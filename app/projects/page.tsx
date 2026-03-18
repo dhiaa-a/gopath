@@ -2,9 +2,21 @@ import Link from "next/link";
 import { projects } from "@/lib/projects";
 
 const tierColors = {
-  1: { accent: "text-go-cyan", icon: "bg-go-cyan/15 text-go-cyan", border: "border-go-cyan/20 hover:border-go-cyan/50" },
-  2: { accent: "text-go-teal", icon: "bg-go-teal/15 text-go-teal", border: "border-go-teal/20 hover:border-go-teal/50" },
-  3: { accent: "text-go-amber", icon: "bg-go-amber/15 text-go-amber", border: "border-go-amber/20 hover:border-go-amber/50" },
+  1: {
+    accent: "text-go-cyan",
+    icon: "bg-go-cyan/15 text-go-cyan",
+    border: "border-go-cyan/20 hover:border-go-cyan/50",
+  },
+  2: {
+    accent: "text-go-teal",
+    icon: "bg-go-teal/15 text-go-teal",
+    border: "border-go-teal/20 hover:border-go-teal/50",
+  },
+  3: {
+    accent: "text-go-amber",
+    icon: "bg-go-amber/15 text-go-amber",
+    border: "border-go-amber/20 hover:border-go-amber/50",
+  },
 };
 
 export default function ProjectsPage() {
@@ -21,7 +33,7 @@ export default function ProjectsPage() {
       </p>
 
       <div className="flex flex-col gap-3">
-        {projects.map((p, i) => {
+        {projects.map((p) => {
           const c = tierColors[p.tier];
           return (
             <Link
@@ -29,13 +41,15 @@ export default function ProjectsPage() {
               href={`/projects/${p.slug}`}
               className={`flex items-center gap-5 rounded-lg border bg-surface p-5 transition-all ${c.border} hover:translate-x-1`}
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded font-mono text-xs font-semibold ${c.icon}">
-                <div className={`flex h-10 w-10 items-center justify-center rounded font-mono text-xs font-semibold ${c.icon}`}>
-                  {p.code}
-                </div>
+              <div
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded font-mono text-xs font-semibold ${c.icon}`}
+              >
+                {p.code}
               </div>
               <div className="min-w-0 flex-1">
-                <div className={`mb-0.5 font-mono text-[10px] uppercase tracking-widest ${c.accent}`}>
+                <div
+                  className={`mb-0.5 font-mono text-[10px] uppercase tracking-widest ${c.accent}`}
+                >
                   {p.tierLabel}
                 </div>
                 <div className="font-semibold text-white">{p.name}</div>
