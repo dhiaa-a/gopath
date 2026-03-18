@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { getProjectsByTier } from "@/lib/projects"
+import { GoCodeBlock } from "@/components/GoCode"
 
 const tierColors = {
 	1: {
@@ -88,8 +89,8 @@ export default function Home() {
 								main.go
 							</span>
 						</div>
-						<pre className="overflow-x-auto p-5 leading-7 text-[#e8f0e8]">
-							{`package main
+						<GoCodeBlock
+							code={`package main
 
 import (
     "context"
@@ -118,7 +119,7 @@ func main() {
     slog.Info("shutting down gracefully")
     srv.Shutdown(context.Background())
 }`}
-						</pre>
+						/>
 					</div>
 				</div>
 			</section>
