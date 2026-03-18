@@ -1,32 +1,42 @@
 import Link from "next/link"
-import { projects } from "@/lib/projects"
+import { concepts } from "@/lib/concepts"
 
-const conceptMap: Record<
-	string,
-	{ projectSlug: string; projectName: string; tier: 1 | 2 | 3 }[]
-> = {}
-
-for (const project of projects) {
-	for (const tag of project.tags) {
-		if (!conceptMap[tag]) conceptMap[tag] = []
-		conceptMap[tag].push({
-			projectSlug: project.slug,
-			projectName: project.name,
-			tier: project.tier,
-		})
-	}
-}
-
-const tierColors = {
-	1: "text-go-cyan",
-	2: "text-go-teal",
-	3: "text-go-amber",
-} as const
-const tierLabels = { 1: "T1", 2: "T2", 3: "T3" } as const
-
-const sortedConcepts = Object.entries(conceptMap).sort(([a], [b]) =>
-	a.localeCompare(b),
-)
+// Group concepts thematically
+const groups = [
+	{
+		label: "Fundamentals",
+		slugs: [
+			"error-handling",
+			"interfaces",
+			"structs",
+			"pointers",
+			"packages",
+		],
+		color: "text-go-cyan",
+		border: "border-go-cyan/20",
+		bg: "bg-go-cyan/5",
+	},
+	{
+		label: "Concurrency",
+		slugs: [
+			"goroutines",
+			"channels",
+			"select",
+			"sync-waitgroup",
+			"context",
+		],
+		color: "text-go-teal",
+		border: "border-go-teal/20",
+		bg: "bg-go-teal/5",
+	},
+	{
+		label: "Standard library",
+		slugs: ["http-handler", "json-decode", "slices", "maps", "defer"],
+		color: "text-go-amber",
+		border: "border-go-amber/20",
+		bg: "bg-go-amber/5",
+	},
+]
 
 export default function ConceptsPage() {
 	return (
@@ -35,68 +45,72 @@ export default function ConceptsPage() {
 				Concepts
 			</div>
 			<h1 className="mb-3 font-serif text-4xl text-white">
-				Every concept, linked to the project that teaches it.
+				Every concept, explained clearly.
 			</h1>
-			<p className="mb-4 text-muted">
-				Not a docs page. Not a blog post. Real code you can run.
+			<p className="mb-12 max-w-xl text-muted">
+				Hit a wall while building? Find the concept, read the mental
+				model, run the example, get unstuck.
 			</p>
 
-			{/* Legend */}
-			<div className="mb-10 flex items-center gap-6 font-mono text-xs text-muted">
-				<span className="flex items-center gap-1.5">
-					<span className="text-go-cyan">T1</span> Get Comfortable
-				</span>
-				<span className="flex items-center gap-1.5">
-					<span className="text-go-teal">T2</span> Go Idioms
-				</span>
-				<span className="flex items-center gap-1.5">
-					<span className="text-go-amber">T3</span> Production Grade
-				</span>
-			</div>
+			<div className="flex flex-col gap-10">
+				{groups.map((group) => {
+					const groupConcepts = group.slugs
+						.map((s) => concepts.find((c) => c.slug === s))
+						.filter(Boolean) as typeof concepts
 
-			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-				{sortedConcepts.map(([concept, projs]) => (
-					<div
-						key={concept}
-						className="rounded-lg border border-border bg-surface p-4"
-					>
-						<div className="mb-3 font-mono text-sm font-semibold text-white">
-							{concept}
-						</div>
-						<div className="flex flex-col gap-1.5">
-							{projs.map((p) => (
-								<Link
-									key={p.projectSlug}
-									href={`/projects/${p.projectSlug}`}
-									className="flex items-center gap-2 text-xs text-muted transition-colors hover:text-white"
-								>
-									<span
-										className={`font-mono ${tierColors[p.tier]}`}
+					return (
+						<div key={group.label}>
+							<div
+								className={`mb-4 font-mono text-xs uppercase tracking-widest ${group.color}`}
+							>
+								{group.label}
+							</div>
+							<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+								{groupConcepts.map((c) => (
+									<Link
+										key={c.slug}
+										href={`/concepts/${c.slug}`}
+										className={`group rounded-lg border ${group.border} bg-surface p-4 transition-all hover:-translate-y-0.5 hover:shadow-sm`}
 									>
-										→
-									</span>
-									<span className="flex-1 truncate">
-										{p.projectName}
-									</span>
-									<span
-										className={`font-mono text-[10px] ${tierColors[p.tier]}`}
-									>
-										{tierLabels[p.tier]}
-									</span>
-								</Link>
-							))}
+										<div className="mb-1 font-semibold text-white group-hover:text-go-cyan">
+											{c.name}
+										</div>
+										<div className="text-xs leading-relaxed text-muted">
+											{c.tagline}
+										</div>
+										<div className="mt-3 flex flex-wrap gap-1">
+											{c.commonMistakes
+												.slice(0, 1)
+												.map((m) => (
+													<span
+														key={m.title}
+														className="rounded border border-border bg-bg px-1.5 py-0.5 font-mono text-[10px] text-faint"
+													>
+														✗{" "}
+														{m.title
+															.split(" ")
+															.slice(0, 3)
+															.join(" ")}
+														…
+													</span>
+												))}
+										</div>
+									</Link>
+								))}
+							</div>
 						</div>
-					</div>
-				))}
+					)
+				})}
 			</div>
 
 			<div className="mt-12 rounded-lg border border-border bg-surface p-6">
-				<p className="mb-2 text-sm font-semibold text-white">
-					Missing a concept?
+				<p className="mb-1 font-semibold text-white">
+					Using concepts while building
 				</p>
 				<p className="text-sm text-muted">
-					The concepts index is built automatically from project tags.
-					As more projects are added, more concepts will appear here.
+					Every project step links to relevant concepts. When you see
+					a concept pill on a step, click it to get a full explanation
+					— then come back and keep building.
 				</p>
 			</div>
 		</main>
