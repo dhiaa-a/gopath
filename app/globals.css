@@ -5,35 +5,69 @@
 @tailwind utilities;
 
 @layer base {
+	html {
+		font-size: 17px; /* base bump — everything scales from here */
+	}
+
 	body {
 		background-color: #0a0e0a;
-		color: #e8f0e8;
+		color: #d4e8d4;
 		font-family: "Outfit", sans-serif;
+		line-height: 1.75;
+		-webkit-font-smoothing: antialiased;
+	}
+
+	h1,
+	h2,
+	h3,
+	h4 {
+		line-height: 1.2;
+		color: #f0f8f0;
+	}
+
+	p {
+		color: #9ab89a;
+		font-size: 1rem;
+		line-height: 1.8;
 	}
 
 	::selection {
-		background: rgba(0, 173, 216, 0.2);
+		background: rgba(0, 173, 216, 0.25);
 	}
 
 	::-webkit-scrollbar {
 		width: 6px;
 	}
 	::-webkit-scrollbar-track {
-		background: #111611;
+		background: #0d150d;
 	}
 	::-webkit-scrollbar-thumb {
 		background: #2a3d2a;
 		border-radius: 3px;
 	}
+	::-webkit-scrollbar-thumb:hover {
+		background: #3a5a3a;
+	}
 
+	/* Inline code — used in step body text */
 	code {
 		font-family: "JetBrains Mono", monospace;
-		font-size: 0.85em;
-		background: rgba(0, 173, 216, 0.08);
-		border: 1px solid rgba(0, 173, 216, 0.15);
-		padding: 0.1em 0.35em;
-		border-radius: 3px;
-		color: #00add8;
+		font-size: 0.82em;
+		background: rgba(0, 173, 216, 0.1);
+		border: 1px solid rgba(0, 173, 216, 0.18);
+		padding: 0.15em 0.4em;
+		border-radius: 4px;
+		color: #00c8f8;
+		letter-spacing: -0.01em;
+	}
+
+	/* Code blocks — the GoCodeBlock component controls wrapper styles,
+     but pre/code inside it should be clean */
+	pre {
+		font-family: "JetBrains Mono", monospace;
+		font-size: 0.84rem;
+		line-height: 1.8;
+		tab-size: 4;
 	}
 
 	pre code {
@@ -42,5 +76,19 @@
 		padding: 0;
 		color: inherit;
 		font-size: inherit;
+		letter-spacing: 0;
+	}
+}
+
+@layer components {
+	/* Prose content areas — bigger text for readability */
+	.prose-body {
+		font-size: 1rem;
+		line-height: 1.85;
+		color: #9ab89a;
+	}
+
+	.prose-body code {
+		font-size: 0.83em;
 	}
 }
