@@ -1,7 +1,8 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { getProject, projects } from "@/lib/projects"
-import { GoCodeBlock } from "@/components/GoCode"
+import { ContentRenderer } from "@/components/ContentRenderer"
+import { ProjectSection } from "@/components/ProjectSection"
 
 export function generateStaticParams() {
 	return projects.map((p) => ({ slug: p.slug }))
@@ -15,6 +16,7 @@ export async function generateMetadata({
 	const { slug } = await params
 	const project = await getProject(slug)
 	if (!project) return {}
+
 	return {
 		title: `${project.name} — GoPath`,
 		description: project.tagline,
@@ -52,6 +54,8 @@ export default async function ProjectPage({
 	const nextProject =
 		currentIdx < allProjects.length - 1 ? allProjects[currentIdx + 1] : null
 
+	const lang = "en"
+
 	return (
 		<main className="mx-auto max-w-3xl px-6 py-16">
 			{/* Breadcrumb */}
@@ -83,7 +87,7 @@ export default async function ProjectPage({
 				{project.tagline}
 			</p>
 
-			{/* Meta badges */}
+			{/* Meta */}
 			<div className="mb-12 flex flex-wrap items-center gap-2">
 				<span
 					className={`inline-flex items-center gap-1.5 rounded border px-3 py-1.5 font-mono text-sm ${c.badge}`}
@@ -100,49 +104,43 @@ export default async function ProjectPage({
 				))}
 			</div>
 
-			{/* What you'll build */}
-			<section className="mb-6 rounded-xl border border-border bg-surface p-7">
-				<h2 className="mb-3 font-mono text-xs uppercase tracking-widest text-muted">
-					What you&apos;ll build
-				</h2>
-				<p
-					className="text-base leading-relaxed text-muted"
-					dangerouslySetInnerHTML={{ __html: project.what }}
-				/>
-			</section>
-
-			{/* What you'll learn */}
-			<section className="mb-6 rounded-xl border border-border bg-surface p-7">
-				<h2 className="mb-4 font-mono text-xs uppercase tracking-widest text-muted">
-					What you&apos;ll learn
-				</h2>
-				<ul className="flex flex-col gap-3">
-					{project.learn.map((item, idx) => (
-						<li
-							key={idx}
-							className="flex items-start gap-3 text-base text-muted"
-						>
+			{/* Mental Models */}
+			{project.mentalModels && (
+				<div className="mb-12">
+					<div className="mb-3 font-mono text-xs uppercase tracking-widest text-muted">
+						Mental Models
+					</div>
+					<div className="flex flex-wrap gap-2">
+						{project.mentalModels.map((m) => (
 							<span
-								className={`mt-1 shrink-0 font-mono text-sm ${c.accent}`}
+								key={m}
+								className="rounded border border-border bg-surface px-3 py-1 text-sm text-muted"
 							>
-								→
+								{m}
 							</span>
-							<span dangerouslySetInnerHTML={{ __html: item }} />
-						</li>
-					))}
-				</ul>
-			</section>
+						))}
+					</div>
+				</div>
+			)}
 
-			{/* Coming from another language */}
-			<section className="mb-12 rounded-xl border border-go-amber/20 bg-go-amber/5 p-7">
-				<h2 className="mb-3 font-mono text-xs uppercase tracking-widest text-go-amber">
-					Coming from another language?
-				</h2>
-				<p
-					className="text-base leading-relaxed text-muted"
-					dangerouslySetInnerHTML={{ __html: project.fromOtherLang }}
-				/>
-			</section>
+			{/* System Sections */}
+			<ProjectSection
+				title={{ en: "System Overview" }}
+				blocks={project.systemOverview}
+				lang={lang}
+			/>
+
+			<ProjectSection
+				title={{ en: "Architecture" }}
+				blocks={project.architecture}
+				lang={lang}
+			/>
+
+			<ProjectSection
+				title={{ en: "Constraints" }}
+				blocks={project.constraints}
+				lang={lang}
+			/>
 
 			{/* Steps */}
 			<div className="mb-4 flex items-baseline justify-between">
@@ -153,9 +151,8 @@ export default async function ProjectPage({
 			</div>
 
 			<div className="flex flex-col gap-10">
-				{project.steps.map((step, i) => (
+				{project.steps.map((step) => (
 					<div key={step.n} className="relative">
-						{/* Step header */}
 						<div className="mb-4 flex items-center gap-4">
 							<div
 								className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface font-mono text-sm font-semibold ${c.accent}`}
@@ -163,43 +160,43 @@ export default async function ProjectPage({
 								{step.n}
 							</div>
 							<h3 className="text-xl font-semibold text-white">
-								{step.heading}
+								{typeof step.heading === "string"
+									? step.heading
+									: step.heading.en}
 							</h3>
 						</div>
 
-						{/* Step body */}
 						<div className="ml-14">
-							<p
-								className="mb-4 text-base leading-relaxed text-muted"
-								dangerouslySetInnerHTML={{ __html: step.body }}
-							/>
-							{step.code && (
-								<GoCodeBlock
-									code={step.code}
-									filename={step.filename}
+							{step.blocks ? (
+								<ContentRenderer
+									blocks={step.blocks}
+									lang={lang}
 								/>
+							) : (
+								<>
+									{step.body && (
+										<p
+											className="mb-4 text-base leading-relaxed text-muted"
+											dangerouslySetInnerHTML={{
+												__html: step.body,
+											}}
+										/>
+									)}
+								</>
 							)}
 						</div>
 					</div>
 				))}
 			</div>
 
-			{/* Go Playground tip */}
-			<div className="mt-10 rounded-xl border border-border bg-surface px-6 py-4 text-sm text-muted">
-				<span className="font-mono text-go-cyan">tip →</span> Try
-				snippets instantly at{" "}
-				<a
-					href="https://go.dev/play"
-					target="_blank"
-					rel="noopener noreferrer"
-					className="text-go-cyan underline hover:opacity-80"
-				>
-					go.dev/play
-				</a>{" "}
-				— no local setup required.
-			</div>
+			{/* Recap */}
+			<ProjectSection
+				title={{ en: "Recap" }}
+				blocks={project.recap}
+				lang={lang}
+			/>
 
-			{/* Prev / Next */}
+			{/* Navigation */}
 			<div className="mt-14 flex items-center justify-between border-t border-border pt-8">
 				{prevProject ? (
 					<Link
@@ -212,6 +209,7 @@ export default async function ProjectPage({
 				) : (
 					<div />
 				)}
+
 				{nextProject && (
 					<Link
 						href={`/projects/${nextProject.slug}`}
