@@ -1,4 +1,5 @@
 import { t } from "@/lib/content"
+import { GoCodeBlock } from "./GoCode"
 
 export function StructuredStep({
 	intent,
@@ -34,9 +35,7 @@ export function StructuredStep({
 					<div className="font-mono text-xs text-go-amber mb-2">
 						implementation
 					</div>
-					<pre className="overflow-x-auto rounded bg-[#0d1a0d] p-4 text-sm">
-						{implementation}
-					</pre>
+					<GoCodeBlock code={implementation} filename={filename} />
 				</div>
 			)}
 		</div>

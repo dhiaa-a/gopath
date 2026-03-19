@@ -21,7 +21,7 @@ const groups = [
 		slugs: [
 			"goroutines",
 			"channels",
-			"select",
+			"select", // was missing
 			"sync-waitgroup",
 			"context",
 		],
@@ -31,7 +31,13 @@ const groups = [
 	},
 	{
 		label: "Standard library",
-		slugs: ["http-handler", "json-decode", "slices", "maps", "defer"],
+		slugs: [
+			"http-handler", // was missing
+			"json-decode",
+			"slices",
+			"maps",
+			"defer",
+		],
 		color: "text-go-amber",
 		border: "border-go-amber/20",
 		bg: "bg-go-amber/5",

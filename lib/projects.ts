@@ -25,7 +25,6 @@ export const projects: Project[] = [
 				type: "text",
 				value: {
 					en: "User input is parsed into configuration, which drives a deterministic file renaming process with optional dry-run preview.",
-					ar: "يتم تحليل إدخال المستخدم إلى تكوين، مما يقود عملية إعادة تسمية ملفات حتمية مع معاينة اختيارية للتجربة الجافة.",
 				},
 			},
 			{
@@ -70,7 +69,6 @@ run()
 				type: "text",
 				value: {
 					en: "You built a production-ready CLI with clear separation between parsing, configuration, and execution phases.",
-					ar: "لقد بنيت أداة سطر أوامر جاهزة للإنتاج مع فصل واضح بين مراحل التحليل والتكوين والتنفيذ.",
 				},
 			},
 		],
@@ -78,20 +76,13 @@ run()
 		steps: [
 			{
 				n: "01",
-				heading: {
-					en: "Parse CLI flags",
-					ar: "تحليل خيارات سطر الأوامر",
-				},
+				heading: { en: "Parse CLI flags" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Capture user input at program start.",
-							ar: "التقاط إدخال المستخدم عند بدء البرنامج.",
-						},
+						intent: { en: "Capture user input at program start." },
 						concept: {
 							en: "CLI flags define a contract between the user and the program.",
-							ar: "خيارات سطر الأوامر تحدد عقدًا بين المستخدم والبرنامج.",
 						},
 						implementation: `package main
 
@@ -119,17 +110,15 @@ func main() {
 			},
 			{
 				n: "02",
-				heading: { en: "Build configuration", ar: "بناء التكوين" },
+				heading: { en: "Build configuration" },
 				blocks: [
 					{
 						type: "structured",
 						intent: {
 							en: "Convert raw inputs into a validated structure.",
-							ar: "تحويل المدخلات الخام إلى هيكل مُتحقق.",
 						},
 						concept: {
 							en: "Configuration centralizes all system inputs and validates them early.",
-							ar: "التكوين يمركز جميع مدخلات النظام ويتحقق منها مبكرًا.",
 						},
 						implementation: `type Config struct {
     Dir     string
@@ -160,20 +149,15 @@ func newConfig(dir, pattern string, dryRun bool) (*Config, error) {
 			},
 			{
 				n: "03",
-				heading: {
-					en: "Implement renaming logic",
-					ar: "تنفيذ منطق إعادة التسمية",
-				},
+				heading: { en: "Implement renaming logic" },
 				blocks: [
 					{
 						type: "structured",
 						intent: {
 							en: "Apply transformation rules to filenames.",
-							ar: "تطبيق قواعد التحويل على أسماء الملفات.",
 						},
 						concept: {
 							en: "Pure functions make transformation logic testable and predictable.",
-							ar: "الدوال النقية تجعل منطق التحويل قابلًا للاختبار ومتوقعًا.",
 						},
 						implementation: `func transformName(name, pattern string) string {
     // Replace spaces with underscores
@@ -211,20 +195,13 @@ func TestTransformName(t *testing.T) {
 			},
 			{
 				n: "04",
-				heading: {
-					en: "Process files with dry-run support",
-					ar: "معالجة الملفات مع دعم التجربة الجافة",
-				},
+				heading: { en: "Process files with dry-run support" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Walk directory and rename files.",
-							ar: "اجتياز المجلد وإعادة تسمية الملفات.",
-						},
+						intent: { en: "Walk directory and rename files." },
 						concept: {
 							en: "Dry-run mode previews changes without side effects.",
-							ar: "وضع التجربة الجافة يعاين التغييرات بدون تأثيرات جانبية.",
 						},
 						implementation: `func (r *Renamer) Run() error {
     entries, err := os.ReadDir(r.config.Dir)
@@ -290,7 +267,6 @@ func TestTransformName(t *testing.T) {
 				type: "text",
 				value: {
 					en: "HTTP requests fetch JSON data, which is decoded into typed structs for safe processing.",
-					ar: "طلبات HTTP تجلب بيانات JSON، التي يتم فك تشفيرها إلى هياكل محددة الأنواع لمعالجة آمنة.",
 				},
 			},
 			{
@@ -330,7 +306,6 @@ handleResponse()
 				type: "text",
 				value: {
 					en: "You built a type-safe API client with proper error handling and resource cleanup.",
-					ar: "لقد بنيت عميل API آمن النوع مع معالجة أخطاء مناسبة وتنظيف موارد.",
 				},
 			},
 		],
@@ -338,20 +313,13 @@ handleResponse()
 		steps: [
 			{
 				n: "01",
-				heading: {
-					en: "Define response structs",
-					ar: "تحديد هياكل الاستجابة",
-				},
+				heading: { en: "Define response structs" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Model the expected JSON structure.",
-							ar: "نمذجة هيكل JSON المتوقع.",
-						},
+						intent: { en: "Model the expected JSON structure." },
 						concept: {
 							en: "Struct tags map JSON fields to Go fields.",
-							ar: "وسوم الهيكل تربط حقول JSON بحقول Go.",
 						},
 						implementation: `type WeatherResponse struct {
     Latitude  float64 \`json:"latitude"\`
@@ -376,17 +344,13 @@ func (w WeatherResponse) String() string {
 			},
 			{
 				n: "02",
-				heading: { en: "Make HTTP request", ar: "إجراء طلب HTTP" },
+				heading: { en: "Make HTTP request" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Fetch data from external API.",
-							ar: "جلب بيانات من API خارجي.",
-						},
+						intent: { en: "Fetch data from external API." },
 						concept: {
 							en: "HTTP clients must handle timeouts and clean up resources.",
-							ar: "عملاء HTTP يجب أن يتعاملوا مع مهلات الاتصال وينظفوا الموارد.",
 						},
 						implementation: `func fetchWeather(lat, lon float64) (*WeatherResponse, error) {
     client := &http.Client{
@@ -421,20 +385,13 @@ func (w WeatherResponse) String() string {
 			},
 			{
 				n: "03",
-				heading: {
-					en: "Format and display output",
-					ar: "تنسيق وعرض المخرجات",
-				},
+				heading: { en: "Format and display output" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Present data to user.",
-							ar: "عرض البيانات للمستخدم.",
-						},
+						intent: { en: "Present data to user." },
 						concept: {
 							en: "The Stringer interface provides custom string formatting.",
-							ar: "واجهة Stringer توفر تنسيقًا مخصصًا للنصوص.",
 						},
 						implementation: `func main() {
     weather, err := fetchWeather(51.5074, -0.1278)
@@ -443,8 +400,6 @@ func (w WeatherResponse) String() string {
     }
     
     fmt.Println("London weather:", weather)
-    
-    // Or access fields directly
     fmt.Printf("Temperature: %.1f°C\\n", weather.Current.Temperature)
     fmt.Printf("Wind speed: %.0f km/h\\n", weather.Current.WindSpeed)
     fmt.Printf("Weather code: %d\\n", weather.Current.WeatherCode)
@@ -461,7 +416,6 @@ func (w WeatherResponse) String() string {
 		name: "Concurrent log parser",
 		tagline: "Parse large log files fast using goroutines and channels.",
 		code: "LOG",
-
 		tier: 1,
 		tierLabel: "FOUNDATIONS",
 
@@ -480,7 +434,6 @@ func (w WeatherResponse) String() string {
 				type: "text",
 				value: {
 					en: "Multiple log files are processed concurrently by workers, with results aggregated through channels.",
-					ar: "يتم معالجة ملفات سجلات متعددة بشكل متزامن بواسطة عمال، مع تجميع النتائج عبر قنوات.",
 				},
 			},
 			{
@@ -521,7 +474,6 @@ worker()
 				type: "text",
 				value: {
 					en: "You implemented a concurrent pipeline with proper goroutine lifecycle management.",
-					ar: "لقد نفذت خط أنابيب متزامن مع إدارة دورة حياة goroutines بشكل صحيح.",
 				},
 			},
 		],
@@ -529,20 +481,13 @@ worker()
 		steps: [
 			{
 				n: "01",
-				heading: {
-					en: "Define log entry structure",
-					ar: "تحديد هيكل إدخال السجل",
-				},
+				heading: { en: "Define log entry structure" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Model parsed log data.",
-							ar: "نمذجة بيانات السجل المحللة.",
-						},
+						intent: { en: "Model parsed log data." },
 						concept: {
 							en: "Strong types make data flow explicit.",
-							ar: "الأنواع القوية تجعل تدفق البيانات واضحًا.",
 						},
 						implementation: `type LogEntry struct {
     Timestamp time.Time
@@ -578,20 +523,13 @@ func parseLine(line string, file string, lineNum int) (LogEntry, bool) {
 			},
 			{
 				n: "02",
-				heading: {
-					en: "Build file processor",
-					ar: "بناء معالج الملفات",
-				},
+				heading: { en: "Build file processor" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Read and parse individual files.",
-							ar: "قراءة وتحليل الملفات الفردية.",
-						},
+						intent: { en: "Read and parse individual files." },
 						concept: {
 							en: "Buffered scanning prevents memory exhaustion.",
-							ar: "المسح المخزن يمنع استنزاف الذاكرة.",
 						},
 						implementation: `func processFile(path string, results chan<- LogEntry) error {
     file, err := os.Open(path)
@@ -619,17 +557,13 @@ func parseLine(line string, file string, lineNum int) (LogEntry, bool) {
 			},
 			{
 				n: "03",
-				heading: { en: "Create worker pool", ar: "إنشاء مجموعة عمال" },
+				heading: { en: "Create worker pool" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Process multiple files concurrently.",
-							ar: "معالجة ملفات متعددة بشكل متزامن.",
-						},
+						intent: { en: "Process multiple files concurrently." },
 						concept: {
 							en: "Workers pull tasks and push results through channels.",
-							ar: "العمال يسحبون المهام ويدفعون النتائج عبر القنوات.",
 						},
 						implementation: `func worker(tasks <-chan string, results chan<- LogEntry, errors chan<- error, wg *sync.WaitGroup) {
     defer wg.Done()
@@ -648,13 +582,11 @@ func processFiles(paths []string, numWorkers int) (<-chan LogEntry, <-chan error
     
     var wg sync.WaitGroup
     
-    // Start workers
     for i := 0; i < numWorkers; i++ {
         wg.Add(1)
         go worker(tasks, results, errors, &wg)
     }
     
-    // Queue tasks
     go func() {
         for _, path := range paths {
             tasks <- path
@@ -662,7 +594,6 @@ func processFiles(paths []string, numWorkers int) (<-chan LogEntry, <-chan error
         close(tasks)
     }()
     
-    // Close results when done
     go func() {
         wg.Wait()
         close(results)
@@ -677,24 +608,19 @@ func processFiles(paths []string, numWorkers int) (<-chan LogEntry, <-chan error
 			},
 			{
 				n: "04",
-				heading: { en: "Aggregate results", ar: "تجميع النتائج" },
+				heading: { en: "Aggregate results" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Generate summary statistics.",
-							ar: "توليد إحصائيات ملخصة.",
-						},
+						intent: { en: "Generate summary statistics." },
 						concept: {
 							en: "Channel range collects results until closure.",
-							ar: "نطاق القناة يجمع النتائج حتى الإغلاق.",
 						},
 						implementation: `func aggregate(results <-chan LogEntry, errors <-chan error) {
     counts := make(map[string]int)
     var earliest, latest time.Time
     var errorList []error
     
-    // Collect results and errors
     for results != nil || errors != nil {
         select {
         case entry, ok := <-results:
@@ -719,7 +645,6 @@ func processFiles(paths []string, numWorkers int) (<-chan LogEntry, <-chan error
         }
     }
     
-    // Print summary
     total := 0
     for _, count := range counts {
         total += count
@@ -751,7 +676,6 @@ func processFiles(paths []string, numWorkers int) (<-chan LogEntry, <-chan error
 		tagline:
 			"Build a real HTTP server with auth, logging, and rate-limiting middleware.",
 		code: "SRV",
-
 		tier: 2,
 		tierLabel: "SYSTEMS",
 
@@ -770,7 +694,6 @@ func processFiles(paths []string, numWorkers int) (<-chan LogEntry, <-chan error
 				type: "text",
 				value: {
 					en: "HTTP requests flow through a chain of middleware before reaching the final handler.",
-					ar: "طلبات HTTP تتدفق عبر سلسلة من middleware قبل الوصول إلى المعالج النهائي.",
 				},
 			},
 			{
@@ -813,7 +736,6 @@ handler()
 				type: "text",
 				value: {
 					en: "You built a composable HTTP server using only the standard library.",
-					ar: "لقد بنيت خادم HTTP قابل للتركيب باستخدام المكتبة القياسية فقط.",
 				},
 			},
 		],
@@ -821,20 +743,13 @@ handler()
 		steps: [
 			{
 				n: "01",
-				heading: {
-					en: "Understand http.Handler",
-					ar: "فهم http.Handler",
-				},
+				heading: { en: "Understand http.Handler" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Learn the core HTTP interface.",
-							ar: "تعلم واجهة HTTP الأساسية.",
-						},
+						intent: { en: "Learn the core HTTP interface." },
 						concept: {
 							en: "Everything in Go HTTP is built on the Handler interface.",
-							ar: "كل شيء في HTTP في Go مبني على واجهة Handler.",
 						},
 						implementation: `type Handler interface {
     ServeHTTP(ResponseWriter, *Request)
@@ -855,20 +770,13 @@ type Middleware func(http.Handler) http.Handler`,
 			},
 			{
 				n: "02",
-				heading: {
-					en: "Implement logging middleware",
-					ar: "تنفيذ middleware للتسجيل",
-				},
+				heading: { en: "Implement logging middleware" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Log request details and timing.",
-							ar: "تسجيل تفاصيل الطلب والتوقيت.",
-						},
+						intent: { en: "Log request details and timing." },
 						concept: {
 							en: "Middleware wraps handlers to add cross-cutting concerns.",
-							ar: "Middleware يغلف المعالجات لإضافة اهتمامات مشتركة.",
 						},
 						implementation: `type responseWriter struct {
     http.ResponseWriter
@@ -913,20 +821,15 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 			},
 			{
 				n: "03",
-				heading: {
-					en: "Add auth middleware",
-					ar: "إضافة middleware للمصادقة",
-				},
+				heading: { en: "Add auth middleware" },
 				blocks: [
 					{
 						type: "structured",
 						intent: {
 							en: "Authenticate requests and attach user context.",
-							ar: "مصادقة الطلبات وإرفاق سياق المستخدم.",
 						},
 						concept: {
 							en: "Context carries request-scoped values through middleware.",
-							ar: "السياق يحمل القيم المرتبطة بالطلب عبر middleware.",
 						},
 						implementation: `type contextKey string
 
@@ -963,17 +866,15 @@ func UserFromContext(ctx context.Context) (string, bool) {
 			},
 			{
 				n: "04",
-				heading: { en: "Chain middleware", ar: "ربط middleware" },
+				heading: { en: "Chain middleware" },
 				blocks: [
 					{
 						type: "structured",
 						intent: {
 							en: "Compose multiple middleware functions.",
-							ar: "تركيب دوال middleware متعددة.",
 						},
 						concept: {
 							en: "Middleware chaining builds the request processing pipeline.",
-							ar: "سلسلة middleware تبني خط معالجة الطلب.",
 						},
 						implementation: `func Chain(handler http.Handler, middlewares ...Middleware) http.Handler {
     for i := len(middlewares) - 1; i >= 0; i-- {
@@ -987,7 +888,6 @@ func main() {
     mux.HandleFunc("/api/users", usersHandler)
     mux.HandleFunc("/api/posts", postsHandler)
     
-    // Build middleware chain
     handler := Chain(
         mux,
         LoggingMiddleware,
@@ -1006,7 +906,6 @@ func main() {
     log.Fatal(srv.ListenAndServe())
 }
 
-// Test without real HTTP
 func TestAuthMiddleware(t *testing.T) {
     handler := AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         user, ok := UserFromContext(r.Context())
@@ -1039,7 +938,6 @@ func TestAuthMiddleware(t *testing.T) {
 		tagline:
 			"Process thousands of tasks concurrently without data races or goroutine leaks.",
 		code: "WRK",
-
 		tier: 2,
 		tierLabel: "SYSTEMS",
 
@@ -1058,7 +956,6 @@ func TestAuthMiddleware(t *testing.T) {
 				type: "text",
 				value: {
 					en: "Tasks flow through a channel to a pool of workers, with results and errors collected separately.",
-					ar: "المهام تتدفق عبر قناة إلى مجموعة من العمال، مع جمع النتائج والأخطاء بشكل منفصل.",
 				},
 			},
 			{
@@ -1106,7 +1003,6 @@ worker
 				type: "text",
 				value: {
 					en: "You built a production-ready worker pool with proper lifecycle management.",
-					ar: "لقد بنيت مجموعة عمال جاهزة للإنتاج مع إدارة دورة حياة مناسبة.",
 				},
 			},
 		],
@@ -1114,20 +1010,13 @@ worker
 		steps: [
 			{
 				n: "01",
-				heading: {
-					en: "Define job and result types",
-					ar: "تحديد أنواع المهمة والنتيجة",
-				},
+				heading: { en: "Define job and result types" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Create type-safe contracts.",
-							ar: "إنشاء عقود آمنة النوع.",
-						},
+						intent: { en: "Create type-safe contracts." },
 						concept: {
 							en: "Clear types make the data flow explicit.",
-							ar: "الأنواع الواضحة تجعل تدفق البيانات واضحًا.",
 						},
 						implementation: `type Job struct {
     ID      int
@@ -1155,20 +1044,13 @@ type Pool struct {
 			},
 			{
 				n: "02",
-				heading: {
-					en: "Create pool with workers",
-					ar: "إنشاء مجموعة مع عمال",
-				},
+				heading: { en: "Create pool with workers" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Initialize worker goroutines.",
-							ar: "تهيئة goroutines العمال.",
-						},
+						intent: { en: "Initialize worker goroutines." },
 						concept: {
 							en: "Workers run concurrently, each processing jobs from a shared queue.",
-							ar: "العمال يعملون بشكل متزامن، كل منهم يعالج المهام من طابور مشترك.",
 						},
 						implementation: `func NewPool(workers int, fn WorkerFunc) *Pool {
     p := &Pool{
@@ -1178,13 +1060,11 @@ type Pool struct {
         workers: workers,
     }
     
-    // Start workers
     p.wg.Add(workers)
     for i := 0; i < workers; i++ {
         go p.worker(fn)
     }
     
-    // Close results when all workers finish
     go func() {
         p.wg.Wait()
         close(p.results)
@@ -1212,22 +1092,17 @@ func (p *Pool) worker(fn WorkerFunc) {
 			},
 			{
 				n: "03",
-				heading: {
-					en: "Add graceful shutdown",
-					ar: "إضافة إيقاف تدريجي",
-				},
+				heading: { en: "Add graceful shutdown" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Handle cancellation and cleanup.",
-							ar: "التعامل مع الإلغاء والتنظيف.",
-						},
+						intent: { en: "Handle cancellation and cleanup." },
 						concept: {
 							en: "Context signals workers to stop accepting new work.",
-							ar: "السياق يشير للعمال بالتوقف عن قبول عمل جديد.",
 						},
-						implementation: `func (p *Pool) StartWithContext(ctx context.Context) {
+						implementation: `var ErrPoolStopped = errors.New("pool stopped")
+
+func (p *Pool) StartWithContext(ctx context.Context) {
     go func() {
         <-ctx.Done()
         close(p.jobs)
@@ -1247,11 +1122,6 @@ func (p *Pool) Results() <-chan Result {
     return p.results
 }
 
-func (p *Pool) Stop() {
-    close(p.jobs)
-}
-
-// Usage with signal handling
 func main() {
     ctx, stop := signal.NotifyContext(context.Background(),
         syscall.SIGINT, syscall.SIGTERM)
@@ -1267,14 +1137,12 @@ func main() {
     
     pool.StartWithContext(ctx)
     
-    // Submit jobs
     go func() {
         for i := 0; i < 100; i++ {
             pool.Submit(Job{ID: i, Payload: i})
         }
     }()
     
-    // Collect results
     for result := range pool.Results() {
         if result.Err != nil {
             log.Printf("job %d failed: %v", result.JobID, result.Err)
@@ -1290,6 +1158,362 @@ func main() {
 		],
 	},
 
+	{
+		slug: "config-watcher",
+		name: "Live config reloader",
+		tagline:
+			"Watch a config file for changes and reload your service without restarting.",
+		code: "CFG",
+		tier: 2,
+		tierLabel: "SYSTEMS",
+
+		estimatedTime: "3–4 hours",
+		tags: ["sync", "goroutines", "select", "patterns"],
+
+		mentalModels: [
+			"shared state protection",
+			"event-driven reload",
+			"zero-downtime updates",
+			"atomic swap",
+		],
+
+		systemOverview: [
+			{
+				type: "text",
+				value: {
+					en: "A watcher goroutine monitors a config file for changes and publishes new config values via a channel. Readers always see a consistent snapshot without locking on the hot path.",
+				},
+			},
+			{
+				type: "code",
+				value: `file watcher → debounce → parse → atomic store → subscribers notified`,
+			},
+		],
+
+		architecture: [
+			{
+				type: "code",
+				value: `Watcher
+ ├── fsnotify loop
+ ├── debounce timer
+ └── broadcast update
+
+ConfigStore
+ ├── atomic.Value (snapshot)
+ └── subscriber channels
+
+Service
+ ├── Load() — reads snapshot
+ └── Subscribe() — receives updates`,
+			},
+		],
+
+		constraints: [
+			{
+				type: "list",
+				items: [
+					{ en: "Must not block request handlers during reload" },
+					{ en: "Must debounce rapid successive file writes" },
+					{ en: "Must keep old config if new file is invalid" },
+					{ en: "Must propagate reload to all active subscribers" },
+				],
+			},
+		],
+
+		recap: [
+			{
+				type: "text",
+				value: {
+					en: "You built a zero-downtime config reloader using atomic values, select-based debouncing, and fan-out notification — patterns that appear in every long-running Go service.",
+				},
+			},
+		],
+
+		steps: [
+			{
+				n: "01",
+				heading: { en: "Define the config type and atomic store" },
+				blocks: [
+					{
+						type: "structured",
+						intent: {
+							en: "Create an immutable config snapshot and a thread-safe store.",
+						},
+						concept: {
+							en: "sync/atomic.Value lets you swap an entire struct pointer atomically. Readers get a consistent snapshot without a mutex on the hot path — the read side is a single pointer load.",
+						},
+						implementation: `package config
+
+import (
+    "encoding/json"
+    "os"
+    "sync/atomic"
+)
+
+// Config is immutable once created — never mutate fields.
+type Config struct {
+    Port     int    \`json:"port"\`
+    LogLevel string \`json:"log_level"\`
+    DBConn   string \`json:"db_conn"\`
+}
+
+// Store holds the current config behind an atomic pointer.
+type Store struct {
+    val atomic.Value // always holds a *Config
+}
+
+func (s *Store) Load() *Config {
+    return s.val.Load().(*Config)
+}
+
+func (s *Store) store(c *Config) {
+    s.val.Store(c)
+}
+
+func loadFromFile(path string) (*Config, error) {
+    data, err := os.ReadFile(path)
+    if err != nil {
+        return nil, err
+    }
+    var c Config
+    if err := json.Unmarshal(data, &c); err != nil {
+        return nil, err
+    }
+    return &c, nil
+}`,
+						filename: "config/store.go",
+					},
+					{
+						type: "callout",
+						variant: "info",
+						value: {
+							en: "atomic.Value requires the concrete type stored to never change. Always store *Config, never Config — that's why Load() does a type assertion, not a type switch.",
+						},
+					},
+				],
+			},
+			{
+				n: "02",
+				heading: { en: "Watch the file with debouncing" },
+				blocks: [
+					{
+						type: "structured",
+						intent: {
+							en: "React to file changes without firing dozens of reloads on a single save.",
+						},
+						concept: {
+							en: "Most editors write a file in multiple syscall bursts. A debounce timer (reset on each event, fired when quiet) collapses the burst into a single reload — a classic select + time.AfterFunc pattern.",
+						},
+						implementation: `package config
+
+import (
+    "log"
+    "time"
+
+    "github.com/fsnotify/fsnotify"
+)
+
+// Watcher watches path and calls reload whenever the file
+// settles after a change. It never calls reload concurrently.
+func Watch(path string, store *Store, notify chan<- struct{}) error {
+    watcher, err := fsnotify.NewWatcher()
+    if err != nil {
+        return err
+    }
+    if err := watcher.Add(path); err != nil {
+        watcher.Close()
+        return err
+    }
+
+    go func() {
+        defer watcher.Close()
+
+        var debounce *time.Timer
+
+        for {
+            select {
+            case event, ok := <-watcher.Events:
+                if !ok {
+                    return
+                }
+                if event.Has(fsnotify.Write) || event.Has(fsnotify.Create) {
+                    // Reset the debounce window.
+                    if debounce != nil {
+                        debounce.Stop()
+                    }
+                    debounce = time.AfterFunc(200*time.Millisecond, func() {
+                        reload(path, store, notify)
+                    })
+                }
+
+            case err, ok := <-watcher.Errors:
+                if !ok {
+                    return
+                }
+                log.Printf("config watcher error: %v", err)
+            }
+        }
+    }()
+
+    return nil
+}
+
+func reload(path string, store *Store, notify chan<- struct{}) {
+    c, err := loadFromFile(path)
+    if err != nil {
+        log.Printf("config reload failed (keeping old config): %v", err)
+        return
+    }
+    store.store(c)
+    log.Printf("config reloaded from %s", path)
+
+    // Non-blocking fan-out: skip subscribers that aren't listening.
+    select {
+    case notify <- struct{}{}:
+    default:
+    }
+}`,
+						filename: "config/watcher.go",
+					},
+				],
+			},
+			{
+				n: "03",
+				heading: { en: "Wire into your service" },
+				blocks: [
+					{
+						type: "structured",
+						intent: {
+							en: "Start the watcher and consume reloads in an HTTP handler.",
+						},
+						concept: {
+							en: "Handlers call store.Load() on every request — one pointer dereference, no lock. The background goroutine that processes the notify channel is the only place that acts on a reload event, keeping the logic in one place.",
+						},
+						implementation: `package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "net/http"
+    "os/signal"
+    "syscall"
+
+    "yourmodule/config"
+)
+
+func main() {
+    store := &config.Store{}
+
+    // Load initial config.
+    initial, err := config.LoadFromFile("config.json")
+    if err != nil {
+        log.Fatal(err)
+    }
+    store.Store(initial)
+
+    // Start watcher.
+    notify := make(chan struct{}, 1)
+    if err := config.Watch("config.json", store, notify); err != nil {
+        log.Fatal(err)
+    }
+
+    // React to reloads in the background.
+    go func() {
+        for range notify {
+            cfg := store.Load()
+            log.Printf("new log level: %s", cfg.LogLevel)
+            // reconfigure logger, update connection pool limits, etc.
+        }
+    }()
+
+    // HTTP handler always reads the latest config snapshot.
+    mux := http.NewServeMux()
+    mux.HandleFunc("/config", func(w http.ResponseWriter, r *http.Request) {
+        cfg := store.Load()
+        fmt.Fprintf(w, "port=%d log_level=%s\\n", cfg.Port, cfg.LogLevel)
+    })
+
+    ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+    defer stop()
+
+    srv := &http.Server{Addr: fmt.Sprintf(":%d", store.Load().Port), Handler: mux}
+    go srv.ListenAndServe()
+
+    <-ctx.Done()
+    srv.Shutdown(context.Background())
+}`,
+						filename: "main.go",
+					},
+				],
+			},
+			{
+				n: "04",
+				heading: { en: "Test the reload path" },
+				blocks: [
+					{
+						type: "structured",
+						intent: {
+							en: "Verify config reloads correctly without a real filesystem event.",
+						},
+						concept: {
+							en: "Testing reload logic directly — by calling reload() rather than waiting for a file event — keeps tests fast and deterministic. The watcher is just plumbing; the real logic is in reload() and Store.",
+						},
+						implementation: `package config_test
+
+import (
+    "os"
+    "testing"
+    "time"
+
+    "yourmodule/config"
+)
+
+func TestReloadUpdatesStore(t *testing.T) {
+    // Write initial config.
+    f, _ := os.CreateTemp("", "cfg*.json")
+    f.WriteString(\`{"port":8080,"log_level":"info","db_conn":"postgres://localhost/dev"}\`)
+    f.Close()
+    defer os.Remove(f.Name())
+
+    store := &config.Store{}
+    initial, err := config.LoadFromFile(f.Name())
+    if err != nil {
+        t.Fatal(err)
+    }
+    store.Store(initial)
+
+    if store.Load().LogLevel != "info" {
+        t.Fatalf("want info, got %s", store.Load().LogLevel)
+    }
+
+    // Overwrite with new config.
+    os.WriteFile(f.Name(), []byte(\`{"port":8080,"log_level":"debug","db_conn":"postgres://localhost/dev"}\`), 0644)
+
+    notify := make(chan struct{}, 1)
+    config.Watch(f.Name(), store, notify)
+
+    // Touch the file to trigger the watcher.
+    now := time.Now()
+    os.Chtimes(f.Name(), now, now)
+
+    select {
+    case <-notify:
+    case <-time.After(2 * time.Second):
+        t.Fatal("timed out waiting for reload")
+    }
+
+    if store.Load().LogLevel != "debug" {
+        t.Fatalf("want debug, got %s", store.Load().LogLevel)
+    }
+}`,
+						filename: "config/watcher_test.go",
+					},
+				],
+			},
+		],
+	},
+
 	// ── TIER 3 ──────────────────────────────────────────────────────────────
 	{
 		slug: "grpc",
@@ -1297,7 +1521,6 @@ func main() {
 		tagline:
 			"Define a protobuf schema, generate Go code, and build a working gRPC service.",
 		code: "RPC",
-
 		tier: 3,
 		tierLabel: "ADVANCED",
 
@@ -1316,7 +1539,6 @@ func main() {
 				type: "text",
 				value: {
 					en: "Protocol Buffers define the service contract, from which server and client code is generated.",
-					ar: "Protocol Buffers تحدد عقد الخدمة، ومنها يتم توليد كود الخادم والعميل.",
 				},
 			},
 			{
@@ -1360,7 +1582,6 @@ client/
 				type: "text",
 				value: {
 					en: "You built a contract-first gRPC service with interceptors and streaming support.",
-					ar: "لقد بنيت خدمة gRPC تعتمد على العقد أولاً مع دعم interceptors والتدفق.",
 				},
 			},
 		],
@@ -1368,20 +1589,13 @@ client/
 		steps: [
 			{
 				n: "01",
-				heading: {
-					en: "Define protobuf schema",
-					ar: "تحديد مخطط protobuf",
-				},
+				heading: { en: "Define protobuf schema" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Create the API contract.",
-							ar: "إنشاء عقد API.",
-						},
+						intent: { en: "Create the API contract." },
 						concept: {
 							en: "Protobuf defines messages and services in a language-neutral way.",
-							ar: "Protobuf يحدد الرسائل والخدمات بطريقة محايدة للغة.",
 						},
 						implementation: `syntax = "proto3";
 
@@ -1431,17 +1645,13 @@ message CreateUserResponse {
 			},
 			{
 				n: "02",
-				heading: { en: "Implement server", ar: "تنفيذ الخادم" },
+				heading: { en: "Implement server" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Provide business logic.",
-							ar: "توفير منطق الأعمال.",
-						},
+						intent: { en: "Provide business logic." },
 						concept: {
 							en: "Generated interfaces ensure contract compliance.",
-							ar: "الواجهات المُولدة تضمن الامتثال للعقد.",
 						},
 						implementation: `type userService struct {
     user.UnimplementedUserServiceServer
@@ -1510,17 +1720,13 @@ func (s *userService) ListUsers(req *user.ListUsersRequest, stream user.UserServ
 			},
 			{
 				n: "03",
-				heading: { en: "Add interceptors", ar: "إضافة interceptors" },
+				heading: { en: "Add interceptors" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Add cross-cutting concerns.",
-							ar: "إضافة اهتمامات مشتركة.",
-						},
+						intent: { en: "Add cross-cutting concerns." },
 						concept: {
 							en: "Interceptors are gRPC's middleware for unary and streaming calls.",
-							ar: "Interceptors هي middleware في gRPC للاستدعاءات الأحادية والمتدفقة.",
 						},
 						implementation: `func loggingInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
     start := time.Now()
@@ -1546,7 +1752,6 @@ func authInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServe
         return nil, status.Error(codes.Unauthenticated, "missing token")
     }
     
-    // Validate token and add claims to context
     claims, err := validateToken(tokens[0])
     if err != nil {
         return nil, status.Error(codes.Unauthenticated, "invalid token")
@@ -1589,7 +1794,6 @@ func main() {
 		tagline:
 			"Full CRUD REST API with Postgres, schema migrations, and the repository pattern.",
 		code: "DB",
-
 		tier: 3,
 		tierLabel: "ADVANCED",
 
@@ -1608,7 +1812,6 @@ func main() {
 				type: "text",
 				value: {
 					en: "HTTP handlers depend on repository interfaces, with Postgres implementing the data access layer.",
-					ar: "معالجات HTTP تعتمد على واجهات المستودع، مع Postgres ينفذ طبقة الوصول للبيانات.",
 				},
 			},
 			{
@@ -1655,7 +1858,6 @@ cmd/
 				type: "text",
 				value: {
 					en: "You built a cleanly-architected REST API with proper separation of concerns.",
-					ar: "لقد بنيت REST API بهندسة نظيفة وفصل مناسب للاهتمامات.",
 				},
 			},
 		],
@@ -1663,20 +1865,13 @@ cmd/
 		steps: [
 			{
 				n: "01",
-				heading: {
-					en: "Define repository interface",
-					ar: "تحديد واجهة المستودع",
-				},
+				heading: { en: "Define repository interface" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Abstract data access.",
-							ar: "تجريد الوصول للبيانات.",
-						},
+						intent: { en: "Abstract data access." },
 						concept: {
 							en: "Interfaces allow swapping implementations for testing.",
-							ar: "الواجهات تسمح بتبديل التنفيذات للاختبار.",
 						},
 						implementation: `package repository
 
@@ -1709,20 +1904,13 @@ type TaskRepository interface {
 			},
 			{
 				n: "02",
-				heading: {
-					en: "Create database migrations",
-					ar: "إنشاء ترحيلات قاعدة البيانات",
-				},
+				heading: { en: "Create database migrations" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Version control schema changes.",
-							ar: "التحكم في إصدارات تغييرات المخطط.",
-						},
+						intent: { en: "Version control schema changes." },
 						concept: {
 							en: "Migrations provide reproducible database setup.",
-							ar: "الترحيلات توفر إعداد قاعدة بيانات قابل للتكرار.",
 						},
 						implementation: `-- 001_create_tasks.up.sql
 CREATE TABLE tasks (
@@ -1747,20 +1935,13 @@ DROP TABLE tasks;
 			},
 			{
 				n: "03",
-				heading: {
-					en: "Implement Postgres repository",
-					ar: "تنفيذ مستودع Postgres",
-				},
+				heading: { en: "Implement Postgres repository" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Provide concrete database access.",
-							ar: "توفير وصول ملموس لقاعدة البيانات.",
-						},
+						intent: { en: "Provide concrete database access." },
 						concept: {
 							en: "Repository implementations encapsulate all database queries.",
-							ar: "تنفيذات المستودع تغلف جميع استعلامات قاعدة البيانات.",
 						},
 						implementation: `type postgresRepo struct {
     db *pgxpool.Pool
@@ -1822,17 +2003,13 @@ func (r *postgresRepo) WithTx(ctx context.Context, fn func(repo TaskRepository) 
 			},
 			{
 				n: "04",
-				heading: { en: "Build HTTP handlers", ar: "بناء معالجات HTTP" },
+				heading: { en: "Build HTTP handlers" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Handle HTTP requests.",
-							ar: "معالجة طلبات HTTP.",
-						},
+						intent: { en: "Handle HTTP requests." },
 						concept: {
 							en: "Handlers depend on interfaces, not concrete implementations.",
-							ar: "المعالجات تعتمد على واجهات، وليس على تنفيذات ملموسة.",
 						},
 						implementation: `type TaskHandler struct {
     repo repository.TaskRepository
@@ -1869,26 +2046,11 @@ func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(task)
 }
 
-func (h *TaskHandler) ListTasks(w http.ResponseWriter, r *http.Request) {
-    limit := 100
-    offset := 0
-    
-    tasks, err := h.repo.List(r.Context(), limit, offset)
-    if err != nil {
-        log.Printf("list error: %v", err)
-        http.Error(w, "internal error", http.StatusInternalServerError)
-        return
-    }
-    
-    json.NewEncoder(w).Encode(tasks)
-}
-
 func main() {
     repo, err := NewPostgresRepo("postgres://localhost:5432/tasks?sslmode=disable")
     if err != nil {
         log.Fatal(err)
     }
-    defer repo.Close()
     
     handler := NewTaskHandler(repo)
     
@@ -1929,7 +2091,6 @@ func main() {
 				type: "text",
 				value: {
 					en: "Profiling endpoints expose runtime metrics, which are analyzed to identify bottlenecks, then optimized with benchmarks proving improvements.",
-					ar: "نقاط نهاية التحليل تكشف مقاييس وقت التشغيل، التي يتم تحليلها لتحديد الاختناقات، ثم تحسينها مع مقاييس أداء تثبت التحسينات.",
 				},
 			},
 			{
@@ -1977,7 +2138,6 @@ analysis/
 				type: "text",
 				value: {
 					en: "You built a profiling toolkit that enables data-driven performance optimization with measurable results.",
-					ar: "لقد بنيت مجموعة أدوات تحليل تمكن تحسين الأداء المعتمد على البيانات مع نتائج قابلة للقياس.",
 				},
 			},
 		],
@@ -1985,20 +2145,13 @@ analysis/
 		steps: [
 			{
 				n: "01",
-				heading: {
-					en: "Add pprof to your service",
-					ar: "إضافة pprof إلى خدمتك",
-				},
+				heading: { en: "Add pprof to your service" },
 				blocks: [
 					{
 						type: "structured",
-						intent: {
-							en: "Expose runtime profiling endpoints.",
-							ar: "كشف نقاط نهاية تحليل وقت التشغيل.",
-						},
+						intent: { en: "Expose runtime profiling endpoints." },
 						concept: {
 							en: "pprof provides built-in profiling through HTTP endpoints.",
-							ar: "pprof يوفر تحليلًا مدمجًا عبر نقاط نهاية HTTP.",
 						},
 						implementation: `package main
 
@@ -2009,12 +2162,10 @@ import (
 )
 
 func main() {
-    // Your normal server
     mux := http.NewServeMux()
     mux.HandleFunc("/api/work", workHandler)
 
-    // pprof endpoints are registered on DefaultServeMux
-    // Run on a separate port — never expose to the internet without auth
+    // Run pprof on a separate port — never expose to the internet without auth.
     go func() {
         log.Println("pprof listening on :6060")
         log.Fatal(http.ListenAndServe(":6060", nil))
@@ -2023,7 +2174,6 @@ func main() {
     log.Fatal(http.ListenAndServe(":8080", mux))
 }
 
-// Now you can profile:
 // CPU profile (30 seconds):
 // go tool pprof http://localhost:6060/debug/pprof/profile?seconds=30
 //
@@ -2041,25 +2191,22 @@ func main() {
 						type: "callout",
 						variant: "warning",
 						value: {
-							en: "Never expose pprof endpoints to the internet without authentication! They can reveal sensitive information about your service.",
-							ar: "لا تكشف نقاط نهاية pprof للإنترنت أبدًا دون مصادقة! يمكنها كشف معلومات حساسة عن خدمتك.",
+							en: "Never expose pprof endpoints to the internet without authentication — they reveal memory contents and goroutine stacks.",
 						},
 					},
 				],
 			},
 			{
 				n: "02",
-				heading: { en: "Write benchmarks", ar: "كتابة مقاييس أداء" },
+				heading: { en: "Write benchmarks" },
 				blocks: [
 					{
 						type: "structured",
 						intent: {
 							en: "Measure performance with repeatable benchmarks.",
-							ar: "قياس الأداء بمقاييس أداء قابلة للتكرار.",
 						},
 						concept: {
 							en: "Benchmarks provide stable, reproducible performance measurements.",
-							ar: "مقاييس الأداء توفر قياسات أداء مستقرة وقابلة للتكرار.",
 						},
 						implementation: `package processor
 
@@ -2067,7 +2214,6 @@ import (
     "testing"
 )
 
-// generateTestItem creates a realistic test payload
 func generateTestItem() *Item {
     return &Item{
         ID:   "test-123",
@@ -2075,21 +2221,16 @@ func generateTestItem() *Item {
     }
 }
 
-// Basic benchmark
 func BenchmarkProcessItem(b *testing.B) {
     item := generateTestItem()
-    
-    b.ResetTimer() // exclude setup time
-    
+    b.ResetTimer()
     for i := 0; i < b.N; i++ {
         ProcessItem(item)
     }
 }
 
-// Parallel benchmark
 func BenchmarkProcessItemParallel(b *testing.B) {
     item := generateTestItem()
-    
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
             ProcessItem(item)
@@ -2097,17 +2238,11 @@ func BenchmarkProcessItemParallel(b *testing.B) {
     })
 }
 
-// Sub-benchmarks for different input sizes
 func BenchmarkProcessItemSizes(b *testing.B) {
     sizes := []int{10, 100, 1000, 10000}
-    
     for _, size := range sizes {
         b.Run(fmt.Sprintf("size-%d", size), func(b *testing.B) {
-            item := &Item{
-                ID:   "test",
-                Data: make([]byte, size),
-            }
-            
+            item := &Item{ID: "test", Data: make([]byte, size)}
             b.ResetTimer()
             for i := 0; i < b.N; i++ {
                 ProcessItem(item)
@@ -2116,43 +2251,29 @@ func BenchmarkProcessItemSizes(b *testing.B) {
     }
 }
 
-// Run with:
-// go test -bench=. -benchmem -count=5 | tee bench.txt
-//
-// Output:
-// BenchmarkProcessItem-8          1234567    890 ns/op    128 B/op    3 allocs/op
-// BenchmarkProcessItemParallel-8  3456789    345 ns/op    128 B/op    3 allocs/op
-//
-// Compare benchmarks:
-// go get golang.org/x/perf/cmd/benchstat
-// benchstat bench.txt`,
+// Run: go test -bench=. -benchmem -count=5 | tee bench.txt
+// Compare: benchstat bench.txt`,
 						filename: "processor_test.go",
 					},
 					{
 						type: "text",
 						value: {
-							en: "The `-benchmem` flag is crucial — allocations often impact performance more than CPU time. Always run benchmarks multiple times (`-count=5`) for statistical significance.",
-							ar: "علامة `-benchmem` حاسمة - التخصيصات غالبًا تؤثر على الأداء أكثر من وقت المعالج. شغل مقاييس الأداء دائمًا عدة مرات (`-count=5`) للدلالة الإحصائية.",
+							en: "The -benchmem flag is crucial — allocations often impact performance more than CPU time. Always run benchmarks multiple times (-count=5) for statistical significance.",
 						},
 					},
 				],
 			},
 			{
 				n: "03",
-				heading: {
-					en: "Find and fix allocation hotspots",
-					ar: "ابحث عن نقاط التخصيص الساخنة وأصلحها",
-				},
+				heading: { en: "Find and fix allocation hotspots" },
 				blocks: [
 					{
 						type: "structured",
 						intent: {
 							en: "Identify and eliminate unnecessary allocations.",
-							ar: "تحديد وإزالة التخصيصات غير الضرورية.",
 						},
 						concept: {
 							en: "Memory profiling reveals allocation patterns and optimization opportunities.",
-							ar: "تحليل الذاكرة يكشف أنماط التخصيص وفرص التحسين.",
 						},
 						implementation: `package query
 
@@ -2161,11 +2282,10 @@ import (
     "sync"
 )
 
-// BAD: Allocates new strings.Builder each call
+// BAD: allocates new Builder every call
 func buildQueryBad(filters []string) string {
     var sb strings.Builder
     sb.WriteString("SELECT * FROM items")
-    
     if len(filters) > 0 {
         sb.WriteString(" WHERE ")
         for i, f := range filters {
@@ -2175,175 +2295,106 @@ func buildQueryBad(filters []string) string {
             sb.WriteString(f)
         }
     }
-    
     return sb.String()
 }
 
-// GOOD: Pre-allocate with known capacity
+// GOOD: pre-allocate with estimated capacity
 func buildQueryGood(filters []string) string {
     if len(filters) == 0 {
         return "SELECT * FROM items"
     }
-    
-    // Estimate capacity to avoid reallocations
-    // WHERE clause + filters + AND separators
-    capacity := len("SELECT * FROM items WHERE ") + 
-                len(filters[0]) + 
-                (len(filters)-1)*len(" AND ")
-    
     var sb strings.Builder
-    sb.Grow(capacity)
-    
+    sb.Grow(len("SELECT * FROM items WHERE ") + len(strings.Join(filters, " AND ")))
     sb.WriteString("SELECT * FROM items WHERE ")
     sb.WriteString(strings.Join(filters, " AND "))
-    
     return sb.String()
 }
 
-// BEST: Use sync.Pool for hot paths
-var builderPool = sync.Pool{
-    New: func() any { 
-        return &strings.Builder{} 
-    },
-}
+// BEST: pool the Builder for hot paths
+var builderPool = sync.Pool{New: func() any { return &strings.Builder{} }}
 
 func buildQueryPooled(filters []string) string {
     if len(filters) == 0 {
         return "SELECT * FROM items"
     }
-    
     sb := builderPool.Get().(*strings.Builder)
     defer builderPool.Put(sb)
-    
     sb.Reset()
-    
-    // Estimate capacity
-    capacity := len("SELECT * FROM items WHERE ") + 
-                len(filters[0]) + 
-                (len(filters)-1)*len(" AND ")
-    sb.Grow(capacity)
-    
+    sb.Grow(len("SELECT * FROM items WHERE ") + len(strings.Join(filters, " AND ")))
     sb.WriteString("SELECT * FROM items WHERE ")
     sb.WriteString(strings.Join(filters, " AND "))
-    
     return sb.String()
 }
 
-// Benchmark results:
 // BenchmarkBuildQueryBad-8     500000   3124 ns/op   1536 B/op   8 allocs/op
 // BenchmarkBuildQueryGood-8   2000000    845 ns/op    512 B/op   2 allocs/op
 // BenchmarkBuildQueryPooled-8 3000000    456 ns/op    512 B/op   2 allocs/op`,
 						filename: "query.go",
 					},
-					{
-						type: "code",
-						value: `# Profile memory allocations
-go tool pprof -alloc_space http://localhost:6060/debug/pprof/heap
-
-# In pprof interactive mode:
-(pprof) top
-(pprof) list buildQuery
-(pprof) web
-
-# Generate flamegraph
-go tool pprof -http=:8081 http://localhost:6060/debug/pprof/profile?seconds=30
-
-# Check for data races
-go test -race ./...
-
-# View runtime metrics
-curl http://localhost:6060/debug/pprof/heap?debug=1`,
-						filename: "analysis_commands.sh",
-					},
 				],
 			},
 			{
 				n: "04",
-				heading: {
-					en: "Advanced profiling techniques",
-					ar: "تقنيات تحليل متقدمة",
-				},
+				heading: { en: "Advanced profiling techniques" },
 				blocks: [
 					{
 						type: "structured",
 						intent: {
 							en: "Use advanced tools to deep-dive into performance.",
-							ar: "استخدم أدوات متقدمة للغوص عميقًا في الأداء.",
 						},
 						concept: {
 							en: "Combining multiple profiling techniques provides a complete performance picture.",
-							ar: "دمج تقنيات تحليل متعددة يوفر صورة أداء كاملة.",
 						},
 						implementation: `package main
 
 import (
     "log"
     "runtime"
-    "runtime/debug"
     "time"
 )
 
 func monitorRuntime() {
     ticker := time.NewTicker(10 * time.Second)
     defer ticker.Stop()
-    
     var m runtime.MemStats
-    
     for range ticker.C {
         runtime.ReadMemStats(&m)
-        
-        log.Printf("=== Runtime Stats ===")
-        log.Printf("Goroutines: %d", runtime.NumGoroutine())
-        log.Printf("Heap: %d MB", m.HeapAlloc/1024/1024)
-        log.Printf("Stack: %d MB", m.StackInuse/1024/1024)
-        log.Printf("GC Cycles: %d", m.NumGC)
-        log.Printf("GC Pause: %v", time.Duration(m.PauseNs[(m.NumGC+255)%256]))
+        log.Printf("goroutines=%d heap=%dMB gc_cycles=%d gc_pause=%v",
+            runtime.NumGoroutine(),
+            m.HeapAlloc/1024/1024,
+            m.NumGC,
+            time.Duration(m.PauseNs[(m.NumGC+255)%256]),
+        )
     }
 }
 
-// Trace execution
-import _ "runtime/trace"
-
-func traceExecution() {
-    f, _ := os.Create("trace.out")
-    defer f.Close()
-    
-    trace.Start(f)
-    defer trace.Stop()
-    
-    // Your code here
-}
-
-// Use GODEBUG for additional insights
-// GODEBUG=gctrace=1,schedtrace=1000 ./myapp
+// Execution trace:
+// import "runtime/trace"
+// f, _ := os.Create("trace.out")
+// trace.Start(f); defer trace.Stop()
+// go tool trace trace.out
 //
-// Output:
-// gc 1 @0.001s 2%: 0.010+1.2+0.020 ms clock, 0.080+0.33/1.0/0.77+0.16 ms cpu
-// SCHED 0ms: gomaxprocs=8 idleprocs=6 threads=5 spinningthreads=1 idlethreads=0`,
+// Runtime debug env vars:
+// GODEBUG=gctrace=1,schedtrace=1000 ./myapp`,
 						filename: "runtime_monitor.go",
 					},
 					{
 						type: "list",
 						items: [
 							{
-								en: "**CPU Profile**: `go tool pprof -http=:8081 http://localhost:6060/debug/pprof/profile?seconds=30`",
-								ar: "**تحليل المعالج**: `go tool pprof -http=:8081 http://localhost:6060/debug/pprof/profile?seconds=30`",
+								en: "CPU Profile: go tool pprof -http=:8081 http://localhost:6060/debug/pprof/profile?seconds=30",
 							},
 							{
-								en: "**Memory Profile**: `go tool pprof -http=:8081 http://localhost:6060/debug/pprof/heap`",
-								ar: "**تحليل الذاكرة**: `go tool pprof -http=:8081 http://localhost:6060/debug/pprof/heap`",
+								en: "Memory Profile: go tool pprof -http=:8081 http://localhost:6060/debug/pprof/heap",
 							},
 							{
-								en: "**Goroutine Profile**: `go tool pprof -http=:8081 http://localhost:6060/debug/pprof/goroutine`",
-								ar: "**تحليل Goroutines**: `go tool pprof -http=:8081 http://localhost:6060/debug/pprof/goroutine`",
+								en: "Goroutine Profile: go tool pprof -http=:8081 http://localhost:6060/debug/pprof/goroutine",
 							},
 							{
-								en: "**Block Profile**: `go tool pprof -http=:8081 http://localhost:6060/debug/pprof/block`",
-								ar: "**تحليل الحظر**: `go tool pprof -http=:8081 http://localhost:6060/debug/pprof/block`",
+								en: "Block Profile: go tool pprof -http=:8081 http://localhost:6060/debug/pprof/block",
 							},
 							{
-								en: "**Mutex Profile**: `go tool pprof -http=:8081 http://localhost:6060/debug/pprof/mutex`",
-								ar: "**تحليل Mutex**: `go tool pprof -http=:8081 http://localhost:6060/debug/pprof/mutex`",
+								en: "Mutex Profile: go tool pprof -http=:8081 http://localhost:6060/debug/pprof/mutex",
 							},
 						],
 					},
@@ -2351,18 +2402,12 @@ func traceExecution() {
 						type: "callout",
 						variant: "info",
 						value: {
-							en: "The `-http` flag opens an interactive web UI where you can explore flamegraphs, call graphs, and source views.",
-							ar: "علامة `-http` تفتح واجهة ويب تفاعلية حيث يمكنك استكشاف رسومات اللهب ورسومات الاستدعاء وعروض المصدر.",
+							en: "The -http flag opens an interactive web UI where you can explore flamegraphs, call graphs, and source views.",
 						},
 					},
 				],
 			},
 		],
-
-		fromOtherLang: {
-			en: "Coming from Python: profiling in Go is built into the standard library — no third-party profilers needed. `pprof` is as powerful as `cProfile` but with better visualization tools. Coming from Java: no JVM overhead, no JIT warmup to account for — Go benchmarks are stable and reproducible from the first run. The `-benchmem` flag is unique to Go and critical for understanding allocation patterns.",
-			ar: "قادماً من Python: التحليل في Go مبني في المكتبة القياسية - لا حاجة لمحللات طرف ثالث. `pprof` بقوة `cProfile` ولكن مع أدوات تصور أفضل. قادماً من Java: لا overhead لـ JVM، لا إحماء JIT لحسابه - مقاييس أداء Go مستقرة وقابلة للتكرار من أول تشغيل. علامة `-benchmem` فريدة لـ Go وحاسمة لفهم أنماط التخصيص.",
-		},
 	},
 ]
 
