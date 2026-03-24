@@ -1,50 +1,66 @@
 export type LocalizedString = {
 	en: string
-	ar?: string
+}
+
+export type Hint = {
+	label: string // short label shown on the toggle button
+	value: string // revealed when clicked
+}
+
+export type TestCase = {
+	description: string
+	input?: string
+	expected: string
+}
+
+export type Assessment = {
+	kind: "unit" | "benchmark" | "integration" | "system" | "metrics"
+	title: string
+	description: string
+	testCases?: TestCase[]
+	desiredOutput?: string
+	desiredMetrics?: string
+	metricsAchievable?: string // shown only when user reveals it
+	hints?: Hint[]
 }
 
 export type ContentBlock =
+	| { type: "text"; value: LocalizedString }
+	| { type: "code"; value: string; filename?: string }
+	| { type: "list"; items: LocalizedString[] }
+	| { type: "callout"; variant: "info" | "warning"; value: LocalizedString }
+	// T1 — show pattern skeleton + similar example, state the task
 	| {
-			type: "text"
-			value: LocalizedString // Localized text content, e.g., { en: "Hello", ar: "مرحبا" }
+			type: "pattern"
+			concept: LocalizedString
+			pattern: string // minimal generic code showing the idiom shape
+			example: LocalizedString // brief description of a similar solved case
+			task: LocalizedString // what the learner must build for THIS project
+			hints?: Hint[]
 	  }
+	// T2 — state requirement + why + stdlib / third-party hints, optional snippet for non-obvious APIs
 	| {
-			type: "code"
-			value: string // The code content to display
-			filename?: string // Optional filename for display, e.g., "main.go"
+			type: "requirement"
+			what: LocalizedString
+			why: LocalizedString
+			stdlibHint?: string
+			thirdPartyHint?: string
+			complexSnippet?: string // only for genuinely non-obvious APIs
+			hints?: Hint[]
 	  }
+	// T3 — constraint only, systems thinking
 	| {
-			type: "list"
-			items: LocalizedString[]
+			type: "constraint"
+			what: LocalizedString
+			rationale: LocalizedString
+			hints?: Hint[]
 	  }
-	// Highlighted note or warning
-	| {
-			type: "callout"
-			variant: "info" | "warning" // Determines style: info (neutral) or warning (caution)
-			value: LocalizedString // Localized message for the callout
-	  }
-	// Conceptual + implementation block
-	| {
-			type: "structured"
-			intent: LocalizedString // What this block aims to achieve (goal)
-			concept: LocalizedString // Explanation of the underlying idea or principle
-			implementation?: string // Optional code snippet implementing the concept
-			filename?: string // Optional filename for the code snippet
-	  }
+	// Assessment — attached to a step
+	| { type: "assessment"; assessment: Assessment }
 
 export type Step = {
 	n: string
 	heading: LocalizedString
-	blocks?: ContentBlock[]
-
-	// legacy fallback
-	body?: string
-	code?: string
-	filename?: string
-}
-
-export type ProjectMetaSection = {
-	title: LocalizedString
 	blocks: ContentBlock[]
 }
 
@@ -55,23 +71,13 @@ export type Project = {
 	code: string
 	tier: 1 | 2 | 3
 	tierLabel: string
-
 	estimatedTime: string
 	tags: string[]
-
 	mentalModels?: string[]
-
 	systemOverview?: ContentBlock[]
 	architecture?: ContentBlock[]
-	constraints?: ContentBlock[]
 	recap?: ContentBlock[]
-
 	steps: Step[]
-
-	// legacy
-	what?: string
-	learn?: string[]
-	fromOtherLang?: LocalizedString
 }
 
 export function t(val: LocalizedString, lang: string) {

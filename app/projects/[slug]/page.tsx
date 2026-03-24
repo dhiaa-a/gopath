@@ -16,7 +16,6 @@ export async function generateMetadata({
 	const { slug } = await params
 	const project = await getProject(slug)
 	if (!project) return {}
-
 	return {
 		title: `${project.name} — GoPath`,
 		description: project.tagline,
@@ -54,8 +53,6 @@ export default async function ProjectPage({
 	const nextProject =
 		currentIdx < allProjects.length - 1 ? allProjects[currentIdx + 1] : null
 
-	const lang = "en"
-
 	return (
 		<main className="mx-auto max-w-3xl px-6 py-16">
 			{/* Breadcrumb */}
@@ -88,7 +85,7 @@ export default async function ProjectPage({
 			</p>
 
 			{/* Meta */}
-			<div className="mb-12 flex flex-wrap items-center gap-2">
+			<div className="mb-8 flex flex-wrap items-center gap-2">
 				<span
 					className={`inline-flex items-center gap-1.5 rounded border px-3 py-1.5 font-mono text-sm ${c.badge}`}
 				>
@@ -105,8 +102,8 @@ export default async function ProjectPage({
 			</div>
 
 			{/* Mental Models */}
-			{project.mentalModels && (
-				<div className="mb-12">
+			{project.mentalModels && project.mentalModels.length > 0 && (
+				<div className="mb-10">
 					<div className="mb-3 font-mono text-xs uppercase tracking-widest text-muted">
 						Mental Models
 					</div>
@@ -127,26 +124,19 @@ export default async function ProjectPage({
 			<ProjectSection
 				title={{ en: "System Overview" }}
 				blocks={project.systemOverview}
-				lang={lang}
 			/>
-
 			<ProjectSection
 				title={{ en: "Architecture" }}
 				blocks={project.architecture}
-				lang={lang}
-			/>
-
-			<ProjectSection
-				title={{ en: "Constraints" }}
-				blocks={project.constraints}
-				lang={lang}
 			/>
 
 			{/* Steps */}
-			<div className="mb-4 flex items-baseline justify-between">
+			<div className="mb-6 flex items-baseline justify-between">
 				<h2 className="font-serif text-3xl text-white">Steps</h2>
 				<span className="font-mono text-sm text-faint">
-					guided, not hand-holding
+					{project.tier === 1 && "pattern → example → your task"}
+					{project.tier === 2 && "requirement → why → hints"}
+					{project.tier === 3 && "constraint only"}
 				</span>
 			</div>
 
@@ -160,41 +150,18 @@ export default async function ProjectPage({
 								{step.n}
 							</div>
 							<h3 className="text-xl font-semibold text-white">
-								{typeof step.heading === "string"
-									? step.heading
-									: step.heading.en}
+								{step.heading.en}
 							</h3>
 						</div>
-
 						<div className="ml-14">
-							{step.blocks ? (
-								<ContentRenderer
-									blocks={step.blocks}
-									lang={lang}
-								/>
-							) : (
-								<>
-									{step.body && (
-										<p
-											className="mb-4 text-base leading-relaxed text-muted"
-											dangerouslySetInnerHTML={{
-												__html: step.body,
-											}}
-										/>
-									)}
-								</>
-							)}
+							<ContentRenderer blocks={step.blocks} />
 						</div>
 					</div>
 				))}
 			</div>
 
 			{/* Recap */}
-			<ProjectSection
-				title={{ en: "Recap" }}
-				blocks={project.recap}
-				lang={lang}
-			/>
+			<ProjectSection title={{ en: "Recap" }} blocks={project.recap} />
 
 			{/* Navigation */}
 			<div className="mt-14 flex items-center justify-between border-t border-border pt-8">
@@ -209,7 +176,6 @@ export default async function ProjectPage({
 				) : (
 					<div />
 				)}
-
 				{nextProject && (
 					<Link
 						href={`/projects/${nextProject.slug}`}
