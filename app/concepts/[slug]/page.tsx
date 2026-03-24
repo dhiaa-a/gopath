@@ -2,6 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { getConcept, concepts } from "@/lib/concepts"
 import { projects } from "@/lib/projects"
+import { GoCode } from "@/components/GoCode"
 
 export function generateStaticParams() {
 	return concepts.map((c) => ({ slug: c.slug }))
@@ -122,7 +123,7 @@ export default async function ConceptPage({
 						</span>
 					</div>
 					<pre className="overflow-x-auto p-5 font-mono text-sm leading-7 text-[#e8f0e8]">
-						<code>{concept.codeExample}</code>
+						<GoCode code={concept.codeExample} />
 					</pre>
 				</div>
 				<p

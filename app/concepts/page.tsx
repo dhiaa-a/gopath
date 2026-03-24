@@ -21,7 +21,7 @@ const groups = [
 		slugs: [
 			"goroutines",
 			"channels",
-			"select", // was missing
+			"select",
 			"sync-waitgroup",
 			"context",
 		],
@@ -31,13 +31,7 @@ const groups = [
 	},
 	{
 		label: "Standard library",
-		slugs: [
-			"http-handler", // was missing
-			"json-decode",
-			"slices",
-			"maps",
-			"defer",
-		],
+		slugs: ["http-handler", "json-decode", "slices", "maps", "defer"],
 		color: "text-go-amber",
 		border: "border-go-amber/20",
 		bg: "bg-go-amber/5",
@@ -116,7 +110,7 @@ export default function ConceptsPage() {
 				<p className="text-sm text-muted">
 					Every project step links to relevant concepts. When you see
 					a concept pill on a step, click it to get a full explanation
-					— then come back and keep building.
+					, then come back and keep building.
 				</p>
 			</div>
 		</main>

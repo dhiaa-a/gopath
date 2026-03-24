@@ -149,7 +149,7 @@ export default async function ProjectPage({
 							>
 								{step.n}
 							</div>
-							<h3 className="text-xl font-semibold text-white">
+							<h3 className="text-xl text-white">
 								{step.heading.en}
 							</h3>
 						</div>
