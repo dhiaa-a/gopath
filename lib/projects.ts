@@ -246,8 +246,7 @@ func TestTransformName(t *testing.T) {
 	{
 		slug: "api-client",
 		name: "REST API client",
-		tagline:
-			"Fetch, decode, and display data from a public API — the Go way.",
+		tagline: "Fetch, decode, and display data from a public API.",
 		code: "API",
 		tier: 1,
 		tierLabel: "FOUNDATIONS",
@@ -1224,7 +1223,7 @@ Service
 			{
 				type: "text",
 				value: {
-					en: "You built a zero-downtime config reloader using atomic values, select-based debouncing, and fan-out notification — patterns that appear in every long-running Go service.",
+					en: "You built a zero-downtime config reloader using atomic values, select-based debouncing, and fan-out notification, patterns that appear in every long-running Go service.",
 				},
 			},
 		],
@@ -1240,7 +1239,7 @@ Service
 							en: "Create an immutable config snapshot and a thread-safe store.",
 						},
 						concept: {
-							en: "sync/atomic.Value lets you swap an entire struct pointer atomically. Readers get a consistent snapshot without a mutex on the hot path — the read side is a single pointer load.",
+							en: "sync/atomic.Value lets you swap an entire struct pointer atomically. Readers get a consistent snapshot without a mutex on the hot path, the read side is a single pointer load.",
 						},
 						implementation: `package config
 
@@ -1250,7 +1249,7 @@ import (
     "sync/atomic"
 )
 
-// Config is immutable once created — never mutate fields.
+// Config is immutable once created, never mutate fields.
 type Config struct {
     Port     int    \`json:"port"\`
     LogLevel string \`json:"log_level"\`
@@ -1287,7 +1286,7 @@ func loadFromFile(path string) (*Config, error) {
 						type: "callout",
 						variant: "info",
 						value: {
-							en: "atomic.Value requires the concrete type stored to never change. Always store *Config, never Config — that's why Load() does a type assertion, not a type switch.",
+							en: "atomic.Value requires the concrete type stored to never change. Always store *Config, never Config, that's why Load() does a type assertion, not a type switch.",
 						},
 					},
 				],
@@ -1302,7 +1301,7 @@ func loadFromFile(path string) (*Config, error) {
 							en: "React to file changes without firing dozens of reloads on a single save.",
 						},
 						concept: {
-							en: "Most editors write a file in multiple syscall bursts. A debounce timer (reset on each event, fired when quiet) collapses the burst into a single reload — a classic select + time.AfterFunc pattern.",
+							en: "Most editors write a file in multiple syscall bursts. A debounce timer (reset on each event, fired when quiet) collapses the burst into a single reload, a classic select + time.AfterFunc pattern.",
 						},
 						implementation: `package config
 
@@ -1387,7 +1386,7 @@ func reload(path string, store *Store, notify chan<- struct{}) {
 							en: "Start the watcher and consume reloads in an HTTP handler.",
 						},
 						concept: {
-							en: "Handlers call store.Load() on every request — one pointer dereference, no lock. The background goroutine that processes the notify channel is the only place that acts on a reload event, keeping the logic in one place.",
+							en: "Handlers call store.Load() on every request, one pointer dereference, no lock. The background goroutine that processes the notify channel is the only place that acts on a reload event, keeping the logic in one place.",
 						},
 						implementation: `package main
 
@@ -1457,7 +1456,7 @@ func main() {
 							en: "Verify config reloads correctly without a real filesystem event.",
 						},
 						concept: {
-							en: "Testing reload logic directly — by calling reload() rather than waiting for a file event — keeps tests fast and deterministic. The watcher is just plumbing; the real logic is in reload() and Store.",
+							en: "Testing reload logic directly, by calling reload() rather than waiting for a file event, keeps tests fast and deterministic. The watcher is just plumbing; the real logic is in reload() and Store.",
 						},
 						implementation: `package config_test
 
@@ -2071,7 +2070,7 @@ func main() {
 		slug: "observability",
 		name: "Observability CLI tool",
 		tagline:
-			"Profile, trace, and benchmark a Go service — then make it measurably faster.",
+			"Profile, trace, and benchmark a Go service, then make it measurably faster.",
 		code: "OBS",
 		tier: 3,
 		tierLabel: "ADVANCED",
@@ -2165,7 +2164,7 @@ func main() {
     mux := http.NewServeMux()
     mux.HandleFunc("/api/work", workHandler)
 
-    // Run pprof on a separate port — never expose to the internet without auth.
+    // Run pprof on a separate port, never expose to the internet without auth.
     go func() {
         log.Println("pprof listening on :6060")
         log.Fatal(http.ListenAndServe(":6060", nil))
@@ -2191,7 +2190,7 @@ func main() {
 						type: "callout",
 						variant: "warning",
 						value: {
-							en: "Never expose pprof endpoints to the internet without authentication — they reveal memory contents and goroutine stacks.",
+							en: "Never expose pprof endpoints to the internet without authentication, they reveal memory contents and goroutine stacks.",
 						},
 					},
 				],
@@ -2258,7 +2257,7 @@ func BenchmarkProcessItemSizes(b *testing.B) {
 					{
 						type: "text",
 						value: {
-							en: "The -benchmem flag is crucial — allocations often impact performance more than CPU time. Always run benchmarks multiple times (-count=5) for statistical significance.",
+							en: "The -benchmem flag is crucial, allocations often impact performance more than CPU time. Always run benchmarks multiple times (-count=5) for statistical significance.",
 						},
 					},
 				],

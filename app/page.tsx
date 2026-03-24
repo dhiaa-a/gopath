@@ -60,7 +60,7 @@ export default function Home() {
 						</h1>
 						<p className="mb-8 max-w-lg text-lg leading-relaxed text-muted">
 							No toy examples. No tutorial hell. Each project
-							teaches you how Go actually thinks — through code
+							teaches you how Go actually thinks through code
 							you&apos;d write at a real job.
 						</p>
 						<div className="flex flex-wrap items-center gap-4">
@@ -236,7 +236,7 @@ func main() {
 					</h2>
 					<p className="mb-12 max-w-xl text-muted">
 						Tour of Go teaches syntax. Go by Example shows snippets.
-						GoPath teaches you how to <em>think</em> in Go — by
+						GoPath teaches you how to <em>think</em> in Go by
 						forcing you to build things.
 					</p>
 					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
