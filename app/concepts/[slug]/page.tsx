@@ -44,8 +44,13 @@ export default async function ConceptPage({
 			project: projects.find((p) => p.slug === projectSlug),
 			stepN,
 		}))
-		.filter((item): item is { project: NonNullable<typeof item.project>; stepN: string } =>
-			item.project !== undefined,
+		.filter(
+			(
+				item,
+			): item is {
+				project: NonNullable<typeof item.project>
+				stepN: string
+			} => item.project !== undefined,
 		)
 
 	const tierColors = {
@@ -81,33 +86,28 @@ export default async function ConceptPage({
 			</h1>
 			<p className="mb-10 text-lg text-muted">{concept.tagline}</p>
 
-			{/* Retrieval prompts — first interactive thing on the page */}
+			{/* Mental model — summary folds in as the definition above the schema-builder */}
+			<section className="mb-8">
+				<p
+					className="mb-4 leading-relaxed text-muted"
+					dangerouslySetInnerHTML={{ __html: concept.summary }}
+				/>
+				<div className="rounded-lg border border-go-cyan/20 bg-go-cyan/5 p-6">
+					<div className="mb-2 font-mono text-xs uppercase tracking-widest text-go-cyan">
+						Mental model
+					</div>
+					<p className="leading-relaxed text-muted">
+						{concept.mentalModel}
+					</p>
+				</div>
+			</section>
+
+			{/* Retrieval prompts */}
 			<RetrievalPrompts
 				prompts={concept.retrievalPrompts}
 				codeExample={concept.codeExample}
 				codeExplanation={concept.codeExplanation}
 			/>
-
-			{/* Summary */}
-			<section className="mb-8">
-				<h2 className="mb-3 font-serif text-xl text-white">
-					What it is
-				</h2>
-				<p
-					className="leading-relaxed text-muted"
-					dangerouslySetInnerHTML={{ __html: concept.summary }}
-				/>
-			</section>
-
-			{/* Mental model */}
-			<section className="mb-8 rounded-lg border border-go-cyan/20 bg-go-cyan/5 p-6">
-				<div className="mb-2 font-mono text-xs uppercase tracking-widest text-go-cyan">
-					Mental model
-				</div>
-				<p className="leading-relaxed text-muted">
-					{concept.mentalModel}
-				</p>
-			</section>
 
 			{/* Code example */}
 			<section className="mb-8">
@@ -146,7 +146,7 @@ export default async function ConceptPage({
 				/>
 			</section>
 
-			{/* Design rationale */}
+			{/* Why Go made this choice */}
 			<section className="mb-8 rounded-lg border border-go-amber/20 bg-go-amber/5 p-6">
 				<div className="mb-2 font-mono text-xs uppercase tracking-widest text-go-amber">
 					Why Go made this choice
@@ -157,32 +157,39 @@ export default async function ConceptPage({
 				/>
 			</section>
 
-			{/* Common mistakes */}
+			{/* Common mistakes — collapsed by default */}
 			<section className="mb-10">
-				<h2 className="mb-4 font-serif text-xl text-white">
-					Common mistakes
-				</h2>
-				<div className="flex flex-col gap-3">
-					{concept.commonMistakes.map((m, i) => (
-						<div
-							key={i}
-							className="rounded-lg border border-border bg-surface p-5"
-						>
-							<div className="mb-1.5 flex items-center gap-2">
-								<span className="font-mono text-xs text-red-400">
-									✗
-								</span>
-								<span className="font-semibold text-white">
-									{m.title}
-								</span>
+				<details>
+					<summary className="mb-4 flex cursor-pointer list-none items-center justify-between">
+						<h2 className="font-serif text-xl text-white">
+							Common mistakes
+						</h2>
+						<span className="font-mono text-xs text-muted">
+							click to expand
+						</span>
+					</summary>
+					<div className="flex flex-col gap-3">
+						{concept.commonMistakes.map((m, i) => (
+							<div
+								key={i}
+								className="rounded-lg border border-border bg-surface p-5"
+							>
+								<div className="mb-1.5 flex items-center gap-2">
+									<span className="font-mono text-xs text-red-400">
+										✗
+									</span>
+									<span className="font-semibold text-white">
+										{m.title}
+									</span>
+								</div>
+								<p
+									className="text-sm leading-relaxed text-muted"
+									dangerouslySetInnerHTML={{ __html: m.body }}
+								/>
 							</div>
-							<p
-								className="text-sm leading-relaxed text-muted"
-								dangerouslySetInnerHTML={{ __html: m.body }}
-							/>
-						</div>
-					))}
-				</div>
+						))}
+					</div>
+				</details>
 			</section>
 
 			{/* Related concepts */}
