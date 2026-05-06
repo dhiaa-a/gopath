@@ -14,7 +14,7 @@ export async function generateMetadata({
 	params: Promise<{ slug: string }>
 }) {
 	const { slug } = await params
-	const project = await getProject(slug)
+	const project = getProject(slug)
 	if (!project) return {}
 
 	return {
@@ -44,7 +44,7 @@ export default async function ProjectPage({
 	params: Promise<{ slug: string }>
 }) {
 	const { slug } = await params
-	const project = await getProject(slug)
+	const project = getProject(slug)
 	if (!project) notFound()
 
 	const c = tierColors[project.tier]
@@ -53,8 +53,6 @@ export default async function ProjectPage({
 	const prevProject = currentIdx > 0 ? allProjects[currentIdx - 1] : null
 	const nextProject =
 		currentIdx < allProjects.length - 1 ? allProjects[currentIdx + 1] : null
-
-	const lang = "en"
 
 	return (
 		<main className="mx-auto max-w-3xl px-6 py-16">
@@ -124,23 +122,9 @@ export default async function ProjectPage({
 			)}
 
 			{/* System Sections */}
-			<ProjectSection
-				title={{ en: "System Overview" }}
-				blocks={project.systemOverview}
-				lang={lang}
-			/>
-
-			<ProjectSection
-				title={{ en: "Architecture" }}
-				blocks={project.architecture}
-				lang={lang}
-			/>
-
-			<ProjectSection
-				title={{ en: "Constraints" }}
-				blocks={project.constraints}
-				lang={lang}
-			/>
+			<ProjectSection title="System Overview" blocks={project.systemOverview} />
+			<ProjectSection title="Architecture" blocks={project.architecture} />
+			<ProjectSection title="Constraints" blocks={project.constraints} />
 
 			{/* Steps */}
 			<div className="mb-4 flex items-baseline justify-between">
@@ -160,29 +144,17 @@ export default async function ProjectPage({
 								{step.n}
 							</div>
 							<h3 className="text-xl font-semibold text-white">
-								{typeof step.heading === "string"
-									? step.heading
-									: step.heading.en}
+								{step.heading}
 							</h3>
 						</div>
 
 						<div className="ml-14">
 							{step.blocks ? (
-								<ContentRenderer
-									blocks={step.blocks}
-									lang={lang}
-								/>
+								<ContentRenderer blocks={step.blocks} />
 							) : (
-								<>
-									{step.body && (
-										<p
-											className="mb-4 text-base leading-relaxed text-muted"
-											dangerouslySetInnerHTML={{
-												__html: step.body,
-											}}
-										/>
-									)}
-								</>
+								<p className="mb-4 text-base leading-relaxed text-muted">
+									Can't Render Content Blocks
+								</p>
 							)}
 						</div>
 					</div>
@@ -190,11 +162,7 @@ export default async function ProjectPage({
 			</div>
 
 			{/* Recap */}
-			<ProjectSection
-				title={{ en: "Recap" }}
-				blocks={project.recap}
-				lang={lang}
-			/>
+			<ProjectSection title="Recap" blocks={project.recap} />
 
 			{/* Navigation */}
 			<div className="mt-14 flex items-center justify-between border-t border-border pt-8">

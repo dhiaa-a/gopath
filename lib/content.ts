@@ -1,8 +1,3 @@
-export type LocalizedString = {
-	en: string
-	ar?: string
-}
-
 export type Hint = {
 	label: string
 	value: string
@@ -28,7 +23,7 @@ export type Assessment = {
 export type ContentBlock =
 	| {
 			type: "text"
-			value: LocalizedString // Localized text content, e.g., { en: "Hello", ar: "مرحبا" }
+			value: string
 	  }
 	| {
 			type: "code"
@@ -37,28 +32,28 @@ export type ContentBlock =
 	  }
 	| {
 			type: "list"
-			items: LocalizedString[]
+			items: string[]
 	  }
 	// Highlighted note or warning
 	| {
 			type: "callout"
 			variant: "info" | "warning" // Determines style: info (neutral) or warning (caution)
-			value: LocalizedString // Localized message for the callout
+			value: string
 	  }
 	// T1 Project Structure: show patterns + similar examples, state the task
 	| {
 			type: "pattern"
-			concept: LocalizedString
+			concept: string
 			pattern: string
-			example: LocalizedString
-			task: LocalizedString
+			example: string
+			task: string
 			hints?: Hint[]
 	  }
 	// T2 Project Structure: state requirements, list needed libraries, code snippets for non-obvious parts
 	| {
 			type: "requirement"
-			what: LocalizedString
-			why: LocalizedString
+			what: string
+			why: string
 			stdlibHint?: string
 			thirdPartyHint?: string
 			complexSnippet?: string
@@ -67,8 +62,8 @@ export type ContentBlock =
 	// T3 Project Structure: provide constraints, motivate thinking in systems
 	| {
 			type: "constraint"
-			what: LocalizedString
-			rationale: LocalizedString
+			what: string
+			rationale: string
 			hints?: Hint[]
 	  }
 	| {
@@ -78,20 +73,20 @@ export type ContentBlock =
 	// Conceptual + implementation block
 	| {
 			type: "structured"
-			intent: LocalizedString // What this block aims to achieve (goal)
-			concept: LocalizedString // Explanation of the underlying idea or principle
+			intent: string // What this block aims to achieve (goal)
+			concept: string // Explanation of the underlying idea or principle
 			implementation?: string // Optional code snippet implementing the concept
 			filename?: string // Optional filename for the code snippet
 	  }
 
 export type Step = {
 	n: string
-	heading: LocalizedString
+	heading: string
 	blocks?: ContentBlock[]
 }
 
 export type ProjectMetaSection = {
-	title: LocalizedString
+	title: string
 	blocks: ContentBlock[]
 }
 
@@ -118,8 +113,4 @@ export type Project = {
 	// legacy
 	what?: string
 	learn?: string[]
-}
-
-export function t(val: LocalizedString, lang: string) {
-	return val[lang as keyof LocalizedString] ?? val.en
 }

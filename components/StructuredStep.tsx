@@ -1,4 +1,3 @@
-import { t } from "@/lib/content"
 import { GoCodeBlock } from "./GoCode"
 
 export function StructuredStep({
@@ -6,13 +5,11 @@ export function StructuredStep({
 	concept,
 	implementation,
 	filename,
-	lang = "en",
 }: {
-	intent: any
-	concept: any
+	intent: string
+	concept: string
 	implementation?: string
 	filename?: string
-	lang?: string
 }) {
 	return (
 		<div className="mb-6 rounded-xl border border-border bg-surface p-5">
@@ -20,14 +17,14 @@ export function StructuredStep({
 				<div className="font-mono text-xs text-go-cyan mb-1">
 					intent
 				</div>
-				<p className="text-sm text-muted">{t(intent, lang)}</p>
+				<p className="text-sm text-muted">{intent}</p>
 			</div>
 
 			<div className="mb-3">
 				<div className="font-mono text-xs text-go-teal mb-1">
 					concept
 				</div>
-				<p className="text-sm text-muted">{t(concept, lang)}</p>
+				<p className="text-sm text-muted">{concept}</p>
 			</div>
 
 			{implementation && (
