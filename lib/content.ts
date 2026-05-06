@@ -82,6 +82,7 @@ export type ContentBlock =
 export type Step = {
 	n: string
 	heading: string
+	uses: string[] // concept slugs applied in this step
 	blocks?: ContentBlock[]
 }
 

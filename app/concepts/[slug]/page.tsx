@@ -2,6 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { getConcept, concepts } from "@/lib/concepts"
 import { projects } from "@/lib/projects"
+import { conceptToProjects } from "@/lib/relations"
 import { GoCodeBlock } from "@/components/GoCode"
 
 export function generateStaticParams() {
@@ -14,7 +15,7 @@ export async function generateMetadata({
 	params: Promise<{ slug: string }>
 }) {
 	const { slug } = await params
-	const concept = await getConcept(slug)
+	const concept = getConcept(slug)
 	if (!concept) return {}
 	return {
 		title: `${concept.name} — GoPath Concepts`,
@@ -28,26 +29,28 @@ export default async function ConceptPage({
 	params: Promise<{ slug: string }>
 }) {
 	const { slug } = await params
-	const concept = await getConcept(slug)
+	const concept = getConcept(slug)
 	if (!concept) notFound()
 
-	// find projects that use this concept (via tag match)
-	const relatedProjects = projects.filter((p) =>
-		p.tags.some(
-			(t) =>
-				t.toLowerCase().replace(/[^a-z0-9]/g, "-") === concept.slug ||
-				concept.relatedSlugs.some((r) =>
-					t.toLowerCase().includes(r.replace(/-/g, " ")),
-				),
-		),
-	)
-
-	// find other concepts
 	const relatedConcepts = concept.relatedSlugs
 		.map((s) => concepts.find((c) => c.slug === s))
 		.filter(Boolean) as typeof concepts
 
-	const playgroundUrl = `https://go.dev/play/#${encodeURIComponent(concept.codeExample)}`
+	const practiceLinks = conceptToProjects(concept.slug)
+		.slice(0, 3)
+		.map(({ projectSlug, stepN }) => ({
+			project: projects.find((p) => p.slug === projectSlug),
+			stepN,
+		}))
+		.filter((item): item is { project: NonNullable<typeof item.project>; stepN: string } =>
+			item.project !== undefined,
+		)
+
+	const tierColors = {
+		1: "text-go-cyan",
+		2: "text-go-teal",
+		3: "text-go-amber",
+	} as const
 
 	return (
 		<main className="mx-auto max-w-3xl px-6 py-16">
@@ -208,92 +211,35 @@ export default async function ConceptPage({
 					<strong className="text-white">{concept.name}</strong> is to
 					use it in a real project.
 				</p>
-				<div className="flex flex-wrap gap-2">
-					{/* Link to tier-appropriate projects */}
-					{projects
-						.filter(
-							(p) =>
-								p.tags.some(
-									(t) =>
-										concept.slug.includes(
-											t
-												.toLowerCase()
-												.replace(/[^a-z]/g, ""),
-										) ||
-										t
-											.toLowerCase()
-											.includes(
-												concept.slug.replace(/-/g, ""),
-											),
-								) ||
-								concept.relatedSlugs.some((r) =>
-									p.slug.includes(
-										r.replace(/-/g, "").slice(0, 6),
-									),
-								),
-						)
-						.slice(0, 3)
-						.concat(
-							// fallback: grab first project if nothing matched
-							projects
-								.filter(
-									(p) =>
-										!projects
-											.filter((p2) =>
-												p2.tags.some(
-													(t) =>
-														concept.slug.includes(
-															t
-																.toLowerCase()
-																.replace(
-																	/[^a-z]/g,
-																	"",
-																),
-														) ||
-														t
-															.toLowerCase()
-															.includes(
-																concept.slug.replace(
-																	/-/g,
-																	"",
-																),
-															),
-												),
-											)
-											.includes(p),
-								)
-								.slice(0, 1),
-						)
-						.slice(0, 3)
-						.map((p) => {
-							const tierColors = {
-								1: "text-go-cyan",
-								2: "text-go-teal",
-								3: "text-go-amber",
-							} as const
-							return (
-								<Link
-									key={p.slug}
-									href={`/projects/${p.slug}`}
-									className="flex items-center gap-3 rounded-lg border border-border bg-bg px-4 py-3 transition-colors hover:border-go-cyan/30"
+				{practiceLinks.length > 0 ? (
+					<div className="flex flex-wrap gap-2">
+						{practiceLinks.map(({ project: p, stepN }) => (
+							<Link
+								key={`${p.slug}-${stepN}`}
+								href={`/projects/${p.slug}`}
+								className="flex items-center gap-3 rounded-lg border border-border bg-bg px-4 py-3 transition-colors hover:border-go-cyan/30"
+							>
+								<span
+									className={`font-mono text-xs font-semibold ${tierColors[p.tier]}`}
 								>
-									<span
-										className={`font-mono text-xs font-semibold ${tierColors[p.tier]}`}
-									>
-										{p.code}
-									</span>
-									<div>
-										<div className="text-sm font-semibold text-white">
-											{p.name}
-										</div>
-										<div className="text-xs text-muted">
-											{p.estimatedTime}
-										</div>
+									{p.code}
+								</span>
+								<div>
+									<div className="text-sm font-semibold text-white">
+										{p.name}
 									</div>
-								</Link>
-							)
-						})}
-				</div>
+									<div className="text-xs text-muted">
+										Step {stepN}
+									</div>
+								</div>
+							</Link>
+						))}
+					</div>
+				) : (
+					<p className="text-sm text-muted">
+						No projects use this concept explicitly yet.
+					</p>
+				)}
 			</section>
 		</main>
 	)

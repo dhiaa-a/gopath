@@ -48,6 +48,7 @@ export const projects: Project[] = [
 			{
 				n: "01",
 				heading: "Parse flags into a Config",
+				uses: ["error-handling"],
 				blocks: [
 					{
 						type: "pattern",
@@ -87,6 +88,7 @@ if !info.IsDir() {
 			{
 				n: "02",
 				heading: "Write a pure name transform",
+				uses: [],
 				blocks: [
 					{
 						type: "pattern",
@@ -113,6 +115,7 @@ func slugify(s string) string {
 			{
 				n: "03",
 				heading: "Walk the directory and apply renames",
+				uses: ["error-handling"],
 				blocks: [
 					{
 						type: "pattern",
@@ -188,6 +191,7 @@ for _, e := range entries {
 			{
 				n: "01",
 				heading: "Model the API response with struct tags",
+				uses: ["json-decode", "structs"],
 				blocks: [
 					{
 						type: "pattern",
@@ -214,6 +218,7 @@ for _, e := range entries {
 			{
 				n: "02",
 				heading: "Make an HTTP request with a timeout",
+				uses: ["defer", "error-handling"],
 				blocks: [
 					{
 						type: "pattern",
@@ -239,6 +244,7 @@ if resp.StatusCode != http.StatusOK {
 			{
 				n: "03",
 				heading: "Decode the response and format output",
+				uses: ["json-decode"],
 				blocks: [
 					{
 						type: "pattern",
@@ -308,6 +314,7 @@ log_parser_test.go`,
 			{
 				n: "01",
 				heading: "Parse a single log line",
+				uses: ["error-handling"],
 				blocks: [
 					{
 						type: "pattern",
@@ -333,6 +340,7 @@ log_parser_test.go`,
 			{
 				n: "02",
 				heading: "Scan a file line by line",
+				uses: ["defer"],
 				blocks: [
 					{
 						type: "pattern",
@@ -356,6 +364,7 @@ return scanner.Err() // nil means clean EOF`,
 			{
 				n: "03",
 				heading: "Build the worker pool",
+				uses: ["goroutines", "channels", "sync-waitgroup"],
 				blocks: [
 					{
 						type: "pattern",
@@ -396,6 +405,7 @@ go func() { wg.Wait(); close(results) }() // closer`,
 			{
 				n: "04",
 				heading: "Write table-driven tests for parseLine",
+				uses: [],
 				blocks: [
 					{
 						type: "pattern",
@@ -525,6 +535,7 @@ PASS`,
 			{
 				n: "01",
 				heading: "Multiplex channels with select",
+				uses: ["select", "goroutines", "context"],
 				blocks: [
 					{
 						type: "pattern",
@@ -550,6 +561,7 @@ case <-ctx.Done():
 			{
 				n: "02",
 				heading: "Debounce rapid file events",
+				uses: [],
 				blocks: [
 					{
 						type: "pattern",
@@ -581,6 +593,7 @@ for event := range events {
 			{
 				n: "03",
 				heading: "Store config with atomic.Value",
+				uses: [],
 				blocks: [
 					{
 						type: "pattern",
@@ -609,6 +622,7 @@ fmt.Println(cfg.Port)`,
 			{
 				n: "04",
 				heading: "Benchmark atomic.Value vs sync.RWMutex",
+				uses: [],
 				blocks: [
 					{
 						type: "pattern",
@@ -715,6 +729,7 @@ server_test.go`,
 			{
 				n: "01",
 				heading: "The http.Handler interface and middleware type",
+				uses: ["interfaces", "http-handler"],
 				blocks: [
 					{
 						type: "requirement",
@@ -734,6 +749,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			{
 				n: "02",
 				heading: "Logging middleware with response capture",
+				uses: ["interfaces"],
 				blocks: [
 					{
 						type: "requirement",
@@ -752,6 +768,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			{
 				n: "03",
 				heading: "Auth middleware with context",
+				uses: ["context"],
 				blocks: [
 					{
 						type: "requirement",
@@ -774,6 +791,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			{
 				n: "04",
 				heading: "Token bucket rate limiter",
+				uses: ["maps", "goroutines"],
 				blocks: [
 					{
 						type: "requirement",
@@ -794,6 +812,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			{
 				n: "05",
 				heading: "Test with httptest",
+				uses: ["interfaces"],
 				blocks: [
 					{
 						type: "requirement",
@@ -896,6 +915,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			{
 				n: "01",
 				heading: "Design the Pool API",
+				uses: [],
 				blocks: [
 					{
 						type: "requirement",
@@ -908,6 +928,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			{
 				n: "02",
 				heading: "Workers with context cancellation",
+				uses: ["goroutines", "channels", "context"],
 				blocks: [
 					{
 						type: "requirement",
@@ -926,6 +947,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			{
 				n: "03",
 				heading: "Error collection without losing results",
+				uses: ["channels", "error-handling"],
 				blocks: [
 					{
 						type: "requirement",
@@ -939,6 +961,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			{
 				n: "04",
 				heading: "Benchmark throughput and buffer sizes",
+				uses: [],
 				blocks: [
 					{
 						type: "requirement",
@@ -1019,6 +1042,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			{
 				n: "01",
 				heading: "The accept loop",
+				uses: ["goroutines", "sync-waitgroup"],
 				blocks: [
 					{
 						type: "requirement",
@@ -1037,6 +1061,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			{
 				n: "02",
 				heading: "Handle connections with bufio and io",
+				uses: ["defer"],
 				blocks: [
 					{
 						type: "requirement",
@@ -1050,6 +1075,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			{
 				n: "03",
 				heading: "Integration test with net.Dial",
+				uses: [],
 				blocks: [
 					{
 						type: "requirement",
@@ -1160,6 +1186,7 @@ cmd/server/main.go`,
 			{
 				n: "01",
 				heading: "Define the protobuf schema",
+				uses: [],
 				blocks: [
 					{
 						type: "constraint",
@@ -1178,6 +1205,7 @@ cmd/server/main.go`,
 			{
 				n: "02",
 				heading: "Implement the server interface",
+				uses: ["interfaces", "error-handling"],
 				blocks: [
 					{
 						type: "constraint",
@@ -1200,6 +1228,7 @@ cmd/server/main.go`,
 			{
 				n: "03",
 				heading: "Chain logging and auth interceptors",
+				uses: ["context", "interfaces"],
 				blocks: [
 					{
 						type: "constraint",
@@ -1218,6 +1247,7 @@ cmd/server/main.go`,
 			{
 				n: "04",
 				heading: "Test with bufconn",
+				uses: [],
 				blocks: [
 					{
 						type: "constraint",
@@ -1328,6 +1358,7 @@ cmd/server/main.go`,
 			{
 				n: "01",
 				heading: "Define the repository interface and migrations",
+				uses: ["interfaces"],
 				blocks: [
 					{
 						type: "constraint",
@@ -1350,6 +1381,7 @@ cmd/server/main.go`,
 			{
 				n: "02",
 				heading: "Implement the Postgres repository",
+				uses: ["error-handling"],
 				blocks: [
 					{
 						type: "constraint",
@@ -1372,6 +1404,7 @@ cmd/server/main.go`,
 			{
 				n: "03",
 				heading: "HTTP handlers with dependency injection",
+				uses: ["http-handler", "interfaces"],
 				blocks: [
 					{
 						type: "constraint",
@@ -1390,6 +1423,7 @@ cmd/server/main.go`,
 			{
 				n: "04",
 				heading: "Test handlers and run an integration test",
+				uses: ["interfaces"],
 				blocks: [
 					{
 						type: "constraint",
@@ -1499,6 +1533,7 @@ cmd/server/main.go`,
 			{
 				n: "01",
 				heading: "Profile under real load",
+				uses: ["http-handler"],
 				blocks: [
 					{
 						type: "constraint",
@@ -1521,6 +1556,7 @@ cmd/server/main.go`,
 			{
 				n: "02",
 				heading: "Baseline benchmark before any change",
+				uses: [],
 				blocks: [
 					{
 						type: "constraint",
@@ -1533,6 +1569,7 @@ cmd/server/main.go`,
 			{
 				n: "03",
 				heading: "Implement and verify the fix",
+				uses: [],
 				blocks: [
 					{
 						type: "constraint",
@@ -1555,6 +1592,7 @@ cmd/server/main.go`,
 			{
 				n: "04",
 				heading: "Prove the improvement with benchstat",
+				uses: [],
 				blocks: [
 					{
 						type: "constraint",
