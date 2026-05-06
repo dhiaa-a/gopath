@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx tsx scripts/validate.ts && next build",
+    "build": "npx tsx scripts/validate.ts && npx tsx scripts/playground-shares.ts && next build",
     "start": "next start",
     "lint": "next lint"
   },

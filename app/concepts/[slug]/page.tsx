@@ -5,6 +5,7 @@ import { projects } from "@/lib/projects"
 import { conceptToProjects } from "@/lib/relations"
 import { GoCodeBlock } from "@/components/GoCode"
 import { RetrievalPrompts } from "@/components/RetrievalPrompts"
+import { playgroundUrl } from "@/lib/playground"
 
 export function generateStaticParams() {
 	return concepts.map((c) => ({ slug: c.slug }))
@@ -115,7 +116,7 @@ export default async function ConceptPage({
 						Code example
 					</h2>
 					<a
-						href={`https://go.dev/play`}
+						href={playgroundUrl(concept.codeExample)}
 						target="_blank"
 						rel="noopener noreferrer"
 						className="flex items-center gap-1.5 rounded border border-border px-3 py-1.5 font-mono text-xs text-muted transition-colors hover:border-go-cyan/40 hover:text-go-cyan"
