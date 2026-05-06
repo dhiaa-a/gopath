@@ -4,6 +4,7 @@ import { getConcept, concepts } from "@/lib/concepts"
 import { projects } from "@/lib/projects"
 import { conceptToProjects } from "@/lib/relations"
 import { GoCodeBlock } from "@/components/GoCode"
+import { RetrievalPrompts } from "@/components/RetrievalPrompts"
 
 export function generateStaticParams() {
 	return concepts.map((c) => ({ slug: c.slug }))
@@ -78,6 +79,13 @@ export default async function ConceptPage({
 				{concept.name}
 			</h1>
 			<p className="mb-10 text-lg text-muted">{concept.tagline}</p>
+
+			{/* Retrieval prompts — first interactive thing on the page */}
+			<RetrievalPrompts
+				prompts={concept.retrievalPrompts}
+				codeExample={concept.codeExample}
+				codeExplanation={concept.codeExplanation}
+			/>
 
 			{/* Summary */}
 			<section className="mb-8">

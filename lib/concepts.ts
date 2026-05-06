@@ -4,6 +4,7 @@ export type Concept = {
 	tagline: string
 	summary: string
 	mentalModel: string
+	retrievalPrompts: string[]
 	codeExample: string
 	codeExplanation: string
 	designRationale: string
@@ -20,6 +21,11 @@ export const concepts: Concept[] = [
 			"Go has no exceptions. Errors are ordinary values of type <code>error</code> returned alongside results. Every caller decides what to do with them — log, wrap, return, or ignore. This explicitness is Go's superpower: you can always see exactly which calls can fail.",
 		mentalModel:
 			'Think of every function with a possible failure as returning two things: the result and a verdict. Like a restaurant order: you get either (food, nil) or (nil, "kitchen is closed"). You check the verdict before eating the food.',
+		retrievalPrompts: [
+			"Without looking at any code, write a function that opens a file and returns its contents as a string — including every place it can fail and what the caller receives.",
+			"What is the difference between `fmt.Errorf(\"context: %v\", err)` and `fmt.Errorf(\"context: %w\", err)`? When does the distinction matter to the caller?",
+			"A colleague proposes replacing all `if err != nil { return err }` blocks with `panic(err)` to reduce verbosity. What breaks in production?",
+		],
 		codeExample: `package main
 
 import (
@@ -77,6 +83,11 @@ func main() {
 			"A Go interface is just a set of method signatures. Any type that has those methods automatically satisfies the interface — no <code>implements</code> keyword needed. This makes interfaces incredibly flexible and enables loose coupling you'd struggle to achieve in other languages.",
 		mentalModel:
 			"An interface is a contract defined by the consumer, not the producer. If you need something that can be written to, you define <code>type Writer interface { Write([]byte) (int, error) }</code> and anything with a <code>Write</code> method fits — files, buffers, network connections, your custom type. You never touch those types.",
+		retrievalPrompts: [
+			"Define an interface called `Stringer` that describes something that can format itself as a string. Now write two different types that satisfy it — without declaring anywhere that they implement the interface.",
+			"A function accepts `io.Writer`. Name three types from the standard library that satisfy this interface, and explain why none of them import the `io` package to declare it.",
+			"You define an interface and a struct in the same package. The struct has the method on a pointer receiver. Which of these satisfies the interface: `T` or `*T`? Why?",
+		],
 		codeExample: `package main
 
 import "fmt"
@@ -144,6 +155,11 @@ func main() {
 			"A goroutine is a function running concurrently with other goroutines in the same address space. Starting one is as cheap as a few kilobytes of stack. The Go runtime multiplexes thousands of goroutines onto a small number of OS threads, handling scheduling for you.",
 		mentalModel:
 			"Think of goroutines as tasks on a to-do list that a team of workers (OS threads) picks up and executes. You can add thousands of tasks and the team handles it — you don't manage which worker does what. The key: goroutines are cheap to create, but you must coordinate their results via channels or sync primitives.",
+		retrievalPrompts: [
+			"What happens to a goroutine if `main()` returns before the goroutine finishes? What is the correct way to wait for it?",
+			"You launch 100 goroutines and each one appends a value to a shared slice. Describe what goes wrong and give two ways to fix it.",
+			"A goroutine is blocked waiting to receive from a channel that nobody will ever write to. What is this called, and how do you prevent it?",
+		],
 		codeExample: `package main
 
 import (
@@ -202,6 +218,11 @@ func main() {
 			"Channels are Go's way of sharing data between goroutines without shared memory or locks. A channel is a typed conduit — you send values in, receive them out. The Go proverb: <em>don't communicate by sharing memory; share memory by communicating.</em>",
 		mentalModel:
 			"A channel is a conveyor belt between goroutines. One goroutine puts items on the belt, another picks them off. An unbuffered channel means the sender waits until a receiver is ready — they synchronize. A buffered channel has capacity, so the sender can keep going until the buffer is full.",
+		retrievalPrompts: [
+			"Two goroutines share an unbuffered channel. Goroutine A sends, goroutine B receives. Which one blocks first, and what makes it unblock?",
+			"When should you close a channel, and which goroutine should do it? What happens if you send to a channel after closing it?",
+			"When is a channel the right tool for coordinating goroutines, and when is a mutex simpler? Give a concrete rule.",
+		],
 		codeExample: `package main
 
 import "fmt"
@@ -260,6 +281,11 @@ func main() {
 			"A <code>defer</code> statement schedules a function call to run just before the surrounding function returns. Deferred calls run in LIFO order (last in, first out). They run even if the function panics, making them perfect for cleanup: closing files, releasing locks, stopping timers.",
 		mentalModel:
 			"Defer is like leaving a sticky note for your future self: 'when you're done here, do this.' You write the cleanup right next to the resource acquisition, which makes code far easier to audit. You can't forget to clean up if the cleanup is defined the moment you open something.",
+		retrievalPrompts: [
+			"Write `openAndRead(path string)` from memory. Where exactly do you place the `defer f.Close()` call, and why does position matter?",
+			"A function has three deferred calls registered in order A, B, C. What order do they execute in, and why?",
+			"You write `defer f.Close()` inside a loop that opens 100 files. When do the 100 Close calls actually happen? What is the correct fix?",
+		],
 		codeExample: `package main
 
 import (
@@ -316,6 +342,11 @@ func main() {
 			"A struct is a composite type that groups together fields with names and types. Unlike classes in OOP languages, Go structs have no inheritance — behaviour is added through methods and composition. Structs are value types by default: assigning or passing a struct copies it.",
 		mentalModel:
 			"A struct is a form with labelled fields. When you assign a struct to another variable, you're filling out a new identical form — changes to one don't affect the other. To share a struct across functions and have mutations visible, pass a pointer to it.",
+		retrievalPrompts: [
+			"You pass a struct with a `Name string` field to a function that sets `Name = \"changed\"`. Back in the caller, what is the value of `Name`? When would your answer be different?",
+			"What is the zero value of a struct with fields `Count int`, `Label string`, `Active bool`? Is this struct safe to use without initialization?",
+			"Explain embedding in Go using `type Employee struct { Person }`. What does it give you, and how is it different from inheritance?",
+		],
 		codeExample: `package main
 
 import "fmt"
@@ -373,6 +404,11 @@ func main() {
 			"Go uses pointers to avoid copying data and to allow functions to mutate their arguments. A pointer <code>*T</code> holds the memory address of a <code>T</code>. You dereference it with <code>*ptr</code> to read or write the value. The address-of operator <code>&amp;</code> gives you a pointer to an existing value.",
 		mentalModel:
 			"A value is a house. A pointer is the street address written on a piece of paper. If you hand someone a copy of your house (value), they can redecorate it without affecting yours. If you hand them the address (pointer), any changes they make are to your actual house.",
+		retrievalPrompts: [
+			"Write two methods on `Counter`: one with a value receiver that increments, one with a pointer receiver that increments. Call both from main. Which mutation persists and why?",
+			"A function returns `*User`. Under what conditions should it return `nil`, and what must the caller do before using the returned pointer?",
+			"All methods on `FileWriter` use pointer receivers. You accidentally define one method with a value receiver. What breaks, and where does the error appear?",
+		],
 		codeExample: `package main
 
 import "fmt"
@@ -424,6 +460,11 @@ func main() {
 			"A <code>context.Context</code> carries a cancellation signal, an optional deadline, and optional key-value pairs. It threads through your call stack so that when an HTTP request is cancelled, every goroutine working on it can stop. Pass context as the first argument to any function that does I/O or spawns goroutines.",
 		mentalModel:
 			"Context is like a project cancellation memo that travels with every piece of work. If the client disconnects, the memo says 'stop everything'. Every worker checks the memo before starting the next unit of work. If the memo says cancel, they stop cleanly instead of continuing to do useless work.",
+		retrievalPrompts: [
+			"A context with a 3-second timeout is passed to a function that makes two sequential HTTP calls, each taking 2 seconds. What happens during the second call?",
+			"Why is `context.Context` always the first parameter by convention? What does putting it first communicate to the reader?",
+			"You store a context in a struct field and use it in a method called later. Why is this wrong, and what should you do instead?",
+		],
 		codeExample: `package main
 
 import (
@@ -480,6 +521,11 @@ func main() {
 			"A slice is a view into an underlying array. It has three parts: a pointer to the array, a length, and a capacity. This makes slices cheap to pass (no copying of elements) but creates subtle aliasing bugs if you're not aware of how they share memory.",
 		mentalModel:
 			"A slice is a window into a row of seats. The window has a start position, a width (length), and a maximum width it could expand to (capacity). Two slices can look at overlapping seats — mutating one changes what the other sees. <code>append</code> either expands the window or, if at capacity, moves everyone to a bigger row.",
+		retrievalPrompts: [
+			"After `b := a[1:4]`, you set `b[0] = 99`. Does `a` change? Why? Now you `append` five more elements to `b` beyond its capacity. Does `a` change now?",
+			"A slice has length 3 and capacity 6. You append one element. What are the new length and capacity? You append four more. What happens?",
+			"What is the practical difference between `var s []int` and `s := []int{}`? Give one situation where the difference matters.",
+		],
 		codeExample: `package main
 
 import "fmt"
@@ -531,6 +577,11 @@ func main() {
 			"Maps are Go's built-in hash map. They map keys to values, both of any comparable type. Two things will panic: writing to a nil map, and concurrent reads + writes without synchronisation. Maps are reference types — passing a map to a function passes a reference, not a copy.",
 		mentalModel:
 			"A map is a lookup table. The zero value of a map is nil — a table that doesn't exist yet. You must initialise it with <code>make</code> or a literal before writing to it. Reading a missing key never panics — it returns the zero value — but that can silently mask bugs.",
+		retrievalPrompts: [
+			"You declare `var m map[string]int` and then read `m[\"key\"]`. What do you get? Now you write `m[\"key\"] = 1`. What happens?",
+			"How do you distinguish between a key that is missing and a key whose value is `0`? Write the idiom from memory.",
+			"Two goroutines each read from the same map at the same time. Is this safe? What if one reads while the other writes?",
+		],
 		codeExample: `package main
 
 import "fmt"
@@ -581,6 +632,11 @@ func main() {
 			"A <code>sync.WaitGroup</code> is a counter. You increment it before launching each goroutine (<code>Add</code>), decrement it when each goroutine finishes (<code>Done</code>), and block until it reaches zero (<code>Wait</code>). It's the standard Go pattern for fan-out concurrency.",
 		mentalModel:
 			"Imagine handing out raffle tickets. Before each person goes off to do a task, you give them a ticket. When they return, they hand it back. You wait at the door until every ticket has been returned. <code>Add</code> = hand out ticket, <code>Done</code> = return ticket, <code>Wait</code> = watch the door.",
+		retrievalPrompts: [
+			"You call `wg.Add(1)` inside the goroutine instead of before launching it. Describe the race condition this creates.",
+			"Why must you always pass `&wg` to functions and never copy the WaitGroup by value? What breaks if you copy it?",
+			"A WaitGroup's counter reaches zero and `Wait()` returns. Then you call `wg.Add(1)` again. Is this valid? What constraint must hold for it to work?",
+		],
 		codeExample: `package main
 
 import (
@@ -631,6 +687,11 @@ func main() {
 			"A <code>select</code> statement is like a switch for channels. It blocks until one of its cases can proceed, then executes that case. If multiple cases are ready simultaneously, one is chosen at random. A <code>default</code> case makes select non-blocking.",
 		mentalModel:
 			"Select is like a waiter watching multiple tables. Whichever table signals first ('ready to order', 'needs the bill', 'wants dessert') gets served. If nobody is ready and there's a default option, the waiter doesn't stand idle — they do the default instead.",
+		retrievalPrompts: [
+			"Two channels are both ready at the exact moment a `select` statement executes. Which case runs, and why?",
+			"Write a `select` that tries to receive from `ch` but gives up and returns an error if nothing arrives within 2 seconds.",
+			"What does a `select` with a `default` case do when no channel is ready? When is this useful, and when is it a performance problem?",
+		],
 		codeExample: `package main
 
 import (
@@ -695,6 +756,11 @@ func main() {
 			"Go's entire HTTP server is built on one interface: <code>http.Handler</code>, which has a single method <code>ServeHTTP(ResponseWriter, *Request)</code>. Middleware is just a function that wraps one handler with another. This simplicity means the standard library is all you need for production-grade HTTP servers.",
 		mentalModel:
 			"Think of each HTTP handler as a function booth at a fair. The booth receives a request ticket and a response envelope. It reads the ticket, does work, and seals the envelope. Middleware is a booth that passes the envelope to another booth first — adding a stamp (auth check, log entry, rate limit) before or after.",
+		retrievalPrompts: [
+			"Write the `http.Handler` interface from memory. How many methods does it have, and what are their signatures?",
+			"Write a middleware function that measures and logs the duration of every request. What type does it accept and what type does it return?",
+			"You write response headers after calling `next.ServeHTTP(w, r)`. What happens, and why?",
+		],
 		codeExample: `package main
 
 import (
@@ -747,6 +813,11 @@ func main() {
 			'Go\'s <code>encoding/json</code> package serialises Go values to JSON and back. You map JSON field names to struct fields using struct tags like <code>json:"user_name"</code>. Unexported fields are always ignored. Two approaches: <code>json.Marshal/Unmarshal</code> for bytes, and <code>json.NewEncoder/NewDecoder</code> for streams.',
 		mentalModel:
 			"JSON decoding is like filling out a form from a dictionary. The dictionary has arbitrary keys; your form has fixed fields. Struct tags tell the decoder which dictionary key maps to which form field. Keys in the dictionary with no matching field are silently ignored.",
+		retrievalPrompts: [
+			"A struct field is `name string` (lowercase). Will `json.Marshal` include it in the output? What must you change, and why?",
+			"You call `json.Unmarshal(data, user)` where `user` is a `User` value, not a pointer. What happens to your struct?",
+			"What is the difference between `json:\"field,omitempty\"` and `json:\"-\"`? Give a concrete case where you'd use each.",
+		],
 		codeExample: `package main
 
 import (
@@ -804,6 +875,11 @@ func main() {
 			"Every Go file belongs to a package, declared on the first line. A module is a collection of packages with a single version, defined by <code>go.mod</code>. Exported identifiers start with an uppercase letter; lowercase is package-private. Circular imports are forbidden.",
 		mentalModel:
 			"A package is a room in a building. Everything in the room can see everything else. Uppercase names are windows — visible from outside. Lowercase names are internal furniture — invisible from other rooms. The building's address is the module path in <code>go.mod</code>.",
+		retrievalPrompts: [
+			"Package A imports package B, which imports package C, which imports package A. What does the compiler do, and what is the correct fix?",
+			"What makes an identifier in Go visible to other packages? Is there a keyword for this?",
+			"What does placing code under `internal/` enforce, and which tool enforces it — the programmer, the linter, or the compiler?",
+		],
 		codeExample: `// go.mod
 module github.com/you/myapp
 
