@@ -1,8 +1,10 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { getProject, projects } from "@/lib/projects"
+import { priorConceptOccurrence } from "@/lib/relations"
 import { ContentRenderer } from "@/components/ContentRenderer"
 import { ProjectSection } from "@/components/ProjectSection"
+import { SpacedReuseCallout } from "@/components/SpacedReuseCallout"
 
 export function generateStaticParams() {
 	return projects.map((p) => ({ slug: p.slug }))
@@ -135,30 +137,42 @@ export default async function ProjectPage({
 			</div>
 
 			<div className="flex flex-col gap-10">
-				{project.steps.map((step) => (
-					<div key={step.n} className="relative">
-						<div className="mb-4 flex items-center gap-4">
-							<div
-								className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface font-mono text-sm font-semibold ${c.accent}`}
-							>
-								{step.n}
-							</div>
-							<h3 className="text-xl font-semibold text-white">
-								{step.heading}
-							</h3>
-						</div>
+				{project.steps.map((step) => {
+					const prior = priorConceptOccurrence(project.slug, step.uses)
+					const priorProject = prior
+						? projects.find((p) => p.slug === prior.priorProjectSlug)
+						: null
 
-						<div className="ml-14">
-							{step.blocks ? (
-								<ContentRenderer blocks={step.blocks} />
-							) : (
-								<p className="mb-4 text-base leading-relaxed text-muted">
-									Can't Render Content Blocks
-								</p>
-							)}
+					return (
+						<div key={step.n} className="relative">
+							<div className="mb-4 flex items-center gap-4">
+								<div
+									className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface font-mono text-sm font-semibold ${c.accent}`}
+								>
+									{step.n}
+								</div>
+								<h3 className="text-xl font-semibold text-white">
+									{step.heading}
+								</h3>
+							</div>
+
+							<div className="ml-14">
+								{priorProject && (
+									<SpacedReuseCallout
+										projectName={priorProject.name}
+									/>
+								)}
+								{step.blocks ? (
+									<ContentRenderer blocks={step.blocks} />
+								) : (
+									<p className="mb-4 text-base leading-relaxed text-muted">
+										Can't Render Content Blocks
+									</p>
+								)}
+							</div>
 						</div>
-					</div>
-				))}
+					)
+				})}
 			</div>
 
 			{/* Recap */}
