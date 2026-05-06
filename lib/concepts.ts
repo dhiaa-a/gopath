@@ -6,7 +6,7 @@ export type Concept = {
 	mentalModel: string
 	codeExample: string
 	codeExplanation: string
-	fromOtherLang: string
+	designRationale: string
 	commonMistakes: { title: string; body: string }[]
 	relatedSlugs: string[]
 }
@@ -50,8 +50,8 @@ func main() {
 }`,
 		codeExplanation:
 			"We define a sentinel error with <code>errors.New</code>. We wrap it with context using <code>fmt.Errorf + %w</code>. The caller uses <code>errors.Is</code> to match the underlying error type — even through multiple layers of wrapping.",
-		fromOtherLang:
-			"Coming from Python/JS: there are no try/catch blocks. You check <code>if err != nil</code> after every call that can fail. It feels verbose at first but makes error paths explicit and impossible to accidentally swallow. Coming from Java: no checked exceptions — just return values.",
+		designRationale:
+			"Go has no exceptions because exceptions hide control flow — a function can fail invisibly without that failure appearing anywhere in its signature. Errors are ordinary values so every failure path is visible in the type system: if a function can fail, its return type says so. This is deliberately verbose — the verbosity is the point, forcing every call site to declare what it does with failure rather than letting it propagate silently.",
 		commonMistakes: [
 			{
 				title: "Ignoring errors with _",
@@ -117,8 +117,8 @@ func main() {
 }`,
 		codeExplanation:
 			"<code>printAll</code> accepts any slice of <code>Stringer</code>. Both <code>User</code> and <code>Bot</code> have a <code>String()</code> method, so both satisfy the interface — without either type knowing about the interface.",
-		fromOtherLang:
-			"Coming from Python: this is duck typing, but checked at compile time. Coming from Java/C#: there's no <code>implements Stringer</code> declaration. The type just needs the methods. Coming from TypeScript: closer to structural typing — shape matters, not the declaration.",
+		designRationale:
+			"Go interfaces are satisfied implicitly because the designers wanted to decouple the definition of an abstraction from the types that satisfy it — a type should not need to know about every interface it fits. This means a library can define an interface and any existing type with the right methods satisfies it without modification. The result is composition without inheritance: behaviour is shared through method sets, not class hierarchies.",
 		commonMistakes: [
 			{
 				title: "Pointer vs value receiver mismatch",
@@ -176,8 +176,8 @@ func main() {
 }`,
 		codeExplanation:
 			"<code>go fetch(url, &wg)</code> launches each fetch concurrently. <code>wg.Add(1)</code> registers a task, <code>wg.Done()</code> marks it complete (via defer), and <code>wg.Wait()</code> blocks until all tasks finish.",
-		fromOtherLang:
-			"Coming from Python: goroutines are not threads — they're multiplexed by the Go runtime and far cheaper. Unlike asyncio, there's no async/await syntax; concurrency is the default. Coming from JS: goroutines can run truly in parallel on multiple CPU cores, unlike the JS event loop. Coming from Java: no <code>new Thread()</code>, no thread pool management — just <code>go func()</code>.",
+		designRationale:
+			"Go was designed for servers, and servers must handle many concurrent requests without allocating an OS thread per request. Goroutines are the answer: a scheduling abstraction so cheap — a few kilobytes of initial stack — that spawning one per request is the idiomatic approach. The runtime multiplexes goroutines onto OS threads automatically, so the programmer expresses concurrency naturally without managing thread pools. Concurrency is not a library added later; it is built into the language because the designers expected it to be used pervasively.",
 		commonMistakes: [
 			{
 				title: "Launching goroutines and not waiting",
@@ -233,8 +233,8 @@ func main() {
 }`,
 		codeExplanation:
 			"Two goroutines form a pipeline. <code>generate</code> sends numbers, <code>square</code> receives them and sends results. <code>close(ch)</code> signals that no more values will be sent, enabling <code>range ch</code> to terminate naturally.",
-		fromOtherLang:
-			"Coming from Python: channels are like <code>queue.Queue</code> but built into the language and type-safe. Coming from JS: no direct equivalent — channels are a synchronization primitive that JS lacks. Coming from Java: similar to <code>BlockingQueue</code>, but with built-in language syntax.",
+		designRationale:
+			"Go adopted CSP (Communicating Sequential Processes) as its concurrency model because shared memory leads to data races that are difficult to reason about under concurrent access. Channels transfer ownership of a value from one goroutine to another, so only one goroutine holds the value at a time — eliminating the need for locks on the data itself. The language proverb captures the intent: don't communicate by sharing memory; share memory by communicating.",
 		commonMistakes: [
 			{
 				title: "Sending to a closed channel (panic)",
@@ -293,8 +293,8 @@ func main() {
 }`,
 		codeExplanation:
 			"<code>defer f.Close()</code> is written immediately after successfully opening the file. No matter how many early returns or errors follow, the file will be closed. Without defer you'd need <code>f.Close()</code> before every return.",
-		fromOtherLang:
-			"Coming from Python: defer is like a <code>finally</code> block or context manager (<code>with open(...)</code>), but scoped to the function, not a block. Coming from JS: similar to <code>try/finally</code>. Coming from C++: similar to RAII destructors — cleanup is tied to scope exit.",
+		designRationale:
+			"Go's designers wanted resource cleanup to be written at the same point as resource acquisition — not duplicated across every early-return path. Without defer, adding an error return means remembering to insert a cleanup call before it; missing one leaks the resource. Defer registers the cleanup immediately and guarantees it runs on function exit regardless of how the function returns. LIFO ordering ensures nested resources — open a file, then acquire a lock — are released in the correct reverse sequence.",
 		commonMistakes: [
 			{
 				title: "Defer in a loop",
@@ -350,8 +350,8 @@ func main() {
 }`,
 		codeExplanation:
 			"Embedding <code>Address</code> inside <code>User</code> promotes its fields — you can write <code>u.City</code> instead of <code>u.Address.City</code>. Methods are defined separately on <code>*User</code> (pointer receiver) so mutations persist.",
-		fromOtherLang:
-			"Coming from Python: structs replace classes for data modeling. There's no <code>__init__</code> — you use struct literals. Coming from JS: structs are typed objects with a fixed shape, checked at compile time. Coming from Java/C#: no inheritance, use embedding and interfaces instead.",
+		designRationale:
+			"Go chose composition over inheritance because class hierarchies create tight coupling that becomes expensive to refactor as requirements change. Structs have methods but no parent class — shared behaviour comes from embedding and interfaces, which can be changed independently. Structs are value types by default so passing them to functions is explicit about copying; you opt into reference semantics with a pointer. Zero values are a first-class design choice: every struct is usable immediately without a constructor, eliminating a whole category of uninitialized-state bugs.",
 		commonMistakes: [
 			{
 				title: "Copying large structs unintentionally",
@@ -401,8 +401,8 @@ func main() {
 }`,
 		codeExplanation:
 			"<code>ValueIncrement</code> receives a copy of <code>Counter</code> — its change doesn't escape. <code>Increment</code> receives a pointer, so the mutation affects the original. This is the most common pointer vs value confusion in Go.",
-		fromOtherLang:
-			"Coming from Python/JS: these languages always pass objects by reference implicitly. In Go, you choose explicitly. Coming from Java: primitives are value types, objects are reference types. In Go, everything is a value — you opt into reference semantics with pointers. Coming from C/C++: same concept, but Go has no pointer arithmetic.",
+		designRationale:
+			"Go makes pointer semantics explicit because implicit reference passing hides whether a function can mutate its arguments — callers have no way to know without reading the implementation. Explicit pointers make mutation visible at the call site: <code>&x</code> signals 'this function may change x'. Go deliberately omits pointer arithmetic because a pointer's only legitimate uses are sharing a value across function boundaries and enabling mutation, not manual memory navigation.",
 		commonMistakes: [
 			{
 				title: "Nil pointer dereference",
@@ -453,8 +453,8 @@ func main() {
 }`,
 		codeExplanation:
 			"<code>context.WithTimeout</code> creates a context that auto-cancels after 1 second. <code>doWork</code> uses <code>select</code> to race between doing real work and the context being cancelled. <code>defer cancel()</code> ensures resources are freed even if we return early.",
-		fromOtherLang:
-			"Coming from Python: similar to <code>asyncio.CancelledError</code>, but explicit and threaded through function arguments. Coming from JS: similar to <code>AbortController</code> + <code>AbortSignal</code>. Coming from Java: similar to <code>ExecutorService.shutdownNow()</code> but much more composable.",
+		designRationale:
+			"Go rejected thread-local storage and hidden ambient state because both make the flow of cancellation invisible — a cancelled request cannot propagate the signal to everything working on its behalf without explicit threading. Passing <code>context.Context</code> as the first argument makes deadlines and cancellation visible in the call graph and forces every function doing I/O to acknowledge them. The convention is enforced by idiom rather than the type system, which means any deviation is immediately visible during code review.",
 		commonMistakes: [
 			{
 				title: "Not calling cancel()",
@@ -508,8 +508,8 @@ func main() {
 }`,
 		codeExplanation:
 			"Slicing with <code>s[1:3]</code> shares the underlying array — mutations in <code>a</code> appear in <code>s</code>. <code>append</code> returns a new slice; if it needed to grow, it allocated a new array and <code>s</code> and <code>b</code> no longer share memory. <code>copy</code> always produces a fully independent slice.",
-		fromOtherLang:
-			"Coming from Python: Go slices are like Python lists, but the aliasing behaviour is different — Python list slices are always copies. Coming from JS: similar to typed arrays, with the same aliasing via <code>subarray</code>. Coming from Java: closer to <code>ArrayList</code> but with explicit capacity and aliasing semantics.",
+		designRationale:
+			"Go separated the concept of a view into data from ownership of data because copying large arrays on every function call would make Go unsuitable for systems programming. A slice — a three-field header of pointer, length, and capacity — is cheap to pass while leaving the underlying array in place. The aliasing behaviour is an explicit design trade-off: slices are deliberately lightweight descriptors, and understanding that two slices can share memory is part of the expected mental model.",
 		commonMistakes: [
 			{
 				title: "Mutating a slice you think is independent",
@@ -558,8 +558,8 @@ func main() {
 }`,
 		codeExplanation:
 			"The comma-ok pattern <code>val, ok := m[key]</code> tells you whether the key exists. Without it, a missing key and a key set to <code>0</code> look identical. Map iteration order is intentionally randomised — never rely on it.",
-		fromOtherLang:
-			"Coming from Python: Go maps are Python dicts, but the zero value is nil (not an empty dict). Coming from JS: equivalent to plain objects or <code>Map</code>, with typed keys. Coming from Java: equivalent to <code>HashMap</code>, but with simpler syntax.",
+		designRationale:
+			"Maps are reference types in Go because the designers observed that maps are almost always shared rather than copied — making them value types would silently copy large data structures on every function call. The zero value is <code>nil</code> rather than an empty map to force explicit initialization: Go prefers deliberate intent over convenient defaults when the default leads to a panic. Map iteration order is randomised on purpose so programs cannot accidentally depend on insertion order, which would be a latent bug waiting for the runtime to change.",
 		commonMistakes: [
 			{
 				title: "Writing to a nil map (panic)",
@@ -608,8 +608,8 @@ func main() {
 }`,
 		codeExplanation:
 			"<code>wg.Add(1)</code> is called before <code>go worker()</code> — never inside the goroutine. <code>defer wg.Done()</code> ensures Done is called even if the function panics. The WaitGroup is passed as a pointer — never copy it.",
-		fromOtherLang:
-			"Coming from Python: similar to <code>ThreadPoolExecutor</code> or <code>asyncio.gather()</code>. Coming from JS: similar to <code>Promise.all()</code>. Coming from Java: similar to <code>CountDownLatch</code>.",
+		designRationale:
+			"WaitGroup lives in the <code>sync</code> package rather than being a language built-in because Go's designers believe concurrency primitives should be composable library types rather than special syntax. The counter-based API — Add, Done, Wait — is minimal by design: it does exactly one thing and nothing else. Requiring a pointer instead of a value receiver is an enforced constraint; copying a WaitGroup resets the counter in the copy, which the race detector will catch and report.",
 		commonMistakes: [
 			{
 				title: "Calling Add inside the goroutine",
@@ -672,8 +672,8 @@ func main() {
 }`,
 		codeExplanation:
 			"The first loop picks whichever channel is ready — ch2 arrives first since it sleeps less. The timeout pattern uses <code>time.After</code> which returns a channel that receives after a duration — a very common Go idiom for preventing indefinite blocking.",
-		fromOtherLang:
-			"Coming from Python: similar to <code>asyncio.wait(..., return_when=FIRST_COMPLETED)</code> but synchronous. Coming from JS: similar to <code>Promise.race()</code>. There's no direct equivalent in most languages.",
+		designRationale:
+			"Select is the language-level answer to 'wait for whichever channel event arrives first', modelled on the POSIX <code>select</code> syscall for file descriptors. Without it, waiting on multiple channels simultaneously would require nested goroutines and additional synchronisation — complexity that belongs in the language, not in application code. When multiple cases are ready simultaneously, Go picks one at random to prevent starvation and to ensure programs are correct under any arrival order rather than relying on a specific one.",
 		commonMistakes: [
 			{
 				title: "Busy-looping with default",
@@ -724,8 +724,8 @@ func main() {
 }`,
 		codeExplanation:
 			"<code>http.HandlerFunc</code> is an adapter that converts a function with the right signature into an <code>http.Handler</code>. Middleware wraps the inner handler — calling <code>next.ServeHTTP</code> in the middle. You can chain as many wrappers as you need: <code>withAuth(withLogging(handler))</code>.",
-		fromOtherLang:
-			"Coming from Express (Node): Go middleware is explicit function wrapping instead of <code>app.use()</code>. Coming from Django: no magic middleware stack — you compose explicitly. Coming from Spring: no annotations, no DI container — just functions and interfaces.",
+		designRationale:
+			"Go's HTTP server is built on a single interface — <code>http.Handler</code> with one method — because a minimal abstraction lets middleware be plain function composition rather than a framework-specific mechanism. A function with the right signature becomes a handler via <code>http.HandlerFunc</code>; a handler that wraps another handler is middleware. There is no registration system, no annotation, no magic — the entire middleware stack is visible as nested function calls in <code>main</code>.",
 		commonMistakes: [
 			{
 				title: "Writing to the response after calling next",
@@ -782,8 +782,8 @@ func main() {
 }`,
 		codeExplanation:
 			'Struct tags control serialisation. <code>json:"-"</code> always excludes a field. <code>omitempty</code> excludes it when it\'s a zero value. Pass a pointer to <code>Unmarshal</code> (<code>&u</code>) — it needs to write to your struct. Use <code>json.NewDecoder(r.Body)</code> in HTTP handlers instead of reading the body into a byte slice first.',
-		fromOtherLang:
-			"Coming from Python: struct tags replace <code>@dataclass</code> field mappings or Pydantic validators. Coming from JS: no <code>JSON.parse</code> into an untyped object — decoding always produces a typed struct. Coming from Java: similar to Jackson annotations like <code>@JsonProperty</code>.",
+		designRationale:
+			"Go's JSON package uses struct tags — backtick string metadata on field declarations — because they keep the mapping between Go fields and JSON keys visible at the declaration site without code generation. The designers chose runtime reflection over compile-time codegen to keep the user-facing API simple: one package, two functions, no schema files. Unexported fields are always silently ignored because the package respects Go's visibility rules — if a field is not exported, it is not part of the type's public contract.",
 		commonMistakes: [
 			{
 				title: "Unexported fields silently ignored",
@@ -842,8 +842,8 @@ func main() {
 }`,
 		codeExplanation:
 			"The module path in <code>go.mod</code> is the root of all import paths. <code>internal/</code> packages can only be imported by code within the same module. Uppercase = exported, lowercase = package-private — that's the entire visibility system.",
-		fromOtherLang:
-			"Coming from Python: packages are closer to Python modules, but there's no <code>__init__.py</code> and no relative imports. Coming from JS: similar to ES modules, but visibility is by name case rather than explicit export lists. Coming from Java: packages are directories, and visibility is uppercase/lowercase rather than <code>public/private</code>.",
+		designRationale:
+			"Go's visibility rule — uppercase exported, lowercase package-private — was chosen because it makes access control obvious from the identifier name without any modifier keyword, and it is enforced by the compiler rather than convention. Circular imports are forbidden at compile time to keep build graphs acyclic: a cycle means two packages are logically one package, and the fix is to extract the shared type into a third. The <code>internal/</code> directory convention enforces package boundaries within a module without additional tooling — the compiler rejects imports that violate it.",
 		commonMistakes: [
 			{
 				title: "Circular imports",

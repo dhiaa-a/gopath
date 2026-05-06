@@ -2,6 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { getConcept, concepts } from "@/lib/concepts"
 import { projects } from "@/lib/projects"
+import { GoCodeBlock } from "@/components/GoCode"
 
 export function generateStaticParams() {
 	return concepts.map((c) => ({ slug: c.slug }))
@@ -122,7 +123,7 @@ export default async function ConceptPage({
 						</span>
 					</div>
 					<pre className="overflow-x-auto p-5 font-mono text-sm leading-7 text-[#e8f0e8]">
-						<code>{concept.codeExample}</code>
+						<GoCodeBlock code={concept.codeExample} />
 					</pre>
 				</div>
 				<p
@@ -133,14 +134,14 @@ export default async function ConceptPage({
 				/>
 			</section>
 
-			{/* Coming from */}
+			{/* Design rationale */}
 			<section className="mb-8 rounded-lg border border-go-amber/20 bg-go-amber/5 p-6">
 				<div className="mb-2 font-mono text-xs uppercase tracking-widest text-go-amber">
-					Coming from another language?
+					Why Go made this choice
 				</div>
 				<p
 					className="leading-relaxed text-muted"
-					dangerouslySetInnerHTML={{ __html: concept.fromOtherLang }}
+					dangerouslySetInnerHTML={{ __html: concept.designRationale }}
 				/>
 			</section>
 
