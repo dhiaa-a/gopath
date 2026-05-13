@@ -1,11 +1,16 @@
 "use client"
 import { useState } from "react"
+import posthog from "posthog-js"
 
 export function RetrievalPrompts({ prompts }: { prompts: string[] }) {
 	const [flipped, setFlipped] = useState<boolean[]>(prompts.map(() => false))
 
 	function flip(i: number) {
+		const isRevealing = !flipped[i]
 		setFlipped((prev) => prev.map((f, idx) => (idx === i ? !f : f)))
+		if (isRevealing) {
+			posthog.capture("retrieval_prompt_revealed", { prompt_index: i })
+		}
 	}
 
 	return (

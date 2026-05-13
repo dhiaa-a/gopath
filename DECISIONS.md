@@ -4,6 +4,30 @@ Append-only. Newest at the top.
 
 ---
 
+## 2026-05-13 — Production-readiness stack + Claude-readable observability
+
+**Decision:** GoPath v1 production observability stack is **Vercel (Hobby) hosting + PostHog (EU region, free tier) for analytics and error tracking + Vercel Speed Insights for Core Web Vitals**. PostHog is wired with a deliberately narrow privacy posture: **autocapture off, session replay off, surveys off, person profiles created only on identify (we never identify), cookieless persistence via localStorage**. Events are reverse-proxied through `/ingest` to dodge ad-blockers. Future Claude sessions read live data via the PostHog MCP (`https://mcp.posthog.com/mcp`, configured in `.mcp.json`); weekly trend history is written to `data/metrics/YYYY-Www.md` by `scripts/snapshot-metrics.ts` (`npm run snapshot`). Public `/privacy` page documents the posture verbatim.
+
+**Why PostHog over Plausible**, even though content's brief leaned Plausible: PostHog's public MCP server is the exact mechanism Aboturab asked for ("Claude can read statistics and derive business decisions"). Plausible's REST API would work but adds $9/month and one more setup hop. PostHog **can** be configured to match Plausible's privacy posture — and is, in `instrumentation-client.ts`. The MCP + free tier + 1M events/month decided it.
+
+**Why EU host, not US:** Audience is technical and EU-sensitive. The original wizard-installed setup pointed at `us.posthog.com`; switched to `eu.i.posthog.com` / `eu-assets.i.posthog.com` and `ui_host: https://eu.posthog.com`. Existing US PostHog project is to be discarded; Aboturab to create a fresh project in EU region and paste the new key into `.env.local`.
+
+**Events instrumented in v1:** `$pageview` (default), `cta_clicked`, `nav_cta_clicked`, `playground_opened`, `retrieval_prompt_revealed` (index only — no question text), `theme_toggled`, `project_navigation_clicked`, `orientation_advanced`, `concept_practice_link_clicked`, plus the two highest-value content additions: **`project_step_in_view`** and **`project_completed`** (both fired via `IntersectionObserver` in `ProjectStepTracker`, scroll-based proxy for step-reach and completion). Errors captured via `capture_exceptions: true`.
+
+**Removed from the wizard's setup:** the `.claude/skills/integration-nextjs-app-router/` folder (PostHog-authored skill that recommends `posthog.identify()` and the latest `defaults` preset — both conflict with our anonymous-only / explicit-config posture; risk of a future Claude session "fixing" our deliberate opt-outs outweighed the reference value). The `posthog-setup-report.md` wizard log was also removed from repo root. Dashboards the wizard created in PostHog Cloud remain in the account but are not authoritative — content's funnel is different; will be rebuilt manually once the EU project is live.
+
+**Production basics added:** `app/sitemap.ts`, `app/robots.ts`, security headers in `next.config.js` (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, HSTS). CSP deferred — needs careful integration with PostHog proxy and is a one-session follow-up.
+
+**Costs:** Total recurring $0 until `gopath.dev` is registered (~$12/yr → Aboturab). Vercel Hobby, PostHog free tier, Speed Insights, GitHub Actions all $0.
+
+**What still needs Aboturab:** (1) Create EU PostHog project, paste `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` into `.env.local`. (2) Run `/mcp` in Claude Code and OAuth into PostHog so MCP authenticates. (3) Verify or register `gopath.dev`. (4) First production deploy.
+
+**Alternatives considered:** Plausible at $9/mo with REST-only access (rejected — no MCP, costs money); Vercel Analytics alone (rejected — 2.5k event cap on Hobby, weak API); Sentry for errors as a separate tool (deferred — PostHog error tracking is sufficient for v1 and one less integration); keeping the wizard's US region + default preset (rejected — violates the privacy posture set in this session); session-replay opt-in via consent banner (rejected — friction conflicts with anti-fluff voice).
+
+**Logged by:** Claude Code (PM, synthesizing engineer + content briefs)
+
+---
+
 ## 2026-05-13 — Open-observations triage + small data-truth fix (pointers concept)
 
 **Decision:** Curated the Open observations section down from six items to one (the still-pending Aboturab call on whether team-setup files get committed to git). Two observations resolved by being folded into Up next (homepage truth-audit finish; Coming-from-X urgency), two promoted to backlog (engineering: first-time concept link affordance; content: T1 P2 curl preamble), one resolved with a small data fix this session (added `pointers` to T1 P1 step 01's `uses` array so the dependency is now truthful in `lib/projects.ts`). Re-ranked Up next: homepage truth-audit finish is #1 (smallest, highest-credibility), Coming-from-X promoted to #2 (load-bearing per persona walkthrough), inline code runner moved to #3 with explicit cross-agent loop framing (engineer feasibility report → PM decision → content UX sign-off → build).

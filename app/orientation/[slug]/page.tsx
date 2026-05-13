@@ -6,6 +6,7 @@ import {
 } from "@/lib/orientation"
 import { ContentRenderer } from "@/components/ContentRenderer"
 import { RetrievalPrompts } from "@/components/RetrievalPrompts"
+import { OrientationNextLink } from "@/components/OrientationNextLink"
 
 export function generateStaticParams() {
 	return orientationPages.map((p) => ({ slug: p.slug }))
@@ -40,6 +41,7 @@ export default async function OrientationPage({
 	const next = idx < ordered.length - 1 ? ordered[idx + 1] : null
 
 	// After the last orientation page, send the learner into Tier 1.
+	const isLastPage = !next
 	const nextHref = next
 		? `/orientation/${next.slug}`
 		: "/projects/cli-renamer"
@@ -114,13 +116,13 @@ export default async function OrientationPage({
 					<div />
 				)}
 
-				<Link
+				<OrientationNextLink
 					href={nextHref}
+					currentSlug={page.slug}
+					nextLabel={nextLabel}
+					isLastPage={isLastPage}
 					className="flex items-center gap-2 font-mono text-sm font-semibold text-muted transition-colors hover:text-foreground"
-				>
-					<span>{nextLabel}</span>
-					<span>→</span>
-				</Link>
+				/>
 			</div>
 		</main>
 	)

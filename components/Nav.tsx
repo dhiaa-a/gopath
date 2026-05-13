@@ -3,6 +3,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { ThemeToggle } from "@/components/ThemeToggle"
+import posthog from "posthog-js"
 
 export default function Nav() {
 	const pathname = usePathname()
@@ -48,6 +49,11 @@ export default function Nav() {
 					<Link
 						href="/projects/cli-renamer"
 						className="hidden rounded bg-go-cyan px-4 py-2 font-mono text-xs font-semibold text-black transition-opacity hover:opacity-85 md:block"
+						onClick={() =>
+							posthog.capture("nav_cta_clicked", {
+								location: "desktop",
+							})
+						}
 					>
 						Start building →
 					</Link>
@@ -90,7 +96,12 @@ export default function Nav() {
 							<Link
 								href="/projects/cli-renamer"
 								className="inline-block rounded bg-go-cyan px-4 py-2 font-mono text-xs font-semibold text-black"
-								onClick={() => setOpen(false)}
+								onClick={() => {
+									setOpen(false)
+									posthog.capture("nav_cta_clicked", {
+										location: "mobile",
+									})
+								}}
 							>
 								Start building →
 							</Link>

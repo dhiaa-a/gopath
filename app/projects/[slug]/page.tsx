@@ -5,6 +5,8 @@ import { priorConceptOccurrence } from "@/lib/relations"
 import { ContentRenderer } from "@/components/ContentRenderer"
 import { ProjectSection } from "@/components/ProjectSection"
 import { SpacedReuseCallout } from "@/components/SpacedReuseCallout"
+import { ProjectNavLink } from "@/components/ProjectNavLink"
+import { ProjectStepTracker } from "@/components/ProjectStepTracker"
 
 export function generateStaticParams() {
 	return projects.map((p) => ({ slug: p.slug }))
@@ -149,6 +151,11 @@ export default async function ProjectPage({
 				</span>
 			</div>
 
+			<ProjectStepTracker
+				projectSlug={project.slug}
+				totalSteps={project.steps.length}
+			/>
+
 			<div className="flex flex-col gap-10">
 				{project.steps.map((step) => {
 					const prior = priorConceptOccurrence(project.slug, step.uses)
@@ -157,7 +164,11 @@ export default async function ProjectPage({
 						: null
 
 					return (
-						<div key={step.n} className="relative">
+						<div
+							key={step.n}
+							className="relative"
+							data-step-n={step.n}
+						>
 							<div className="mb-4 flex items-center gap-4">
 								<div
 									className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface font-mono text-sm font-semibold ${c.accent}`}
@@ -188,24 +199,30 @@ export default async function ProjectPage({
 			{/* Navigation */}
 			<div className="mt-14 flex items-center justify-between border-t border-border pt-8">
 				{prevProject ? (
-					<Link
+					<ProjectNavLink
 						href={`/projects/${prevProject.slug}`}
+						projectSlug={prevProject.slug}
+						direction="prev"
+						label={prevProject.name}
 						className="group flex items-center gap-2 font-mono text-sm text-muted transition-colors hover:text-foreground"
 					>
 						<span>←</span>
 						<span>{prevProject.name}</span>
-					</Link>
+					</ProjectNavLink>
 				) : (
 					<div />
 				)}
 				{nextProject && (
-					<Link
+					<ProjectNavLink
 						href={`/projects/${nextProject.slug}`}
+						projectSlug={nextProject.slug}
+						direction="next"
+						label={nextProject.name}
 						className={`flex items-center gap-2 font-mono text-sm font-semibold transition-opacity hover:opacity-75 ${c.accent}`}
 					>
 						<span>{nextProject.name}</span>
 						<span>→</span>
-					</Link>
+					</ProjectNavLink>
 				)}
 			</div>
 		</main>

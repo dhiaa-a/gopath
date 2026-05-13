@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import "./globals.css"
 import Nav from "@/components/Nav"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 export const metadata: Metadata = {
 	title: "GoPath — Learn Go by Building Real Things",
@@ -31,6 +32,7 @@ export default function RootLayout({
 			<body>
 				<Nav />
 				{children}
+				<SpeedInsights />
 			</body>
 		</html>
 	)

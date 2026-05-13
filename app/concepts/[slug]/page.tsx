@@ -6,6 +6,8 @@ import { conceptToProjects } from "@/lib/relations"
 import { GoCode } from "@/components/GoCode"
 import { RetrievalPrompts } from "@/components/RetrievalPrompts"
 import { playgroundUrl } from "@/lib/playground"
+import { PlaygroundLink } from "@/components/PlaygroundLink"
+import { ConceptPracticeLink } from "@/components/ConceptPracticeLink"
 
 export function generateStaticParams() {
 	return concepts.map((c) => ({ slug: c.slug }))
@@ -111,15 +113,10 @@ export default async function ConceptPage({
 					<h2 className="font-serif text-xl text-foreground">
 						Code example
 					</h2>
-					<a
+					<PlaygroundLink
 						href={playgroundUrl(concept.codeExample)}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="flex items-center gap-1.5 rounded border border-border px-3 py-1.5 font-mono text-xs text-muted transition-colors hover:border-go-cyan/40 hover:text-go-cyan"
-					>
-						<span>▶</span>
-						<span>Run in Playground</span>
-					</a>
+						conceptSlug={concept.slug}
+					/>
 				</div>
 				<div className="overflow-hidden rounded-lg border border-border bg-surface">
 					<div className="flex items-center gap-2 border-b border-border bg-surface2 px-4 py-2.5">
@@ -226,25 +223,14 @@ export default async function ConceptPage({
 				{practiceLinks.length > 0 ? (
 					<div className="flex flex-wrap gap-2">
 						{practiceLinks.map(({ project: p, stepN }) => (
-							<Link
+							<ConceptPracticeLink
 								key={`${p.slug}-${stepN}`}
-								href={`/projects/${p.slug}`}
-								className="flex items-center gap-3 rounded-lg border border-border bg-bg px-4 py-3 transition-colors hover:border-go-cyan/30"
-							>
-								<span
-									className={`font-mono text-xs font-semibold ${tierColors[p.tier]}`}
-								>
-									{p.code}
-								</span>
-								<div>
-									<div className="text-sm font-semibold text-foreground">
-										{p.name}
-									</div>
-									<div className="text-xs text-muted">
-										Step {stepN}
-									</div>
-								</div>
-							</Link>
+								projectSlug={p.slug}
+								projectCode={p.code}
+								projectName={p.name}
+								stepN={stepN}
+								tierColor={tierColors[p.tier]}
+							/>
 						))}
 					</div>
 				) : (

@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { getProjectsByTier } from "@/lib/projects"
 import { GoCodeBlock } from "@/components/GoCode"
+import { HomeCta } from "@/components/HomeCta"
 
 const tierColors = {
 	1: {
@@ -64,12 +65,12 @@ export default function Home() {
 							you&apos;d write at a real job.
 						</p>
 						<div className="flex flex-wrap items-center gap-4">
-							<Link
+							<HomeCta
 								href="/projects/cli-renamer"
+								label="Start the path →"
+								location="hero"
 								className="rounded bg-go-cyan px-6 py-3 font-mono text-sm font-semibold text-black transition-all hover:-translate-y-px hover:bg-sky-400"
-							>
-								Start the path →
-							</Link>
+							/>
 							<Link
 								href="/orientation"
 								className="font-mono text-sm text-muted transition-colors hover:text-foreground"
@@ -289,12 +290,12 @@ func main() {
 					Start with the File Renamer CLI. You&apos;ll be writing
 					idiomatic Go within the first half hour.
 				</p>
-				<Link
+				<HomeCta
 					href="/projects/cli-renamer"
+					label="Start: File renamer CLI →"
+					location="bottom_cta"
 					className="inline-block rounded bg-go-cyan px-8 py-3 font-mono text-sm font-semibold text-black transition-all hover:-translate-y-px hover:bg-sky-400"
-				>
-					Start: File renamer CLI →
-				</Link>
+				/>
 			</section>
 
 			<footer className="border-t border-border py-8 text-center font-mono text-xs text-faint">

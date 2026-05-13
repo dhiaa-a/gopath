@@ -6,10 +6,13 @@
     "dev": "next dev",
     "build": "npx tsx scripts/validate.ts && npx tsx scripts/playground-shares.ts && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "snapshot": "npx tsx scripts/snapshot-metrics.ts"
   },
   "dependencies": {
+    "@vercel/speed-insights": "^2.0.0",
     "next": "^16.1.6",
+    "posthog-js": "^1.373.4",
     "react": "^18",
     "react-dom": "^18"
   },

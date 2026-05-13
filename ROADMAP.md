@@ -1,6 +1,6 @@
 # GoPath Roadmap
 
-_Last updated: 2026-05-13 by PM (session 2: observation triage + em-dash sweep)_
+_Last updated: 2026-05-13 by PM (session 3: production-readiness + observability)_
 
 > One sentence per sprint: what's the biggest thing that needs to be true by end of week?
 
@@ -8,17 +8,19 @@ _Last updated: 2026-05-13 by PM (session 2: observation triage + em-dash sweep)_
 
 ## Current focus
 
-**Make the homepage truthful and the path to first project effortless.** Before adding features (search, inline runner, progress tracking), make sure what the site already claims is what it actually delivers. Credibility is the moat — a visitor who catches an overclaim won't trust the rest.
+**Ship v1 production observability so future Claude sessions can read site data and propose decisions from it.** Stack is wired on branch `feat/prod-readiness-observability`; awaiting Aboturab for EU PostHog project key, MCP OAuth, and the first deploy. After deploy lands, the homepage truth-audit (session 2's focus) resumes.
 
 ## In progress
 
-- [ ] _(Nothing in flight — pick from Up next.)_
+- [ ] **v1 observability on `feat/prod-readiness-observability`** — wired and locally green, awaiting Aboturab actions documented in DECISIONS 2026-05-13. After merge: rebuild PostHog dashboards (content's funnel — orientation→T1→Config Watcher→T2-preview), run `npm run snapshot` once to seed `data/metrics/`, run `/mcp` in Claude Code to OAuth PostHog, and verify the privacy page reads correctly in prod.
 
 ## Open observations
 
 _Anyone can drop a one-liner here. The PM curates it — converts to tasks, parks, or resolves. This is how the agents talk between sessions._
 
 - **Team-setup files not in git** — _awaiting Aboturab_: `CLAUDE.md`, `ROADMAP.md`, `DECISIONS.md`, and `.claude/` are still untracked on `main`. The working memory only exists on local disk. One-time decision needed on what to track vs. keep local (e.g. `.claude/settings.local.json` typically stays local). Raised PM 2026-05-13, still pending.
+- **CSP header deferred** — `next.config.js` ships `X-Frame-Options`, HSTS, `Permissions-Policy`, etc. but no Content-Security-Policy. PostHog reverse proxy makes a tight CSP tricky to author without breaking analytics. One-session follow-up after the EU PostHog project is live so we can test the policy end-to-end.
+- **Scroll-completion is a proxy, not truth** — `project_completed` fires when the final step's wrapper crosses 50% of the viewport. A learner who skips to the bottom will trigger it. Once per-user progress tracking ships (Up next #4 in old numbering), revisit and replace with a strict signal.
 
 ## Up next (ranked)
 
@@ -67,6 +69,7 @@ _Anyone can drop a one-liner here. The PM curates it — converts to tasks, park
 
 ## Done recently (rolling)
 
+- [x] 2026-05-13 — Production-readiness v1 wired (branch `feat/prod-readiness-observability`): PostHog EU + privacy-strict config, Vercel Speed Insights, `app/sitemap.ts`, `app/robots.ts`, `/privacy` page, security headers, `scripts/snapshot-metrics.ts` (`npm run snapshot`), `.mcp.json` for PostHog MCP, `ProjectStepTracker` for step-reach + completion events, retrieval-prompt event payload trimmed. Removed wizard cruft: `.claude/skills/integration-nextjs-app-router/`, `posthog-setup-report.md`. Full rationale in DECISIONS.
 - [x] 2026-05-13 — Em-dash sweep across all prose (`lib/projects.ts`, `lib/concepts.ts`, `lib/orientation.ts`, `app/page.tsx`). 266 of 267 prose em-dashes replaced with commas, colons, or sentence breaks per voice decision; one intentional em-dash in `SpacedReuseCallout` UI copy kept (component-level, not prose). Build clean.
 - [x] 2026-05-13 — Step 01 of `cli-renamer` now lists `pointers` in `uses`. Data layer is truthful; UI affordance (first-time concept link) tracked in engineering backlog.
 - [x] Concepts system (`lib/concepts.ts`) — 15 entries with mental models, retrieval prompts, design rationale, common mistakes
