@@ -20,8 +20,8 @@ export function SpacedReuseCallout({
 			</div>
 			<p className="mb-4 text-sm leading-relaxed text-muted">
 				↻ You used this concept in{" "}
-				<strong className="text-foreground">{projectName}</strong>. Before
-				reading on — how well do you remember applying it?
+				<strong className="text-foreground">{projectName}</strong>.
+				Before reading on — how well do you remember applying it?
 			</p>
 
 			{state === "pending" && (

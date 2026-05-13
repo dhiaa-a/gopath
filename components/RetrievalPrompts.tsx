@@ -1,11 +1,7 @@
 "use client"
 import { useState } from "react"
 
-export function RetrievalPrompts({
-	prompts,
-}: {
-	prompts: string[]
-}) {
+export function RetrievalPrompts({ prompts }: { prompts: string[] }) {
 	const [flipped, setFlipped] = useState<boolean[]>(prompts.map(() => false))
 
 	function flip(i: number) {
