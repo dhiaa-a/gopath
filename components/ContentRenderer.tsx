@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react"
-import { ContentBlock, Hint } from "@/lib/content"
+import { ContentBlock, Hint, t } from "@/lib/content"
 import { GoCodeBlock } from "./GoCode"
 
 function HintPill({ hint }: { hint: Hint }) {
@@ -9,9 +9,9 @@ function HintPill({ hint }: { hint: Hint }) {
 		<span className="inline-block">
 			<button
 				onClick={() => setOpen((o) => !o)}
-				className="rounded border border-border bg-surface px-2 py-0.5 font-mono text-[10px] text-muted transition-colors hover:border-go-cyan/40 hover:text-go-cyan"
+				className="rounded border border-border bg-surface px-3 py-1 font-mono text-[11px] text-muted transition-colors hover:border-go-cyan/40 hover:text-go-cyan"
 			>
-				{open ? "▼" : "►"} {hint.label}
+				{open ? "▾" : "▸"} {hint.label}
 			</button>
 			{open && (
 				<span className="ml-2 font-mono text-[11px] text-go-cyan">
@@ -26,8 +26,8 @@ function HintRow({ hints }: { hints: Hint[] }) {
 	if (!hints.length) return null
 	return (
 		<div className="mt-2 flex flex-wrap gap-1.5">
-			{hints.map((hint, i) => (
-				<HintPill key={i} hint={hint} />
+			{hints.map((h, i) => (
+				<HintPill key={i} hint={h} />
 			))}
 		</div>
 	)
@@ -48,7 +48,6 @@ function AssessmentBlock({
 		integration: "border-go-teal/25 bg-go-teal/5",
 		system: "border-go-teal/25 bg-go-teal/5",
 	}
-
 	const accent: Record<string, string> = {
 		unit: "text-go-cyan",
 		benchmark: "text-go-amber",
@@ -80,17 +79,17 @@ function AssessmentBlock({
 						{a.testCases.map((tc, i) => (
 							<div
 								key={i}
-								className="rounded border border-border bg-bg p-3"
+								className="rounded border border-border bg-bg p-4"
 							>
 								<div className="mb-1 text-xs text-muted">
 									{tc.description}
 								</div>
 								{tc.input && (
-									<div className="mb-1 font-mono text-xs text-go-cyan">
+									<div className="mb-1 font-mono text-sm text-go-cyan">
 										in: {tc.input}
 									</div>
 								)}
-								<div className="font-mono text-xs text-go-teal">
+								<div className="font-mono text-sm text-go-teal">
 									want: {tc.expected}
 								</div>
 							</div>
@@ -124,7 +123,7 @@ function AssessmentBlock({
 								onClick={() => setMetricsOpen((o) => !o)}
 								className="font-mono text-[10px] text-muted transition-colors hover:text-go-amber"
 							>
-								{metricsOpen ? "▼" : "►"} is this actually
+								{metricsOpen ? "▾" : "▸"} is this actually
 								achievable?
 							</button>
 							{metricsOpen && (
@@ -136,12 +135,19 @@ function AssessmentBlock({
 					)}
 				</div>
 			)}
+
 			{a.hints && <HintRow hints={a.hints} />}
 		</div>
 	)
 }
 
-export function ContentRenderer({ blocks }: { blocks: ContentBlock[] }) {
+export function ContentRenderer({
+	blocks,
+	lang = "en",
+}: {
+	blocks: ContentBlock[]
+	lang?: string
+}) {
 	return (
 		<>
 			{blocks.map((block, i) => {
@@ -152,7 +158,7 @@ export function ContentRenderer({ blocks }: { blocks: ContentBlock[] }) {
 								key={i}
 								className="mb-4 text-base leading-relaxed text-muted"
 								dangerouslySetInnerHTML={{
-									__html: block.value,
+									__html: t(block.value, lang),
 								}}
 							/>
 						)
@@ -171,7 +177,7 @@ export function ContentRenderer({ blocks }: { blocks: ContentBlock[] }) {
 							<ul key={i} className="mb-4 flex flex-col gap-2">
 								{block.items.map((item, j) => (
 									<li key={j} className="text-sm text-muted">
-										{item}
+										{t(item, lang)}
 									</li>
 								))}
 							</ul>
@@ -187,7 +193,7 @@ export function ContentRenderer({ blocks }: { blocks: ContentBlock[] }) {
 										: "border-go-cyan/20 bg-go-cyan/5"
 								}`}
 							>
-								{block.value}
+								{t(block.value, lang)}
 							</div>
 						)
 
@@ -198,26 +204,26 @@ export function ContentRenderer({ blocks }: { blocks: ContentBlock[] }) {
 								key={i}
 								className="mb-6 rounded-xl border border-border bg-surface overflow-hidden"
 							>
-								<div className="border-b border-border px-5 py-4">
+								<div className="border-b border-border px-5 py-5">
 									<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-go-cyan">
 										concept
 									</div>
 									<p className="text-sm leading-relaxed text-muted">
-										{block.concept}
+										{t(block.concept, lang)}
 									</p>
 								</div>
-								<div className="border-b border-border px-5 py-4">
+								<div className="border-b border-border px-5 py-5">
 									<div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-muted">
 										pattern
 									</div>
 									<GoCodeBlock code={block.pattern} />
 								</div>
-								<div className="border-b border-border px-5 py-4">
+								<div className="border-b border-border px-5 py-5">
 									<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-go-teal">
 										similar example
 									</div>
 									<p className="text-sm leading-relaxed text-muted">
-										{block.example}
+										{t(block.example, lang)}
 									</p>
 								</div>
 								<div className="px-5 py-4">
@@ -225,7 +231,7 @@ export function ContentRenderer({ blocks }: { blocks: ContentBlock[] }) {
 										your task
 									</div>
 									<p className="text-sm leading-relaxed text-foreground">
-										{block.task}
+										{t(block.task, lang)}
 									</p>
 									{block.hints && (
 										<HintRow hints={block.hints} />
@@ -246,7 +252,7 @@ export function ContentRenderer({ blocks }: { blocks: ContentBlock[] }) {
 										requirement
 									</div>
 									<p className="text-sm font-medium leading-relaxed text-foreground">
-										{block.what}
+										{t(block.what, lang)}
 									</p>
 								</div>
 								<div className="border-b border-border px-5 py-4">
@@ -254,7 +260,7 @@ export function ContentRenderer({ blocks }: { blocks: ContentBlock[] }) {
 										why
 									</div>
 									<p className="text-sm leading-relaxed text-muted">
-										{block.why}
+										{t(block.why, lang)}
 									</p>
 								</div>
 								{(block.stdlibHint || block.thirdPartyHint) && (
@@ -310,10 +316,10 @@ export function ContentRenderer({ blocks }: { blocks: ContentBlock[] }) {
 									constraint
 								</div>
 								<p className="mb-2 text-sm font-medium text-foreground">
-									{block.what}
+									{t(block.what, lang)}
 								</p>
 								<p className="text-sm leading-relaxed text-muted">
-									{block.rationale}
+									{t(block.rationale, lang)}
 								</p>
 								{block.hints && (
 									<div className="mt-3">

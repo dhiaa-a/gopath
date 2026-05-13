@@ -1,3 +1,7 @@
+export type LocalizedString = {
+	en: string
+}
+
 export type Hint = {
 	label: string
 	value: string
@@ -16,70 +20,47 @@ export type Assessment = {
 	testCases?: TestCase[]
 	desiredOutput?: string
 	desiredMetrics?: string
-	metricsAchievable?: string // censored metrics for grounded truths
+	metricsAchievable?: string
 	hints?: Hint[]
 }
 
 export type ContentBlock =
-	| {
-			type: "text"
-			value: string
-	  }
-	| {
-			type: "code"
-			value: string // The code content to display
-			filename?: string // Optional filename for display, e.g., "main.go"
-	  }
-	| {
-			type: "list"
-			items: string[]
-	  }
-	// Highlighted note or warning
-	| {
-			type: "callout"
-			variant: "info" | "warning" // Determines style: info (neutral) or warning (caution)
-			value: string
-	  }
-	// T1 Project Structure: show patterns + similar examples, state the task
+	| { type: "text"; value: LocalizedString }
+	| { type: "code"; value: string; filename?: string }
+	| { type: "list"; items: LocalizedString[] }
+	| { type: "callout"; variant: "info" | "warning"; value: LocalizedString }
+	// T1 — show pattern skeleton + similar example, state the task
 	| {
 			type: "pattern"
-			concept: string
+			concept: LocalizedString
 			pattern: string
-			example: string
-			task: string
+			example: LocalizedString
+			task: LocalizedString
 			hints?: Hint[]
 	  }
-	// T2 Project Structure: state requirements, list needed libraries, code snippets for non-obvious parts
+	// T2 — state requirement + why + stdlib / third-party hints, optional snippet for non-obvious APIs
 	| {
 			type: "requirement"
-			what: string
-			why: string
+			what: LocalizedString
+			why: LocalizedString
 			stdlibHint?: string
 			thirdPartyHint?: string
 			complexSnippet?: string
 			hints?: Hint[]
 	  }
-	// T3 Project Structure: provide constraints, motivate thinking in systems
+	// T3 — constraint only, systems thinking
 	| {
 			type: "constraint"
-			what: string
-			rationale: string
+			what: LocalizedString
+			rationale: LocalizedString
 			hints?: Hint[]
 	  }
-	| {
-			type: "assessment"
-			assessment: Assessment
-	  }
+	| { type: "assessment"; assessment: Assessment }
 
 export type Step = {
 	n: string
-	heading: string
-	uses: string[] // concept slugs applied in this step
-	blocks?: ContentBlock[]
-}
-
-export type ProjectMetaSection = {
-	title: string
+	heading: LocalizedString
+	uses: string[]
 	blocks: ContentBlock[]
 }
 
@@ -90,16 +71,16 @@ export type Project = {
 	code: string
 	tier: 1 | 2 | 3
 	tierLabel: string
-
 	estimatedTime: string
 	tags: string[]
-
 	mentalModels?: string[]
-
 	systemOverview?: ContentBlock[]
 	architecture?: ContentBlock[]
 	constraints?: ContentBlock[]
 	recap?: ContentBlock[]
-
 	steps: Step[]
+}
+
+export function t(val: LocalizedString, lang: string) {
+	return val[lang as keyof LocalizedString] ?? val.en
 }

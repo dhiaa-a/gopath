@@ -1,21 +1,23 @@
 import { ContentRenderer } from "./ContentRenderer"
-import { ContentBlock } from "@/lib/content"
+import { ContentBlock, LocalizedString, t } from "@/lib/content"
 
 export function ProjectSection({
 	title,
 	blocks,
+	lang = "en",
 }: {
-	title: string
+	title: LocalizedString
 	blocks?: ContentBlock[]
+	lang?: string
 }) {
 	if (!blocks) return null
 
 	return (
 		<section className="mb-10 rounded-xl border border-border bg-surface p-7">
 			<h2 className="mb-4 font-mono text-xs uppercase tracking-widest text-muted">
-				{title}
+				{t(title, lang)}
 			</h2>
-			<ContentRenderer blocks={blocks} />
+			<ContentRenderer blocks={blocks} lang={lang} />
 		</section>
 	)
 }

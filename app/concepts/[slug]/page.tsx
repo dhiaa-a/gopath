@@ -3,7 +3,7 @@ import { notFound } from "next/navigation"
 import { getConcept, concepts } from "@/lib/concepts"
 import { projects } from "@/lib/projects"
 import { conceptToProjects } from "@/lib/relations"
-import { GoCodeBlock } from "@/components/GoCode"
+import { GoCode } from "@/components/GoCode"
 import { RetrievalPrompts } from "@/components/RetrievalPrompts"
 import { playgroundUrl } from "@/lib/playground"
 
@@ -131,7 +131,7 @@ export default async function ConceptPage({
 						</span>
 					</div>
 					<pre className="overflow-x-auto p-5 font-mono text-sm leading-7 text-foreground">
-						<GoCodeBlock code={concept.codeExample} />
+						<GoCode code={concept.codeExample} />
 					</pre>
 				</div>
 				<p

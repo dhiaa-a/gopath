@@ -86,10 +86,12 @@ for (const concept of concepts) {
 function collectScannableText(page: OrientationPage): string[] {
 	const out: string[] = []
 	for (const block of page.blocks) {
-		if (block.type === "text" || block.type === "callout" || block.type === "code") {
+		if (block.type === "text" || block.type === "callout") {
+			out.push(block.value.en)
+		} else if (block.type === "code") {
 			out.push(block.value)
 		} else if (block.type === "list") {
-			out.push(...block.items)
+			out.push(...block.items.map((i) => i.en))
 		}
 	}
 	if (page.retrievalPrompts) out.push(...page.retrievalPrompts)

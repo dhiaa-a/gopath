@@ -18,7 +18,6 @@ export async function generateMetadata({
 	const { slug } = await params
 	const project = getProject(slug)
 	if (!project) return {}
-
 	return {
 		title: `${project.name} — GoPath`,
 		description: project.tagline,
@@ -39,6 +38,12 @@ const tierColors = {
 		badge: "bg-go-amber/10 border-go-amber/25 text-go-amber",
 	},
 }
+
+const stepCue = {
+	1: "pattern → example → your task",
+	2: "requirement → why → hints",
+	3: "constraint only",
+} as const
 
 export default async function ProjectPage({
 	params,
@@ -87,7 +92,7 @@ export default async function ProjectPage({
 			</p>
 
 			{/* Meta */}
-			<div className="mb-12 flex flex-wrap items-center gap-2">
+			<div className="mb-8 flex flex-wrap items-center gap-2">
 				<span
 					className={`inline-flex items-center gap-1.5 rounded border px-3 py-1.5 font-mono text-sm ${c.badge}`}
 				>
@@ -104,8 +109,8 @@ export default async function ProjectPage({
 			</div>
 
 			{/* Mental Models */}
-			{project.mentalModels && (
-				<div className="mb-12">
+			{project.mentalModels && project.mentalModels.length > 0 && (
+				<div className="mb-10">
 					<div className="mb-3 font-mono text-xs uppercase tracking-widest text-muted">
 						Mental Models
 					</div>
@@ -123,15 +128,24 @@ export default async function ProjectPage({
 			)}
 
 			{/* System Sections */}
-			<ProjectSection title="System Overview" blocks={project.systemOverview} />
-			<ProjectSection title="Architecture" blocks={project.architecture} />
-			<ProjectSection title="Constraints" blocks={project.constraints} />
+			<ProjectSection
+				title={{ en: "System Overview" }}
+				blocks={project.systemOverview}
+			/>
+			<ProjectSection
+				title={{ en: "Architecture" }}
+				blocks={project.architecture}
+			/>
+			<ProjectSection
+				title={{ en: "Constraints" }}
+				blocks={project.constraints}
+			/>
 
 			{/* Steps */}
-			<div className="mb-4 flex items-baseline justify-between">
+			<div className="mb-6 flex items-baseline justify-between">
 				<h2 className="font-serif text-3xl text-foreground">Steps</h2>
 				<span className="font-mono text-sm text-faint">
-					guided, not hand-holding
+					{stepCue[project.tier]}
 				</span>
 			</div>
 
@@ -151,10 +165,9 @@ export default async function ProjectPage({
 									{step.n}
 								</div>
 								<h3 className="text-xl font-semibold text-foreground">
-									{step.heading}
+									{step.heading.en}
 								</h3>
 							</div>
-
 							<div className="ml-14">
 								{priorProject && prior && (
 									<SpacedReuseCallout
@@ -162,13 +175,7 @@ export default async function ProjectPage({
 										projectSlug={priorProject.slug}
 									/>
 								)}
-								{step.blocks ? (
-									<ContentRenderer blocks={step.blocks} />
-								) : (
-									<p className="mb-4 text-base leading-relaxed text-muted">
-										Can't Render Content Blocks
-									</p>
-								)}
+								<ContentRenderer blocks={step.blocks} />
 							</div>
 						</div>
 					)
@@ -176,7 +183,7 @@ export default async function ProjectPage({
 			</div>
 
 			{/* Recap */}
-			<ProjectSection title="Recap" blocks={project.recap} />
+			<ProjectSection title={{ en: "Recap" }} blocks={project.recap} />
 
 			{/* Navigation */}
 			<div className="mt-14 flex items-center justify-between border-t border-border pt-8">
@@ -191,7 +198,6 @@ export default async function ProjectPage({
 				) : (
 					<div />
 				)}
-
 				{nextProject && (
 					<Link
 						href={`/projects/${nextProject.slug}`}
