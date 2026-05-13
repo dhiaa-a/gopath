@@ -17,6 +17,12 @@
 # playground share cache
 /.cache
 
+# typescript incremental build cache
+tsconfig.tsbuildinfo
+
+# claude code local settings (per-user permissions, not project config)
+.claude/settings.local.json
+
 # misc
 .DS_Store
 *.pem
