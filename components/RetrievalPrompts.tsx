@@ -5,8 +5,6 @@ export function RetrievalPrompts({
 	prompts,
 }: {
 	prompts: string[]
-	codeExample: string
-	codeExplanation: string
 }) {
 	const [flipped, setFlipped] = useState<boolean[]>(prompts.map(() => false))
 

@@ -937,9 +937,3 @@ func main() {
 export function getConcept(slug: string): Concept | undefined {
 	return concepts.find((c) => c.slug === slug)
 }
-
-export function getConceptsBySlug(slugs: string[]): Concept[] {
-	return slugs
-		.map((s) => concepts.find((c) => c.slug === s))
-		.filter(Boolean) as Concept[]
-}

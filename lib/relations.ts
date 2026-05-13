@@ -20,25 +20,19 @@ export function conceptToProjects(
 export function priorConceptOccurrence(
 	currentProjectSlug: string,
 	uses: string[],
-): { conceptSlug: string; priorProjectSlug: string; priorStepN: string } | null {
+): { conceptSlug: string; priorProjectSlug: string } | null {
 	if (uses.length === 0) return null
 
 	const currentIdx = projects.findIndex((p) => p.slug === currentProjectSlug)
 	if (currentIdx <= 0) return null
 
-	type Best = {
-		conceptSlug: string
-		priorProjectSlug: string
-		priorStepN: string
-		projectIdx: number
-	}
-	let best: Best | null = null
+	let best: { conceptSlug: string; priorProjectSlug: string; projectIdx: number } | null = null
 
 	for (const conceptSlug of uses) {
-		for (const { projectSlug, stepN } of conceptToProjects(conceptSlug)) {
+		for (const { projectSlug } of conceptToProjects(conceptSlug)) {
 			const idx = projects.findIndex((p) => p.slug === projectSlug)
 			if (idx < currentIdx && (best === null || idx > best.projectIdx)) {
-				best = { conceptSlug, priorProjectSlug: projectSlug, priorStepN: stepN, projectIdx: idx }
+				best = { conceptSlug, priorProjectSlug: projectSlug, projectIdx: idx }
 			}
 		}
 	}
@@ -47,7 +41,6 @@ export function priorConceptOccurrence(
 	return {
 		conceptSlug: best.conceptSlug,
 		priorProjectSlug: best.priorProjectSlug,
-		priorStepN: best.priorStepN,
 	}
 }
 

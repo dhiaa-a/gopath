@@ -103,11 +103,7 @@ export default async function ConceptPage({
 			</section>
 
 			{/* Retrieval prompts */}
-			<RetrievalPrompts
-				prompts={concept.retrievalPrompts}
-				codeExample={concept.codeExample}
-				codeExplanation={concept.codeExplanation}
-			/>
+			<RetrievalPrompts prompts={concept.retrievalPrompts} />
 
 			{/* Code example */}
 			<section className="mb-8">

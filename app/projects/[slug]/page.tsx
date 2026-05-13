@@ -50,11 +50,10 @@ export default async function ProjectPage({
 	if (!project) notFound()
 
 	const c = tierColors[project.tier]
-	const allProjects = projects
-	const currentIdx = allProjects.findIndex((p) => p.slug === project.slug)
-	const prevProject = currentIdx > 0 ? allProjects[currentIdx - 1] : null
+	const currentIdx = projects.findIndex((p) => p.slug === project.slug)
+	const prevProject = currentIdx > 0 ? projects[currentIdx - 1] : null
 	const nextProject =
-		currentIdx < allProjects.length - 1 ? allProjects[currentIdx + 1] : null
+		currentIdx < projects.length - 1 ? projects[currentIdx + 1] : null
 
 	return (
 		<main className="mx-auto max-w-3xl px-6 py-16">
@@ -161,7 +160,6 @@ export default async function ProjectPage({
 									<SpacedReuseCallout
 										projectName={priorProject.name}
 										projectSlug={priorProject.slug}
-										stepN={prior.priorStepN}
 									/>
 								)}
 								{step.blocks ? (

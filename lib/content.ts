@@ -15,7 +15,7 @@ export type Assessment = {
 	description: string
 	testCases?: TestCase[]
 	desiredOutput?: string
-	desiredMetrics?: String
+	desiredMetrics?: string
 	metricsAchievable?: string // censored metrics for grounded truths
 	hints?: Hint[]
 }
@@ -70,14 +70,6 @@ export type ContentBlock =
 			type: "assessment"
 			assessment: Assessment
 	  }
-	// Conceptual + implementation block
-	| {
-			type: "structured"
-			intent: string // What this block aims to achieve (goal)
-			concept: string // Explanation of the underlying idea or principle
-			implementation?: string // Optional code snippet implementing the concept
-			filename?: string // Optional filename for the code snippet
-	  }
 
 export type Step = {
 	n: string
@@ -110,8 +102,4 @@ export type Project = {
 	recap?: ContentBlock[]
 
 	steps: Step[]
-
-	// legacy
-	what?: string
-	learn?: string[]
 }

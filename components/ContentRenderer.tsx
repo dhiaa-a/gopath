@@ -26,8 +26,8 @@ function HintRow({ hints }: { hints: Hint[] }) {
 	if (!hints.length) return null
 	return (
 		<div className="mt-2 flex flex-wrap gap-1.5">
-			{hints.map((hints, i) => (
-				<HintPill key={i} hint={hints} />
+			{hints.map((hint, i) => (
+				<HintPill key={i} hint={hint} />
 			))}
 		</div>
 	)
@@ -46,7 +46,7 @@ function AssessmentBlock({
 		benchmark: "border-go-amber/25 bg-go-amber/5",
 		metrics: "border-go-amber/25 bg-go-amber/5",
 		integration: "border-go-teal/25 bg-go-teal/5",
-		systems: "border-go-teal/25 bg-go-teal/5",
+		system: "border-go-teal/25 bg-go-teal/5",
 	}
 
 	const accent: Record<string, string> = {
@@ -54,7 +54,7 @@ function AssessmentBlock({
 		benchmark: "text-go-amber",
 		metrics: "text-go-amber",
 		integration: "text-go-teal",
-		systems: "text-go-teal",
+		system: "text-go-teal",
 	}
 
 	return (
@@ -67,7 +67,7 @@ function AssessmentBlock({
 				{a.kind} assessment
 			</div>
 			<div className="mb-2 font-semibold text-foreground">{a.title}</div>
-			<p className="mb-4 text-sm leading-relaxed test-muted">
+			<p className="mb-4 text-sm leading-relaxed text-muted">
 				{a.description}
 			</p>
 
@@ -82,8 +82,8 @@ function AssessmentBlock({
 								key={i}
 								className="rounded border border-border bg-bg p-3"
 							>
-								<div className="mb-1 font-mono text-xs text-go-cyan">
-									in: {tc.input}
+								<div className="mb-1 text-xs text-muted">
+									{tc.description}
 								</div>
 								{tc.input && (
 									<div className="mb-1 font-mono text-xs text-go-cyan">
@@ -112,7 +112,7 @@ function AssessmentBlock({
 
 			{a.desiredMetrics && (
 				<div className="mb-3">
-					<div className="mb-1 font-mono text-[10px] upper tracking-widest text-muted">
+					<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-muted">
 						target metrics
 					</div>
 					<div className="rounded border border-border bg-bg px-3 py-2 font-mono text-xs text-go-amber">
@@ -122,7 +122,7 @@ function AssessmentBlock({
 						<div className="mt-2">
 							<button
 								onClick={() => setMetricsOpen((o) => !o)}
-								className="font-mono text-[10px] text-muted translate-colors hover:text-go-amber"
+								className="font-mono text-[10px] text-muted transition-colors hover:text-go-amber"
 							>
 								{metricsOpen ? "▼" : "►"} is this actually
 								achievable?

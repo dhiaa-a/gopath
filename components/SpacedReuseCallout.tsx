@@ -10,7 +10,6 @@ export function SpacedReuseCallout({
 }: {
 	projectName: string
 	projectSlug: string
-	stepN: string
 }) {
 	const [state, setState] = useState<State>("pending")
 

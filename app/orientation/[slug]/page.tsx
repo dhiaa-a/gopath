@@ -85,11 +85,7 @@ export default async function OrientationPage({
 
 			{/* Optional retrieval prompts (ready-check) */}
 			{page.retrievalPrompts && page.retrievalPrompts.length > 0 && (
-				<RetrievalPrompts
-					prompts={page.retrievalPrompts}
-					codeExample=""
-					codeExplanation=""
-				/>
+				<RetrievalPrompts prompts={page.retrievalPrompts} />
 			)}
 
 			{/* Optional CTA */}
