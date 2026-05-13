@@ -136,7 +136,7 @@ func main() {
 					{[
 						{ n: "9", l: "Projects" },
 						{ n: "3", l: "Tiers" },
-						{ n: "40+", l: "Go concepts" },
+						{ n: "15", l: "Go concepts" },
 						{ n: "0", l: "Toy examples" },
 					].map((s) => (
 						<div key={s.l} className="text-center">
@@ -256,8 +256,8 @@ func main() {
 								b: "Every concept links to the project that teaches it best — not a docs page. Real code you can run.",
 							},
 							{
-								h: '"Coming from X" sidebars',
-								b: "Python dev? JS dev? Rust dev? Each project surfaces the key mental model shifts for where you're coming from.",
+								h: "Concepts explain the why",
+								b: "Tour of Go shows what compiles. GoPath explains why Go is shaped this way — no exceptions, no inheritance, channels over locks. The reasoning, not just the rules.",
 							},
 							{
 								h: "No fluff, no filler",
