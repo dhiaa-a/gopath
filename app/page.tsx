@@ -71,6 +71,12 @@ export default function Home() {
 								Start the path →
 							</Link>
 							<Link
+								href="/orientation"
+								className="font-mono text-sm text-muted transition-colors hover:text-foreground"
+							>
+								New to Go? Start with Orientation →
+							</Link>
+							<Link
 								href="#why"
 								className="font-mono text-sm text-muted transition-colors hover:text-foreground"
 							>

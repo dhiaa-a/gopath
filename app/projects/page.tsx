@@ -28,8 +28,18 @@ export default function ProjectsPage() {
 			<h1 className="mb-3 font-serif text-4xl text-foreground">
 				Nine projects. One path.
 			</h1>
-			<p className="mb-12 text-muted">
+			<p className="mb-2 text-muted">
 				Work through them in order. Each one builds on the last.
+			</p>
+			<p className="mb-12 text-sm text-muted">
+				Not sure if you&apos;re ready?{" "}
+				<Link
+					href="/orientation/ready-check"
+					className="text-go-cyan underline decoration-go-cyan/40 hover:no-underline"
+				>
+					Take the readiness check
+				</Link>
+				.
 			</p>
 
 			<div className="flex flex-col gap-3">

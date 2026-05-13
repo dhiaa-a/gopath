@@ -9,6 +9,7 @@ export default function Nav() {
 	const [open, setOpen] = useState(false)
 
 	const links = [
+		{ href: "/orientation", label: "Orientation" },
 		{ href: "/#path", label: "Learning path" },
 		{ href: "/projects", label: "All projects" },
 		{ href: "/concepts", label: "Concepts" },
