@@ -253,11 +253,11 @@ func main() {
 							},
 							{
 								h: "Concepts link to projects",
-								b: "Every concept links to the project that teaches it best — not a docs page. Real code you can run.",
+								b: "Every concept links to the project that teaches it best, not a docs page. Real code you can run.",
 							},
 							{
 								h: "Concepts explain the why",
-								b: "Tour of Go shows what compiles. GoPath explains why Go is shaped this way — no exceptions, no inheritance, channels over locks. The reasoning, not just the rules.",
+								b: "Tour of Go shows what compiles. GoPath explains why Go is shaped this way: no exceptions, no inheritance, channels over locks. The reasoning, not just the rules.",
 							},
 							{
 								h: "No fluff, no filler",
@@ -286,7 +286,7 @@ func main() {
 					Ready to write real Go?
 				</h2>
 				<p className="mb-8 text-muted">
-					Start with the File Renamer CLI — you&apos;ll be writing
+					Start with the File Renamer CLI. You&apos;ll be writing
 					idiomatic Go within the first half hour.
 				</p>
 				<Link
@@ -298,7 +298,7 @@ func main() {
 			</section>
 
 			<footer className="border-t border-border py-8 text-center font-mono text-xs text-faint">
-				gopath.dev — learn go by building real things
+				gopath.dev · learn go by building real things
 			</footer>
 		</main>
 	)

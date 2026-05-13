@@ -2,8 +2,8 @@ import { Project } from "./content"
 
 export const projects: Project[] = [
 	// ─────────────────────────────────────────────────────────────────────────
-	// TIER 1 — FOUNDATIONS
-	// Step type: "pattern" — show idiom skeleton + similar example + state task.
+	// TIER 1: FOUNDATIONS
+	// Step type "pattern": show idiom skeleton + similar example + state task.
 	// No assessment in P1/P2. Tests introduced in P3, benchmarks in P4.
 	// ─────────────────────────────────────────────────────────────────────────
 
@@ -50,12 +50,12 @@ export const projects: Project[] = [
 			{
 				n: "01",
 				heading: { en: "Parse flags into a Config" },
-				uses: ["error-handling"],
+				uses: ["error-handling", "pointers"],
 				blocks: [
 					{
 						type: "pattern",
 						concept: {
-							en: "The flag package registers named flags and writes their values into pointers. After flag.Parse() the pointers hold what the user typed. Go's convention is to validate all input at the boundary — early, explicitly, before any work begins — and return a descriptive error rather than panicking or silently using bad values.",
+							en: "The flag package registers named flags and writes their values into pointers. After flag.Parse() the pointers hold what the user typed. Go's convention is to validate all input at the boundary (early, explicitly, before any work begins) and return a descriptive error rather than panicking or silently using bad values.",
 						},
 						pattern: `// register → parse → validate
 dir     := flag.String("dir", ".", "directory to scan")
@@ -73,7 +73,7 @@ if !info.IsDir() {
     return nil, fmt.Errorf("%s is not a directory", *dir)
 }`,
 						example: {
-							en: "An image compressor registers --input (path), --quality (int, 1–100), and --output. It validates that the input file exists, that quality is in range, and that the output directory is writable — all before touching any image data.",
+							en: "An image compressor registers --input (path), --quality (int, 1–100), and --output. It validates that the input file exists, that quality is in range, and that the output directory is writable, all before touching any image data.",
 						},
 						task: {
 							en: 'Define --dir (default "."), --pattern (required string), and --dry-run (bool). After flag.Parse, validate that --dir exists and is a directory using os.Stat. Collect all flag and validation errors into a single descriptive message. Return a *Config on success.',
@@ -99,7 +99,7 @@ if !info.IsDir() {
 					{
 						type: "pattern",
 						concept: {
-							en: "A pure function has no side effects and always returns the same output for the same input. Transformation logic should be pure: it takes a string in, returns a string out, never touches the filesystem. Pure functions are trivially testable — just call them with inputs and compare outputs.",
+							en: "A pure function has no side effects and always returns the same output for the same input. Transformation logic should be pure: it takes a string in, returns a string out, never touches the filesystem. Pure functions are trivially testable: just call them with inputs and compare outputs.",
 						},
 						pattern: `// pure: input in, output out, no I/O
 func slugify(s string) string {
@@ -108,7 +108,7 @@ func slugify(s string) string {
     return strings.ReplaceAll(s, " ", "-")
 }`,
 						example: {
-							en: "A URL shortener's slug generator takes a blog post title, strips leading/trailing whitespace, lowercases it, replaces spaces with hyphens, and removes non-alphanumeric characters — all without touching a database or filesystem.",
+							en: "A URL shortener's slug generator takes a blog post title, strips leading/trailing whitespace, lowercases it, replaces spaces with hyphens, and removes non-alphanumeric characters, all without touching a database or filesystem.",
 						},
 						task: {
 							en: 'Write transformName(name, pattern string) string. It must: replace spaces with underscores, convert the base name to lowercase, and prepend pattern + "_" when pattern is non-empty. The file extension must be preserved exactly as-is. "My File.TXT" with pattern "backup" → "backup_my_file.TXT".',
@@ -130,7 +130,7 @@ func slugify(s string) string {
 					{
 						type: "pattern",
 						concept: {
-							en: "os.ReadDir returns a sorted []fs.DirEntry — no recursion. For each entry: skip directories, compute the new name, skip if unchanged, then either print (dry-run) or call os.Rename. Errors from Rename should be wrapped with context and returned immediately — do not silently continue past a failed rename.",
+							en: "os.ReadDir returns a sorted []fs.DirEntry, no recursion. For each entry: skip directories, compute the new name, skip if unchanged, then either print (dry-run) or call os.Rename. Errors from Rename should be wrapped with context and returned immediately; do not silently continue past a failed rename.",
 						},
 						pattern: `entries, err := os.ReadDir(dir)
 if err != nil {
@@ -145,7 +145,7 @@ for _, e := range entries {
     }
 }`,
 						example: {
-							en: "A photo organiser reads a directory, skips subdirectories, constructs a date-prefixed name from EXIF metadata, and calls os.Rename only when the new name differs from the old one — skipping already-renamed files on reruns.",
+							en: "A photo organiser reads a directory, skips subdirectories, constructs a date-prefixed name from EXIF metadata, and calls os.Rename only when the new name differs from the old one, skipping already-renamed files on reruns.",
 						},
 						task: {
 							en: 'Implement run(*Config) error. Skip directories and files where transformName produces the same name. In dry-run mode print "[DRY RUN] old → new" without calling os.Rename. Return the first error encountered, wrapped with the filename.',
@@ -158,7 +158,7 @@ for _, e := range entries {
 			{
 				type: "text",
 				value: {
-					en: "You separated concerns into three explicit layers — parsing, transformation, execution — keeping the transform pure and the I/O isolated. This structure appears in every subsequent project. The pattern of validating at the boundary and propagating errors with context is Go's most important idiom.",
+					en: "You separated concerns into three explicit layers (parsing, transformation, execution) keeping the transform pure and the I/O isolated. This structure appears in every subsequent project. The pattern of validating at the boundary and propagating errors with context is Go's most important idiom.",
 				},
 			},
 		],
@@ -185,7 +185,7 @@ for _, e := range entries {
 			{
 				type: "text",
 				value: {
-					en: "An http.Client sends a GET request. The status code is checked before any decoding. The response body is decoded into a typed struct using json.Decoder. The body is always closed — even on error paths — using defer. The result is formatted and printed to stdout.",
+					en: "An http.Client sends a GET request. The status code is checked before any decoding. The response body is decoded into a typed struct using json.Decoder. The body is always closed (even on error paths) using defer. The result is formatted and printed to stdout.",
 				},
 			},
 			{
@@ -214,7 +214,7 @@ for _, e := range entries {
 					{
 						type: "pattern",
 						concept: {
-							en: 'encoding/json maps JSON keys to struct fields using struct tags. The field must be exported (start with an uppercase letter) or json silently ignores it. The tag controls the JSON key name, whether to omit the field when empty (omitempty), and whether to skip it entirely (json:"-"). Unexported fields are always ignored — no tag needed.',
+							en: 'encoding/json maps JSON keys to struct fields using struct tags. The field must be exported (start with an uppercase letter) or json silently ignores it. The tag controls the JSON key name, whether to omit the field when empty (omitempty), and whether to skip it entirely (json:"-"). Unexported fields are always ignored; no tag needed.',
 						},
 						pattern: `type Record struct {
     ID    int    \`json:"id"\`
@@ -245,7 +245,7 @@ for _, e := range entries {
 					{
 						type: "pattern",
 						concept: {
-							en: "The default http.Client has no timeout — it waits forever for slow or dead servers. Always set an explicit Timeout. The response Body is an io.ReadCloser: if you don't close it, the underlying TCP connection leaks and cannot be reused. Defer body.Close() immediately after a successful Get — before any other error check — so it always runs.",
+							en: "The default http.Client has no timeout; it waits forever for slow or dead servers. Always set an explicit Timeout. The response Body is an io.ReadCloser: if you don't close it, the underlying TCP connection leaks and cannot be reused. Defer body.Close() immediately after a successful Get (before any other error check) so it always runs.",
 						},
 						pattern: `client := &http.Client{Timeout: 10 * time.Second}
 
@@ -259,7 +259,7 @@ if resp.StatusCode != http.StatusOK {
     return nil, fmt.Errorf("unexpected status: %s", resp.Status)
 }`,
 						example: {
-							en: "A currency rate fetcher sets a 5-second timeout, defers body close, checks for HTTP 200, and only then decodes — so a 429 Too Many Requests returns a clear error rather than a confusing JSON decode failure.",
+							en: "A currency rate fetcher sets a 5-second timeout, defers body close, checks for HTTP 200, and only then decodes, so a 429 Too Many Requests returns a clear error rather than a confusing JSON decode failure.",
 						},
 						task: {
 							en: "Write fetch(url string) (*WeatherResponse, error). Use &http.Client{Timeout: 10 * time.Second}. Defer body close immediately after checking the Get error. Check the status code before decoding. Return a wrapped, descriptive error at each failure point.",
@@ -275,17 +275,17 @@ if resp.StatusCode != http.StatusOK {
 					{
 						type: "pattern",
 						concept: {
-							en: "json.NewDecoder wraps an io.Reader and decodes directly from it — no need to buffer the entire body into a []byte first. Pass a pointer to your struct: Decode needs to write into it. A non-nil error from Decode means the JSON was malformed or didn't match the struct shape.",
+							en: "json.NewDecoder wraps an io.Reader and decodes directly from it; no need to buffer the entire body into a []byte first. Pass a pointer to your struct: Decode needs to write into it. A non-nil error from Decode means the JSON was malformed or didn't match the struct shape.",
 						},
 						pattern: `var result MyStruct
 if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
     return nil, fmt.Errorf("decode: %w", err)
 }`,
 						example: {
-							en: "A Stripe webhook handler decodes the request body directly into an Event struct using json.NewDecoder(r.Body). It never calls io.ReadAll first — for large payloads this would buffer megabytes unnecessarily.",
+							en: "A Stripe webhook handler decodes the request body directly into an Event struct using json.NewDecoder(r.Body). It never calls io.ReadAll first; for large payloads this would buffer megabytes unnecessarily.",
 						},
 						task: {
-							en: 'Complete fetch() with json.NewDecoder decoding. Then write printResult(*WeatherResponse) that prints temperature to one decimal place and wind speed rounded to the nearest integer. Add a --city flag accepting "london", "paris", or "baghdad" mapped to hardcoded lat/lon — the user should never type coordinates.',
+							en: 'Complete fetch() with json.NewDecoder decoding. Then write printResult(*WeatherResponse) that prints temperature to one decimal place and wind speed rounded to the nearest integer. Add a --city flag accepting "london", "paris", or "baghdad" mapped to hardcoded lat/lon. The user should never type coordinates.',
 						},
 					},
 				],
@@ -315,7 +315,7 @@ if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		tags: ["goroutines", "channels", "sync", "bufio", "testing"],
 		mentalModels: [
 			"fan-out with a worker pool",
-			"channel ownership — senders close",
+			"channel ownership: senders close",
 			"buffered scanning for memory efficiency",
 			"table-driven tests",
 		],
@@ -353,7 +353,7 @@ log_parser_test.go`,
 					{
 						type: "pattern",
 						concept: {
-							en: "A pure parsing function takes a raw string and returns a typed value plus a bool — Go's idiom for optional results without allocating an error on every bad line. Because it touches no I/O it is trivial to test exhaustively.",
+							en: "A pure parsing function takes a raw string and returns a typed value plus a bool: Go's idiom for optional results without allocating an error on every bad line. Because it touches no I/O it is trivial to test exhaustively.",
 						},
 						pattern: `func parseRecord(line string) (Record, bool) {
     parts := strings.SplitN(line, " ", 3)
@@ -370,7 +370,7 @@ log_parser_test.go`,
 							en: "A CSV importer splits each row by comma, checks the field count matches the header, converts numeric columns with strconv.Atoi, and returns (Row, false) for any malformed row rather than aborting the entire import.",
 						},
 						task: {
-							en: 'Write parseLine(line, file string, lineNum int) (LogEntry, bool). The format is: "2024-01-15T10:30:00Z INFO message here". Parse the timestamp with time.Parse(time.RFC3339, ...). Return false — never an error — for any line that doesn\'t match. Store file and lineNum in the entry for debugging.',
+							en: 'Write parseLine(line, file string, lineNum int) (LogEntry, bool). The format is: "2024-01-15T10:30:00Z INFO message here". Parse the timestamp with time.Parse(time.RFC3339, ...). Return false (never an error) for any line that doesn\'t match. Store file and lineNum in the entry for debugging.',
 						},
 					},
 				],
@@ -383,7 +383,7 @@ log_parser_test.go`,
 					{
 						type: "pattern",
 						concept: {
-							en: "bufio.Scanner wraps an io.Reader and exposes a Scan() / Text() loop, reading one line at a time regardless of file size. Memory usage stays constant. After the loop always check scanner.Err() — it returns the first non-EOF error encountered during scanning.",
+							en: "bufio.Scanner wraps an io.Reader and exposes a Scan() / Text() loop, reading one line at a time regardless of file size. Memory usage stays constant. After the loop always check scanner.Err(); it returns the first non-EOF error encountered during scanning.",
 						},
 						pattern: `f, err := os.Open(path)
 if err != nil { return err }
@@ -395,7 +395,7 @@ for scanner.Scan() {
 }
 return scanner.Err() // nil means clean EOF`,
 						example: {
-							en: "A log rotator scans a multi-gigabyte nginx access log line by line to count 5xx status codes without ever loading the file into memory — the same file that would OOM the process if read with os.ReadFile.",
+							en: "A log rotator scans a multi-gigabyte nginx access log line by line to count 5xx status codes without ever loading the file into memory: the same file that would OOM the process if read with os.ReadFile.",
 						},
 						task: {
 							en: 'Write processFile(path string, out chan<- LogEntry) error. Open the file, scan line by line, call parseLine, and send successful entries into out. Count skipped lines and print a summary with log.Printf("skipped %d malformed lines in %s").',
@@ -411,7 +411,7 @@ return scanner.Err() // nil means clean EOF`,
 					{
 						type: "pattern",
 						concept: {
-							en: "Worker pool: N goroutines all range over the same tasks channel. Range blocks waiting for items and exits when the channel is closed. The dispatcher sends all work then closes tasks — signalling workers to stop. A WaitGroup counts active workers; when it hits zero, a separate goroutine closes results — signalling the collector to stop.",
+							en: "Worker pool: N goroutines all range over the same tasks channel. Range blocks waiting for items and exits when the channel is closed. The dispatcher sends all work then closes tasks, signalling workers to stop. A WaitGroup counts active workers; when it hits zero, a separate goroutine closes results, signalling the collector to stop.",
 						},
 						pattern: `tasks   := make(chan string, len(paths))
 results := make(chan Result, 200)
@@ -456,7 +456,7 @@ go func() { wg.Wait(); close(results) }() // closer`,
 					{
 						type: "pattern",
 						concept: {
-							en: "Table-driven tests define a slice of cases — each with a name, inputs, and expected outputs — then range over them calling t.Run. Each case becomes a named subtest in the output: PASS/FAIL is reported per case, not for the whole function. Adding a new edge case is one new struct literal.",
+							en: "Table-driven tests define a slice of cases (each with a name, inputs, and expected outputs) then range over them calling t.Run. Each case becomes a named subtest in the output: PASS/FAIL is reported per case, not for the whole function. Adding a new edge case is one new struct literal.",
 						},
 						pattern: `func TestParseRecord(t *testing.T) {
     cases := []struct {
@@ -482,7 +482,7 @@ go func() { wg.Wait(); close(results) }() // closer`,
     }
 }`,
 						example: {
-							en: "The Go standard library tests net/url.Parse with a table of 60+ cases covering schemes, hosts, paths, query strings, fragments, and edge cases like missing slashes and duplicate keys. Each is a single row — adding coverage is trivial.",
+							en: "The Go standard library tests net/url.Parse with a table of 60+ cases covering schemes, hosts, paths, query strings, fragments, and edge cases like missing slashes and duplicate keys. Each is a single row; adding coverage is trivial.",
 						},
 						task: {
 							en: "Write TestParseLine covering: a valid INFO line, a valid WARN line, a malformed timestamp, a line with only two space-separated fields, and an empty string. Run go test ./... and confirm all five subtests pass. The output must show named subtests, not just PASS.",
@@ -494,7 +494,7 @@ go func() { wg.Wait(); close(results) }() // closer`,
 							kind: "unit",
 							title: "parseLine test suite",
 							description:
-								"Run go test ./... — five named subtests must pass.",
+								"Run go test ./... and five named subtests must pass.",
 							testCases: [
 								{
 									description: "Valid INFO line",
@@ -538,7 +538,7 @@ PASS`,
 			{
 				type: "text",
 				value: {
-					en: "You built a concurrent pipeline from scratch: pure parsing, buffered I/O, a fan-out worker pool with proper channel ownership, and your first test suite. The channel ownership rule — senders close, receivers range — is the rule you will apply in every concurrent project from here.",
+					en: "You built a concurrent pipeline from scratch: pure parsing, buffered I/O, a fan-out worker pool with proper channel ownership, and your first test suite. The channel ownership rule (senders close, receivers range) is the rule you will apply in every concurrent project from here.",
 				},
 			},
 		],
@@ -566,7 +566,7 @@ PASS`,
 			{
 				type: "text",
 				value: {
-					en: "A watcher goroutine receives file system events. Rapid successive events (editors write in bursts) are collapsed by a debounce timer. When quiet for 200ms, the new config is parsed and stored atomically. HTTP handlers call Load() — one pointer dereference, no lock, never blocked by a reload.",
+					en: "A watcher goroutine receives file system events. Rapid successive events (editors write in bursts) are collapsed by a debounce timer. When quiet for 200ms, the new config is parsed and stored atomically. HTTP handlers call Load(): one pointer dereference, no lock, never blocked by a reload.",
 				},
 			},
 			{
@@ -594,7 +594,7 @@ PASS`,
 					{
 						type: "pattern",
 						concept: {
-							en: "select waits on multiple channels simultaneously. It blocks until one case is ready, then executes exactly that case. If multiple are ready simultaneously, one is chosen at random. It is Go's answer to 'wait for whichever event arrives first' — the foundation of every event loop.",
+							en: "select waits on multiple channels simultaneously. It blocks until one case is ready, then executes exactly that case. If multiple are ready simultaneously, one is chosen at random. It is Go's answer to 'wait for whichever event arrives first', the foundation of every event loop.",
 						},
 						pattern: `// wait on whichever channel fires first
 select {
@@ -608,10 +608,10 @@ case <-ctx.Done():
     return ctx.Err() // clean shutdown
 }`,
 						example: {
-							en: "A health checker selects over a ticker (fires every 30s to ping a service), an error channel (fires when a ping fails beyond threshold), and ctx.Done() (fires on SIGINT). The loop body runs only one case per iteration — exactly whichever arrived first.",
+							en: "A health checker selects over a ticker (fires every 30s to ping a service), an error channel (fires when a ping fails beyond threshold), and ctx.Done() (fires on SIGINT). The loop body runs only one case per iteration: exactly whichever arrived first.",
 						},
 						task: {
-							en: "Write the core goroutine for your watcher. It should select over: watcher.Events (file system events), watcher.Errors (log and continue), and ctx.Done() (return to exit the goroutine). Use github.com/fsnotify/fsnotify for the watcher. For now just log events — debounce comes next.",
+							en: "Write the core goroutine for your watcher. It should select over: watcher.Events (file system events), watcher.Errors (log and continue), and ctx.Done() (return to exit the goroutine). Use github.com/fsnotify/fsnotify for the watcher. For now just log events; debounce comes next.",
 						},
 					},
 				],
@@ -624,7 +624,7 @@ case <-ctx.Done():
 					{
 						type: "pattern",
 						concept: {
-							en: "Most editors write a file in multiple syscall bursts — you may receive 10 events in 50ms for a single save. Without debouncing you reload config 10 times unnecessarily. time.AfterFunc fires a callback once after a delay. On each new event: stop the existing timer (if any) and create a new one. Only when no events arrive for the full window does the callback execute.",
+							en: "Most editors write a file in multiple syscall bursts; you may receive 10 events in 50ms for a single save. Without debouncing you reload config 10 times unnecessarily. time.AfterFunc fires a callback once after a delay. On each new event: stop the existing timer (if any) and create a new one. Only when no events arrive for the full window does the callback execute.",
 						},
 						pattern: `var timer *time.Timer
 
@@ -638,7 +638,7 @@ for event := range events {
     })
 }`,
 						example: {
-							en: "A search-as-you-type box debounces keystrokes: each keypress stops the previous timer and starts a fresh 300ms one. The API call fires only after the user pauses typing — not on every keystroke.",
+							en: "A search-as-you-type box debounces keystrokes: each keypress stops the previous timer and starts a fresh 300ms one. The API call fires only after the user pauses typing, not on every keystroke.",
 						},
 						task: {
 							en: "Add debouncing to your event loop. When a Write or Create event arrives, stop any existing timer and start a new 200ms timer whose callback calls reload(path, store, notify). reload() must: call loadFromFile, log and return on error keeping the old config, call store.store() with the new config, and send a non-blocking signal on notify.",
@@ -646,7 +646,7 @@ for event := range events {
 						hints: [
 							{
 								label: "non-blocking send",
-								value: "select { case notify <- struct{}{}: default: } — if notify is full, skip. Subscribers that weren't listening miss this notification, which is fine.",
+								value: "select { case notify <- struct{}{}: default: }. If notify is full, skip. Subscribers that weren't listening miss this notification, which is fine.",
 							},
 						],
 					},
@@ -660,7 +660,7 @@ for event := range events {
 					{
 						type: "pattern",
 						concept: {
-							en: "sync/atomic.Value stores and loads a value atomically — one machine instruction, no mutex, no contention on the read path. The rule: always store the same concrete type, and store a pointer (*Config), never a value (Config). Load returns interface{} — type-assert it. This is the right tool when reads vastly outnumber writes and the entire value is replaced atomically.",
+							en: "sync/atomic.Value stores and loads a value atomically: one machine instruction, no mutex, no contention on the read path. The rule: always store the same concrete type, and store a pointer (*Config), never a value (Config). Load returns interface{}; type-assert it. This is the right tool when reads vastly outnumber writes and the entire value is replaced atomically.",
 						},
 						pattern: `var v atomic.Value
 
@@ -671,7 +671,7 @@ v.Store(&Config{Port: 8080})
 cfg := v.Load().(*Config)
 fmt.Println(cfg.Port)`,
 						example: {
-							en: "A feature flag service stores *FlagSet atomically. Thousands of concurrent HTTP handlers call Load() on every request with no mutex. When flags update once per minute, a background goroutine calls Store with the new pointer — one atomic write, zero reader contention.",
+							en: "A feature flag service stores *FlagSet atomically. Thousands of concurrent HTTP handlers call Load() on every request with no mutex. When flags update once per minute, a background goroutine calls Store with the new pointer: one atomic write, zero reader contention.",
 						},
 						task: {
 							en: "Define type Store struct with an atomic.Value field. Expose Load() *Config and a private store(*Config). Initialize the store with the config read at startup before starting the watcher. Call store() from reload(). Add a GET /config handler that calls Load() and writes the current port and log level as plain text.",
@@ -693,7 +693,7 @@ fmt.Println(cfg.Port)`,
 					{
 						type: "pattern",
 						concept: {
-							en: "A benchmark is named BenchmarkXxx, takes *testing.B, and runs the code b.N times. The framework adjusts b.N until the total time is stable. Call b.ResetTimer() after setup so setup cost is excluded. b.RunParallel spins up GOMAXPROCS goroutines — essential for seeing contention differences between atomic and mutex implementations.",
+							en: "A benchmark is named BenchmarkXxx, takes *testing.B, and runs the code b.N times. The framework adjusts b.N until the total time is stable. Call b.ResetTimer() after setup so setup cost is excluded. b.RunParallel spins up GOMAXPROCS goroutines: essential for seeing contention differences between atomic and mutex implementations.",
 						},
 						pattern: `func BenchmarkLoad(b *testing.B) {
     store := NewStore(&Config{Port: 8080}) // setup
@@ -708,7 +708,7 @@ fmt.Println(cfg.Port)`,
 
 // Run: go test -bench=. -benchmem -count=5`,
 						example: {
-							en: "The Go team benchmarked sync.Map vs map+RWMutex for read-heavy and write-heavy workloads with RunParallel. The results — sync.Map wins at high read-to-write ratios, loses on write-heavy — drove the documentation guidance on when to use each.",
+							en: "The Go team benchmarked sync.Map vs map+RWMutex for read-heavy and write-heavy workloads with RunParallel. The results (sync.Map wins at high read-to-write ratios, loses on write-heavy) drove the documentation guidance on when to use each.",
 						},
 						task: {
 							en: "Write BenchmarkAtomicLoad (your Store) and BenchmarkMutexLoad (implement a MutexStore using sync.RWMutex with the same API). Run go test -bench=. -benchmem -count=5. Record the ns/op for both. The atomic version should be significantly faster under parallel load.",
@@ -724,11 +724,11 @@ fmt.Println(cfg.Port)`,
 							desiredMetrics:
 								"BenchmarkAtomicLoad:  < 5 ns/op,   0 allocs/op\nBenchmarkMutexLoad:  10–40 ns/op,  0 allocs/op",
 							metricsAchievable:
-								"On an M1 Mac with GOMAXPROCS=8: atomic ~1.2 ns/op, RWMutex ~22 ns/op. The gap widens with more goroutines because atomic has zero contention — every RLock still touches the mutex's memory, invalidating cache lines shared across cores.",
+								"On an M1 Mac with GOMAXPROCS=8: atomic ~1.2 ns/op, RWMutex ~22 ns/op. The gap widens with more goroutines because atomic has zero contention; every RLock still touches the mutex's memory, invalidating cache lines shared across cores.",
 							hints: [
 								{
 									label: "why RunParallel",
-									value: "A serial benchmark (b.N loop, no RunParallel) shows similar results for both — there's no contention when only one goroutine runs. RunParallel reveals the difference.",
+									value: "A serial benchmark (b.N loop, no RunParallel) shows similar results for both; there's no contention when only one goroutine runs. RunParallel reveals the difference.",
 								},
 								{
 									label: "benchstat",
@@ -744,15 +744,15 @@ fmt.Println(cfg.Port)`,
 			{
 				type: "text",
 				value: {
-					en: "You learned select (the channel multiplexer), debouncing (time.AfterFunc in a real pattern), and atomic.Value (lock-free reads). You wrote your first benchmark and proved with data which implementation is faster. These three — select, atomic, benchmarks — appear in every T2 and T3 project.",
+					en: "You learned select (the channel multiplexer), debouncing (time.AfterFunc in a real pattern), and atomic.Value (lock-free reads). You wrote your first benchmark and proved with data which implementation is faster. These three (select, atomic, benchmarks) appear in every T2 and T3 project.",
 				},
 			},
 		],
 	},
 
 	// ─────────────────────────────────────────────────────────────────────────
-	// TIER 2 — SYSTEMS
-	// Step type: "requirement" — what + why + stdlib/3rd-party hints.
+	// TIER 2: SYSTEMS
+	// Step type "requirement": what + why + stdlib/3rd-party hints.
 	// Complex snippets only for non-obvious APIs.
 	// Assessment required on every project.
 	// ─────────────────────────────────────────────────────────────────────────
@@ -761,7 +761,7 @@ fmt.Println(cfg.Port)`,
 		slug: "http-server",
 		name: "HTTP server with middleware",
 		tagline:
-			"Build a composable HTTP server — auth, logging, rate limiting — from the stdlib alone.",
+			"Build a composable HTTP server (auth, logging, rate limiting) from the stdlib alone.",
 		code: "SRV",
 		tier: 2,
 		tierLabel: "SYSTEMS",
@@ -777,7 +777,7 @@ fmt.Println(cfg.Port)`,
 			{
 				type: "text",
 				value: {
-					en: "Every request passes through a chain of middleware functions before reaching a route handler. Each middleware wraps the next one. The chain is assembled explicitly in main — not by a framework. You learned http.Client in T1; now you implement the server side of the same interface.",
+					en: "Every request passes through a chain of middleware functions before reaching a route handler. Each middleware wraps the next one. The chain is assembled explicitly in main, not by a framework. You learned http.Client in T1; now you implement the server side of the same interface.",
 				},
 			},
 			{
@@ -813,10 +813,10 @@ server_test.go`,
 							en: "Define type Middleware func(http.Handler) http.Handler. Write Chain(h http.Handler, mws ...Middleware) http.Handler that applies middlewares in order. The first middleware in the list must be the outermost wrapper (first to run, last to return).",
 						},
 						why: {
-							en: "http.Handler is the single interface powering Go's entire HTTP stack. A middleware is just a function that wraps one Handler in another — there is no magic, no reflection, no framework. Chain lets you compose them cleanly: Chain(mux, logging, auth) instead of logging(auth(mux)).",
+							en: "http.Handler is the single interface powering Go's entire HTTP stack. A middleware is just a function that wraps one Handler in another. There is no magic, no reflection, no framework. Chain lets you compose them cleanly: Chain(mux, logging, auth) instead of logging(auth(mux)).",
 						},
 						stdlibHint:
-							"net/http — http.Handler, http.HandlerFunc, http.ResponseWriter, *http.Request",
+							"net/http: http.Handler, http.HandlerFunc, http.ResponseWriter, *http.Request",
 						complexSnippet: `// HandlerFunc converts a plain function into an http.Handler
 return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     // pre-processing
@@ -837,7 +837,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 							en: "Write LoggingMiddleware that logs method, path, status code, response bytes, and duration for every request using log/slog.",
 						},
 						why: {
-							en: "http.ResponseWriter does not expose the status code after it has been written — the interface has no StatusCode() method. The standard Go solution is a wrapper struct that embeds http.ResponseWriter and overrides WriteHeader to capture the code. You used an identical pattern in T1 when you wrapped bufio.Scanner to count lines.",
+							en: "http.ResponseWriter does not expose the status code after it has been written; the interface has no StatusCode() method. The standard Go solution is a wrapper struct that embeds http.ResponseWriter and overrides WriteHeader to capture the code. You used an identical pattern in T1 when you wrapped bufio.Scanner to count lines.",
 						},
 						stdlibHint: "net/http, log/slog, time",
 						hints: [
@@ -860,13 +860,13 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 							en: "Write AuthMiddleware that reads a Bearer token from the Authorization header, validates it, and stores the user identity in the request context. Return 401 for missing or invalid tokens. Expose UserFromContext(ctx) (string, bool) for handlers.",
 						},
 						why: {
-							en: "context.WithValue threads request-scoped values through the call stack without changing function signatures. The context key must be an unexported type — never a bare string or int — to prevent collisions between packages. You attached config values to a context in T1's config watcher; the pattern is identical here.",
+							en: "context.WithValue threads request-scoped values through the call stack without changing function signatures. The context key must be an unexported type (never a bare string or int) to prevent collisions between packages. You attached config values to a context in T1's config watcher; the pattern is identical here.",
 						},
 						stdlibHint: "context, net/http, strings",
 						hints: [
 							{
 								label: "context key",
-								value: 'type contextKey string — const userKey contextKey = "user". The unexported type means no other package can accidentally read or overwrite your key.',
+								value: 'type contextKey string; const userKey contextKey = "user". The unexported type means no other package can accidentally read or overwrite your key.',
 							},
 							{
 								label: "r.WithContext",
@@ -887,11 +887,11 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 							en: "Write RateLimitMiddleware with per-IP limiting: N requests per second. Requests beyond the limit receive 429. A background goroutine must evict stale IP entries periodically.",
 						},
 						why: {
-							en: "Per-IP rate limiting requires a map keyed by IP protected by a mutex — concurrent requests from different IPs hit the map simultaneously. You built a mutex-protected map in the config watcher's MutexStore. The token bucket is the standard algorithm: each IP gets N tokens, one consumed per request, tokens refill at rate R/s. Stale entry eviction prevents unbounded memory growth.",
+							en: "Per-IP rate limiting requires a map keyed by IP protected by a mutex; concurrent requests from different IPs hit the map simultaneously. You built a mutex-protected map in the config watcher's MutexStore. The token bucket is the standard algorithm: each IP gets N tokens, one consumed per request, tokens refill at rate R/s. Stale entry eviction prevents unbounded memory growth.",
 						},
 						stdlibHint: "net, sync, time",
 						thirdPartyHint:
-							"golang.org/x/time/rate — ready-made token bucket Limiter, one per IP",
+							"golang.org/x/time/rate: ready-made token bucket Limiter, one per IP",
 						hints: [
 							{
 								label: "IP from RemoteAddr",
@@ -912,7 +912,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 							en: "Write table-driven tests for each middleware using httptest.NewRecorder and httptest.NewRequest. Run with -race. No real TCP connections.",
 						},
 						why: {
-							en: "httptest.NewRecorder is an http.ResponseWriter that captures status, headers, and body. httptest.NewRequest builds an *http.Request without a network round-trip. Calling ServeHTTP directly tests the middleware in isolation — no server needed. You wrote table-driven tests in T1; apply the same pattern here.",
+							en: "httptest.NewRecorder is an http.ResponseWriter that captures status, headers, and body. httptest.NewRequest builds an *http.Request without a network round-trip. Calling ServeHTTP directly tests the middleware in isolation, no server needed. You wrote table-driven tests in T1; apply the same pattern here.",
 						},
 						stdlibHint: "net/http/httptest",
 					},
@@ -968,7 +968,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			{
 				type: "text",
 				value: {
-					en: "You built composable middleware from one interface, applied the context-key pattern from T1, and tested everything without a real server. The rate limiter's mutex-protected map is the same pattern as MutexStore from the config watcher — you recognised it and applied it.",
+					en: "You built composable middleware from one interface, applied the context-key pattern from T1, and tested everything without a real server. The rate limiter's mutex-protected map is the same pattern as MutexStore from the config watcher; you recognised it and applied it.",
 				},
 			},
 		],
@@ -996,7 +996,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			{
 				type: "text",
 				value: {
-					en: "N workers range over a buffered jobs channel. Results and errors flow out on separate channels. A context cancels all workers cleanly. The pool must not leak goroutines — every goroutine started must eventually exit, proven by the race detector and goroutine leak checks.",
+					en: "N workers range over a buffered jobs channel. Results and errors flow out on separate channels. A context cancels all workers cleanly. The pool must not leak goroutines: every goroutine started must eventually exit, proven by the race detector and goroutine leak checks.",
 				},
 			},
 			{
@@ -1028,7 +1028,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						why: {
 							en: "Designing the API surface before implementation forces you to answer ownership questions: who closes which channel, who can safely call Stop. Answering these questions with sync.Once (Stop is idempotent) and the sender-closes rule (only the pool closes results) prevents the entire class of 'send on closed channel' panics.",
 						},
-						stdlibHint: "sync — sync.Once, sync.WaitGroup",
+						stdlibHint: "sync: sync.Once, sync.WaitGroup",
 					},
 				],
 			},
@@ -1040,7 +1040,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					{
 						type: "requirement",
 						what: {
-							en: "Each worker must exit when the pool's context is cancelled. Every blocking operation — receiving a job, sending a result — needs a ctx.Done() escape hatch via select. A worker that blocks forever on either channel is a goroutine leak.",
+							en: "Each worker must exit when the pool's context is cancelled. Every blocking operation (receiving a job, sending a result) needs a ctx.Done() escape hatch via select. A worker that blocks forever on either channel is a goroutine leak.",
 						},
 						why: {
 							en: "You used ctx.Done() in the config watcher's event loop to exit cleanly. The pattern is identical here: select on the operation channel and ctx.Done(). The difference is that workers block on both receive (jobs) and send (results), so both need the escape hatch.",
@@ -1049,7 +1049,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						hints: [
 							{
 								label: "select on send",
-								value: "select { case results <- r: case <-ctx.Done(): return } — worker exits if context cancels while blocked on sending a result.",
+								value: "select { case results <- r: case <-ctx.Done(): return }. Worker exits if context cancels while blocked on sending a result.",
 							},
 						],
 					},
@@ -1066,10 +1066,10 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 							en: "A Result that carries either Output or Err (not both simultaneously) lets callers handle them uniformly from one channel. Alternatively use errgroup to manage goroutine lifecycles and collect the first error. Choose one approach and justify it in a comment.",
 						},
 						why: {
-							en: "Separate error and result channels force the caller to select over two channels simultaneously — workable, but verbose. A Result{Output, Err} union type with 'exactly one is set' convention is more composable. errgroup.WithContext is the stdlib-adjacent choice when you need the first error to cancel all workers automatically.",
+							en: "Separate error and result channels force the caller to select over two channels simultaneously: workable, but verbose. A Result{Output, Err} union type with 'exactly one is set' convention is more composable. errgroup.WithContext is the stdlib-adjacent choice when you need the first error to cancel all workers automatically.",
 						},
 						thirdPartyHint:
-							"golang.org/x/sync/errgroup — manages goroutines, cancels on first error",
+							"golang.org/x/sync/errgroup: manages goroutines, cancels on first error",
 					},
 				],
 			},
@@ -1087,7 +1087,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 							en: "You already know how to write benchmarks from T1. Apply that knowledge here with b.ReportMetric for custom units. Buffer size is the primary tuning knob: an unbuffered channel forces Submit to block until a worker is free (maximum backpressure), a large buffer decouples submission from processing. Data from your benchmark, not intuition, drives the choice.",
 						},
 						stdlibHint:
-							"testing — b.ReportMetric, b.Run for sub-benchmarks",
+							"testing: b.ReportMetric, b.Run for sub-benchmarks",
 					},
 					{
 						type: "assessment",
@@ -1099,7 +1099,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 							desiredMetrics:
 								"> 500,000 jobs/sec with 8 workers\nSubmit p99 latency < 5 µs\n0 allocs/op in the worker receive-process-send path",
 							metricsAchievable:
-								"A no-op WorkerFunc with buffer=100 achieves ~1.1M jobs/sec on an M1 Mac. The bottleneck is channel scheduling overhead. Your actual WorkerFunc cost is on top of this — measure them separately.",
+								"A no-op WorkerFunc with buffer=100 achieves ~1.1M jobs/sec on an M1 Mac. The bottleneck is channel scheduling overhead. Your actual WorkerFunc cost is on top of this; measure them separately.",
 							hints: [
 								{
 									label: "b.ReportMetric",
@@ -1127,14 +1127,14 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		slug: "tcp-echo",
 		name: "TCP echo server",
 		tagline:
-			"Handle concurrent TCP connections — the network plumbing under every Go service.",
+			"Handle concurrent TCP connections: the network plumbing under every Go service.",
 		code: "TCP",
 		tier: 2,
 		tierLabel: "SYSTEMS",
 		estimatedTime: "3–4 hours",
 		tags: ["net", "io", "bufio", "goroutines", "integration-testing"],
 		mentalModels: [
-			"accept loop — one goroutine per connection",
+			"accept loop: one goroutine per connection",
 			"net.Conn as io.Reader + io.Writer",
 			"deadline-based idle timeout",
 			"port :0 for test isolation",
@@ -1170,12 +1170,12 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					{
 						type: "requirement",
 						what: {
-							en: "Write Server with Listen(addr string) error and Shutdown(). Listen must accept connections in a loop and hand each to a goroutine. Shutdown closes the listener — causing Accept to return an error — and waits for all connection goroutines to finish with a WaitGroup.",
+							en: "Write Server with Listen(addr string) error and Shutdown(). Listen must accept connections in a loop and hand each to a goroutine. Shutdown closes the listener (causing Accept to return an error) and waits for all connection goroutines to finish with a WaitGroup.",
 						},
 						why: {
-							en: "This is the accept loop pattern — the foundation of every network server. net.Listener.Accept blocks until a connection arrives or the listener is closed. Closing the listener is the shutdown signal; the error from Accept tells you which case occurred. The per-connection goroutine is the same fan-out pattern as the log parser worker pool, applied to connections instead of file paths.",
+							en: "This is the accept loop pattern: the foundation of every network server. net.Listener.Accept blocks until a connection arrives or the listener is closed. Closing the listener is the shutdown signal; the error from Accept tells you which case occurred. The per-connection goroutine is the same fan-out pattern as the log parser worker pool, applied to connections instead of file paths.",
 						},
-						stdlibHint: "net — net.Listen, net.Listener, net.Conn",
+						stdlibHint: "net: net.Listen, net.Listener, net.Conn",
 						hints: [
 							{
 								label: "accept error on close",
@@ -1193,13 +1193,13 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					{
 						type: "requirement",
 						what: {
-							en: 'Implement handleConn(conn net.Conn). Read lines with bufio.Scanner, uppercase each with strings.ToUpper, write back with fmt.Fprintln. If the client sends "quit", close the connection cleanly. Set a 30-second idle deadline with conn.SetDeadline — reset it on each line received.',
+							en: 'Implement handleConn(conn net.Conn). Read lines with bufio.Scanner, uppercase each with strings.ToUpper, write back with fmt.Fprintln. If the client sends "quit", close the connection cleanly. Set a 30-second idle deadline with conn.SetDeadline and reset it on each line received.',
 						},
 						why: {
-							en: "net.Conn implements both io.Reader and io.Writer. bufio.Scanner wraps the Reader exactly as it wrapped os.File in the log parser — same API, different underlying type. conn.SetDeadline prevents a goroutine from blocking forever on an idle connection. You must reset the deadline after each successful read or the connection times out even for active clients.",
+							en: "net.Conn implements both io.Reader and io.Writer. bufio.Scanner wraps the Reader exactly as it wrapped os.File in the log parser: same API, different underlying type. conn.SetDeadline prevents a goroutine from blocking forever on an idle connection. You must reset the deadline after each successful read or the connection times out even for active clients.",
 						},
 						stdlibHint:
-							"bufio, strings, fmt, net, time — bufio.NewScanner, conn.SetDeadline",
+							"bufio, strings, fmt, net, time: bufio.NewScanner, conn.SetDeadline",
 					},
 				],
 			},
@@ -1214,10 +1214,10 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 							en: "Write integration tests that start a real server on :0 (OS assigns a free port), connect with net.Dial, send lines, and assert the response. The server must shut down cleanly after each test. Run 10 concurrent connections in one test.",
 						},
 						why: {
-							en: "Unit tests with mocks cannot tell you if TCP framing, buffering, or connection lifecycle is correct. An integration test with a real socket proves the full path. Port :0 lets the OS pick a free port — no conflicts between parallel test runs. This is the integration testing approach you will apply in all T3 projects.",
+							en: "Unit tests with mocks cannot tell you if TCP framing, buffering, or connection lifecycle is correct. An integration test with a real socket proves the full path. Port :0 lets the OS pick a free port, so no conflicts between parallel test runs. This is the integration testing approach you will apply in all T3 projects.",
 						},
 						stdlibHint:
-							"net, testing, bufio — net.Dial, listener.Addr().String()",
+							"net, testing, bufio: net.Dial, listener.Addr().String()",
 					},
 					{
 						type: "assessment",
@@ -1253,7 +1253,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 							hints: [
 								{
 									label: "goleak",
-									value: "go.uber.org/goleak — add goleak.VerifyNone(t) in each test or goleak.VerifyTestMain(m) in TestMain.",
+									value: "go.uber.org/goleak: add goleak.VerifyNone(t) in each test or goleak.VerifyTestMain(m) in TestMain.",
 								},
 							],
 						},
@@ -1265,15 +1265,15 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			{
 				type: "text",
 				value: {
-					en: "The accept loop, per-connection goroutines, bufio scanning, idle deadlines — these are the exact primitives gRPC and the database driver use internally. You now understand the layer underneath.",
+					en: "The accept loop, per-connection goroutines, bufio scanning, idle deadlines: these are the exact primitives gRPC and the database driver use internally. You now understand the layer underneath.",
 				},
 			},
 		],
 	},
 
 	// ─────────────────────────────────────────────────────────────────────────
-	// TIER 3 — PRODUCTION
-	// Step type: "constraint" — what must be true + rationale.
+	// TIER 3: PRODUCTION
+	// Step type "constraint": what must be true + rationale.
 	// Assessment is a hard deliverable. Project is not done without it.
 	// ─────────────────────────────────────────────────────────────────────────
 
@@ -1297,7 +1297,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			{
 				type: "text",
 				value: {
-					en: "A .proto file is the single source of truth. protoc generates server interfaces and client stubs. You implement the server interface, chain interceptors for logging and auth, and expose a server-streaming RPC. Tests use bufconn — an in-memory listener — for a real gRPC round-trip with no TCP overhead.",
+					en: "A .proto file is the single source of truth. protoc generates server interfaces and client stubs. You implement the server interface, chain interceptors for logging and auth, and expose a server-streaming RPC. Tests use bufconn (an in-memory listener) for a real gRPC round-trip with no TCP overhead.",
 				},
 			},
 			{
@@ -1334,12 +1334,12 @@ cmd/server/main.go`,
 							en: "The proto file must define UserService with GetUser (unary), ListUsers (server-streaming), and CreateUser (unary). All fields must use snake_case. Field numbers 1–15 must be reserved for the most frequently sent fields. The go_package option must point to your module's gen path.",
 						},
 						rationale: {
-							en: "The schema is the API contract. Changing a field number is a wire-breaking change — existing clients will misread the data. snake_case is the protobuf convention; the generated Go code converts to CamelCase automatically. Field numbers 1–15 use one byte on the wire; 16+ use two.",
+							en: "The schema is the API contract. Changing a field number is a wire-breaking change; existing clients will misread the data. snake_case is the protobuf convention; the generated Go code converts to CamelCase automatically. Field numbers 1–15 use one byte on the wire; 16+ use two.",
 						},
 						hints: [
 							{
 								label: "streaming syntax",
-								value: "rpc ListUsers(ListUsersRequest) returns (stream User); — the stream keyword generates a server-streaming RPC.",
+								value: "rpc ListUsers(ListUsersRequest) returns (stream User); the stream keyword generates a server-streaming RPC.",
 							},
 						],
 					},
@@ -1356,12 +1356,12 @@ cmd/server/main.go`,
 							en: "Embed UnimplementedUserServiceServer. Return codes.NotFound for missing resources, codes.InvalidArgument for malformed input, codes.Internal for unexpected errors. Never return a raw Go error from a gRPC handler.",
 						},
 						rationale: {
-							en: "Embedding UnimplementedUserServiceServer means adding new RPCs to the proto won't break your server — the embedded type provides a default Unimplemented response. gRPC status codes are part of the wire contract: clients branch on them. A raw Go error becomes codes.Unknown — clients cannot distinguish it from a bug.",
+							en: "Embedding UnimplementedUserServiceServer means adding new RPCs to the proto won't break your server; the embedded type provides a default Unimplemented response. gRPC status codes are part of the wire contract: clients branch on them. A raw Go error becomes codes.Unknown, which clients cannot distinguish from a bug.",
 						},
 						hints: [
 							{
 								label: "status errors",
-								value: 'status.Errorf(codes.NotFound, "user %s not found", id) — import google.golang.org/grpc/status and google.golang.org/grpc/codes.',
+								value: 'status.Errorf(codes.NotFound, "user %s not found", id). Import google.golang.org/grpc/status and google.golang.org/grpc/codes.',
 							},
 							{
 								label: "streaming send",
@@ -1382,12 +1382,12 @@ cmd/server/main.go`,
 							en: "Implement two unary interceptors: one logs method, duration, and error code for every call; one validates a Bearer token from gRPC metadata and returns codes.Unauthenticated on failure. Chain with grpc.ChainUnaryInterceptor. Auth must run before logging sees the result.",
 						},
 						rationale: {
-							en: "gRPC interceptors are the same wrapping pattern as the HTTP middleware you built in T2 — wrap one handler in another. gRPC metadata is the equivalent of HTTP headers. Auth before logging ensures unauthenticated requests are not logged as successful — the ordering matters for the same reason middleware ordering mattered in the HTTP server.",
+							en: "gRPC interceptors are the same wrapping pattern as the HTTP middleware you built in T2: wrap one handler in another. gRPC metadata is the equivalent of HTTP headers. Auth before logging ensures unauthenticated requests are not logged as successful; the ordering matters for the same reason middleware ordering mattered in the HTTP server.",
 						},
 						hints: [
 							{
 								label: "metadata",
-								value: "metadata.FromIncomingContext(ctx) — import google.golang.org/grpc/metadata.",
+								value: "metadata.FromIncomingContext(ctx). Import google.golang.org/grpc/metadata.",
 							},
 						],
 					},
@@ -1401,10 +1401,10 @@ cmd/server/main.go`,
 					{
 						type: "constraint",
 						what: {
-							en: "All tests must use bufconn — no real TCP ports. Tests must cover: GetUser returning NotFound, GetUser returning a valid user, ListUsers streaming at least three items, CreateUser returning InvalidArgument on empty email, and the auth interceptor rejecting a missing token.",
+							en: "All tests must use bufconn (no real TCP ports). Tests must cover: GetUser returning NotFound, GetUser returning a valid user, ListUsers streaming at least three items, CreateUser returning InvalidArgument on empty email, and the auth interceptor rejecting a missing token.",
 						},
 						rationale: {
-							en: "bufconn creates an in-memory listener. A grpc.Dial with a custom dialer pointing at it gives you a real gRPC round-trip — client stub, interceptors, your handler, response — with zero network overhead and no port allocation. You used net.Dial for TCP integration tests in T2; bufconn is the gRPC equivalent.",
+							en: "bufconn creates an in-memory listener. A grpc.Dial with a custom dialer pointing at it gives you a real gRPC round-trip (client stub, interceptors, your handler, response) with zero network overhead and no port allocation. You used net.Dial for TCP integration tests in T2; bufconn is the gRPC equivalent.",
 						},
 					},
 					{
@@ -1446,7 +1446,7 @@ cmd/server/main.go`,
 								},
 								{
 									label: "recv loop",
-									value: "Call stream.Recv() in a loop until it returns io.EOF — that signals the server is done sending.",
+									value: "Call stream.Recv() in a loop until it returns io.EOF; that signals the server is done sending.",
 								},
 							],
 						},
@@ -1458,7 +1458,7 @@ cmd/server/main.go`,
 			{
 				type: "text",
 				value: {
-					en: "Contract-first design, generated types, interceptor chaining, in-memory test transport. Every pattern — middleware, context propagation, error codes, integration testing with a real transport — you already knew from T1 and T2. protobuf and gRPC were a new surface on familiar foundations.",
+					en: "Contract-first design, generated types, interceptor chaining, in-memory test transport. Every pattern (middleware, context propagation, error codes, integration testing with a real transport) you already knew from T1 and T2. protobuf and gRPC were a new surface on familiar foundations.",
 				},
 			},
 		],
@@ -1486,7 +1486,7 @@ cmd/server/main.go`,
 			{
 				type: "text",
 				value: {
-					en: "HTTP handlers receive a TaskRepository interface — not a *pgxpool.Pool. The Postgres implementation lives behind that interface. Tests inject a mock. Schema changes are versioned SQL migration files. Transactions are propagated through a WithTx method on the interface itself.",
+					en: "HTTP handlers receive a TaskRepository interface, not a *pgxpool.Pool. The Postgres implementation lives behind that interface. Tests inject a mock. Schema changes are versioned SQL migration files. Transactions are propagated through a WithTx method on the interface itself.",
 				},
 			},
 			{
@@ -1526,12 +1526,12 @@ cmd/server/main.go`,
 							en: "TaskRepository must expose Create, GetByID, List(limit, offset int), Update, Delete, and WithTx(ctx, func(TaskRepository) error) error. Schema changes must be in versioned up/down SQL files applied by golang-migrate, not in application startup code.",
 						},
 						rationale: {
-							en: "The interface is defined by its consumer (handlers), not its implementation (Postgres). WithTx accepts a callback that receives a transaction-scoped repository — the callback never touches the transaction object, so it can be tested with a mock that calls the function directly without a transaction. SQL migration files version the schema independently of the application binary.",
+							en: "The interface is defined by its consumer (handlers), not its implementation (Postgres). WithTx accepts a callback that receives a transaction-scoped repository; the callback never touches the transaction object, so it can be tested with a mock that calls the function directly without a transaction. SQL migration files version the schema independently of the application binary.",
 						},
 						hints: [
 							{
 								label: "golang-migrate",
-								value: "github.com/golang-migrate/migrate/v4 — reads numbered .up.sql/.down.sql files, tracks applied versions in schema_migrations.",
+								value: "github.com/golang-migrate/migrate/v4: reads numbered .up.sql/.down.sql files, tracks applied versions in schema_migrations.",
 							},
 							{
 								label: "WithTx pattern",
@@ -1552,7 +1552,7 @@ cmd/server/main.go`,
 							en: "Use pgxpool with explicit MaxConns and MinConns. Every query must use $N parameterised placeholders. Wrap all database errors with context before returning. Detect unique constraint violations and return a typed sentinel error.",
 						},
 						rationale: {
-							en: "pgxpool reuses connections — opening one per query would be 10–100× slower. Parameterised queries prevent SQL injection at the driver level. Error wrapping preserves the original pgx error for callers. Typed sentinel errors (ErrDuplicate) let handlers return 409 Conflict instead of 500 Internal Error for known failure modes.",
+							en: "pgxpool reuses connections; opening one per query would be 10–100× slower. Parameterised queries prevent SQL injection at the driver level. Error wrapping preserves the original pgx error for callers. Typed sentinel errors (ErrDuplicate) let handlers return 409 Conflict instead of 500 Internal Error for known failure modes.",
 						},
 						hints: [
 							{
@@ -1578,12 +1578,12 @@ cmd/server/main.go`,
 							en: 'Handlers must receive TaskRepository through a constructor, never as a global or package-level variable. Use Go 1.22 method-specific routing patterns. All error responses must be consistent JSON: {"error": "message"}. All success responses must set Content-Type: application/json.',
 						},
 						rationale: {
-							en: 'Constructor injection makes the dependency explicit and swappable — the same principle as the interface itself. Global state makes tests order-dependent and race-prone. Method-specific patterns ("POST /tasks") eliminate the need for a third-party router. Consistent error shapes let clients handle errors uniformly without inspecting response bodies.',
+							en: 'Constructor injection makes the dependency explicit and swappable: the same principle as the interface itself. Global state makes tests order-dependent and race-prone. Method-specific patterns ("POST /tasks") eliminate the need for a third-party router. Consistent error shapes let clients handle errors uniformly without inspecting response bodies.',
 						},
 						hints: [
 							{
 								label: "Go 1.22 routing",
-								value: 'mux.HandleFunc("POST /tasks", h.Create) — the HTTP method is part of the pattern string.',
+								value: 'mux.HandleFunc("POST /tasks", h.Create). The HTTP method is part of the pattern string.',
 							},
 						],
 					},
@@ -1597,10 +1597,10 @@ cmd/server/main.go`,
 					{
 						type: "constraint",
 						what: {
-							en: "Unit tests must use a MockTaskRepository — no real database. Cover every handler: success, not-found, invalid input, and duplicate. Additionally write one integration test against a real Postgres instance (testcontainers-go) exercising Create → GetByID → Update → Delete.",
+							en: "Unit tests must use a MockTaskRepository: no real database. Cover every handler: success, not-found, invalid input, and duplicate. Additionally write one integration test against a real Postgres instance (testcontainers-go) exercising Create → GetByID → Update → Delete.",
 						},
 						rationale: {
-							en: "The repository interface exists so tests never need a database. The mock lets you exercise every handler branch in milliseconds. The integration test proves the SQL is correct — mocks cannot do that. testcontainers-go spins up a real Postgres container and tears it down after — no manual setup.",
+							en: "The repository interface exists so tests never need a database. The mock lets you exercise every handler branch in milliseconds. The integration test proves the SQL is correct; mocks cannot do that. testcontainers-go spins up a real Postgres container and tears it down after, with no manual setup.",
 						},
 					},
 					{
@@ -1642,7 +1642,7 @@ cmd/server/main.go`,
 							hints: [
 								{
 									label: "testcontainers",
-									value: "github.com/testcontainers/testcontainers-go — spins up a real Postgres container, runs migrations, tears down after test.",
+									value: "github.com/testcontainers/testcontainers-go: spins up a real Postgres container, runs migrations, tears down after test.",
 								},
 								{
 									label: "mock pattern",
@@ -1658,7 +1658,7 @@ cmd/server/main.go`,
 			{
 				type: "text",
 				value: {
-					en: "Interface-driven data access, constructor injection, migration-versioned schema, typed error codes, unit tests with mocks, and an integration test with a real database. This is production Go architecture — layered, testable, and decoupled at every boundary.",
+					en: "Interface-driven data access, constructor injection, migration-versioned schema, typed error codes, unit tests with mocks, and an integration test with a real database. This is production Go architecture: layered, testable, and decoupled at every boundary.",
 				},
 			},
 		],
@@ -1717,7 +1717,7 @@ cmd/server/main.go`,
 							en: "Import net/http/pprof on a dedicated admin port (not the public port). Generate load with hey or ab (minimum 10,000 requests, 50 concurrent). Take a 30-second CPU profile. Open the flamegraph. Name the function that appears widest.",
 						},
 						rationale: {
-							en: "pprof registers endpoints on the default ServeMux. Running it on a separate port keeps it off the public interface. The flamegraph's widest bar is the most expensive function — you cannot guess this correctly; the profile must name it. Minimum 10,000 requests ensures enough samples for a statistically representative profile.",
+							en: "pprof registers endpoints on the default ServeMux. Running it on a separate port keeps it off the public interface. The flamegraph's widest bar is the most expensive function: you cannot guess this correctly; the profile must name it. Minimum 10,000 requests ensures enough samples for a statistically representative profile.",
 						},
 						hints: [
 							{
@@ -1743,7 +1743,7 @@ cmd/server/main.go`,
 							en: "Write BenchmarkBefore for the slow function using realistic input (same shape as production). Run with -benchmem -count=5. Save the output to before.txt. Do not change any code before recording the baseline.",
 						},
 						rationale: {
-							en: "Without a baseline you cannot prove improvement — you can only claim it. The benchmark must use realistic input: a benchmark on 10-byte strings that proves nothing when production processes 10,000-byte strings. -count=5 gives benchstat enough runs to compute variance. Save before.txt before any code change.",
+							en: "Without a baseline you cannot prove improvement; you can only claim it. The benchmark must use realistic input: a benchmark on 10-byte strings that proves nothing when production processes 10,000-byte strings. -count=5 gives benchstat enough runs to compute variance. Save before.txt before any code change.",
 						},
 					},
 				],
@@ -1756,7 +1756,7 @@ cmd/server/main.go`,
 					{
 						type: "constraint",
 						what: {
-							en: "Fix the bottleneck identified in the flamegraph. The fix must not change the observable output of the function. Run go test ./... — tests must pass before and after. Common patterns: sync.Pool for per-call allocations, pre-sized slices/maps, strings.Builder over concatenation, map lookup over O(n²) scan.",
+							en: "Fix the bottleneck identified in the flamegraph. The fix must not change the observable output of the function. Run go test ./... and tests must pass before and after. Common patterns: sync.Pool for per-call allocations, pre-sized slices/maps, strings.Builder over concatenation, map lookup over O(n²) scan.",
 						},
 						rationale: {
 							en: "The most common Go performance issue is unnecessary allocation. sync.Pool recycles objects, eliminating GC pressure. Pre-sizing with make([]T, 0, n) avoids growth copies. strings.Builder avoids the string immutability copies that make concatenation O(n²). A faster function that changes output is a bug, not an optimisation.",
@@ -1785,7 +1785,7 @@ cmd/server/main.go`,
 							en: "Run the benchmark again with identical flags and -count=5. Save to after.txt. Run benchstat before.txt after.txt. The delta column must show a statistically significant improvement (p < 0.05). Write one paragraph explaining what you changed and why it reduced allocations or CPU time.",
 						},
 						rationale: {
-							en: "A single benchmark run has high variance. benchstat computes mean, variance, and p-value across runs. p > 0.05 means the difference could be noise — you need more runs or a larger improvement. The written explanation is mandatory: if you cannot articulate why it is faster, you do not understand the fix and will not be able to apply it elsewhere.",
+							en: "A single benchmark run has high variance. benchstat computes mean, variance, and p-value across runs. p > 0.05 means the difference could be noise; you need more runs or a larger improvement. The written explanation is mandatory: if you cannot articulate why it is faster, you do not understand the fix and will not be able to apply it elsewhere.",
 						},
 					},
 					{
@@ -1802,7 +1802,7 @@ cmd/server/main.go`,
 							hints: [
 								{
 									label: "benchstat",
-									value: "go install golang.org/x/perf/cmd/benchstat@latest — then: benchstat before.txt after.txt",
+									value: "go install golang.org/x/perf/cmd/benchstat@latest, then: benchstat before.txt after.txt",
 								},
 								{
 									label: "correctness first",
@@ -1818,7 +1818,7 @@ cmd/server/main.go`,
 			{
 				type: "text",
 				value: {
-					en: "The professional performance workflow: profile first, baseline second, fix third, prove with data. You used benchmarks from T1 and benchstat to make claims you can defend. The skill is not memorising optimisation techniques — it is knowing how to find which one matters and proving it worked.",
+					en: "The professional performance workflow: profile first, baseline second, fix third, prove with data. You used benchmarks from T1 and benchstat to make claims you can defend. The skill is not memorising optimisation techniques; it is knowing how to find which one matters and proving it worked.",
 				},
 			},
 		],

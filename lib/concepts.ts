@@ -16,14 +16,14 @@ export const concepts: Concept[] = [
 	{
 		slug: "error-handling",
 		name: "Error handling",
-		tagline: "Errors are values — explicit, returnable, wrappable.",
+		tagline: "Errors are values: explicit, returnable, wrappable.",
 		summary:
-			"Go has no exceptions. Errors are ordinary values of type <code>error</code> returned alongside results. Every caller decides what to do with them — log, wrap, return, or ignore. This explicitness is Go's superpower: you can always see exactly which calls can fail.",
+			"Go has no exceptions. Errors are ordinary values of type <code>error</code> returned alongside results. Every caller decides what to do with them: log, wrap, return, or ignore. This explicitness is Go's superpower: you can always see exactly which calls can fail.",
 		mentalModel:
 			'Think of every function with a possible failure as returning two things: the result and a verdict. Like a restaurant order: you get either (food, nil) or (nil, "kitchen is closed"). You check the verdict before eating the food.',
 		retrievalPrompts: [
-			"Without looking, write a function that opens a file and returns its contents as a string — including every place it can fail. || Signature: func readFile(path string) (string, error). It can fail on Open (return \"\", fmt.Errorf(\"open: %w\", err)) and on Read (return \"\", fmt.Errorf(\"read: %w\", err)). The caller always gets two values and must check error before trusting the result.",
-			"What is the difference between fmt.Errorf with %v and %w? When does it matter to the caller? || %v formats the error as a string — the original is lost. %w wraps it so errors.Is and errors.As can unwrap through the chain. The distinction matters when callers need to match a specific error type — with %v they can only do string comparison.",
+			"Without looking, write a function that opens a file and returns its contents as a string, including every place it can fail. || Signature: func readFile(path string) (string, error). It can fail on Open (return \"\", fmt.Errorf(\"open: %w\", err)) and on Read (return \"\", fmt.Errorf(\"read: %w\", err)). The caller always gets two values and must check error before trusting the result.",
+			"What is the difference between fmt.Errorf with %v and %w? When does it matter to the caller? || %v formats the error as a string and the original is lost. %w wraps it so errors.Is and errors.As can unwrap through the chain. The distinction matters when callers need to match a specific error type; with %v they can only do string comparison.",
 			"A colleague proposes replacing all if err != nil blocks with panic to reduce verbosity. What breaks in production? || Panics crash the goroutine unless recovered. In a server, an unrecovered panic in a handler kills the request goroutine. You lose the ability to return user-friendly errors, wrap context, or handle expected failures gracefully. Errors are control flow, not exceptional events.",
 		],
 		codeExample: `package main
@@ -55,13 +55,13 @@ func main() {
 	fmt.Println("Found:", name)
 }`,
 		codeExplanation:
-			"We define a sentinel error with <code>errors.New</code>. We wrap it with context using <code>fmt.Errorf + %w</code>. The caller uses <code>errors.Is</code> to match the underlying error type — even through multiple layers of wrapping.",
+			"We define a sentinel error with <code>errors.New</code>. We wrap it with context using <code>fmt.Errorf + %w</code>. The caller uses <code>errors.Is</code> to match the underlying error type, even through multiple layers of wrapping.",
 		designRationale:
-			"Go has no exceptions because exceptions hide control flow — a function can fail invisibly without that failure appearing anywhere in its signature. Errors are ordinary values so every failure path is visible in the type system: if a function can fail, its return type says so. This is deliberately verbose — the verbosity is the point, forcing every call site to declare what it does with failure rather than letting it propagate silently.",
+			"Go has no exceptions because exceptions hide control flow: a function can fail invisibly without that failure appearing anywhere in its signature. Errors are ordinary values so every failure path is visible in the type system: if a function can fail, its return type says so. This is deliberately verbose. The verbosity is the point, forcing every call site to declare what it does with failure rather than letting it propagate silently.",
 		commonMistakes: [
 			{
 				title: "Ignoring errors with _",
-				body: "Writing <code>result, _ := doThing()</code> silently discards errors. Only do this when you're absolutely certain the error can't happen — which is rarer than you think.",
+				body: "Writing <code>result, _ := doThing()</code> silently discards errors. Only do this when you're absolutely certain the error can't happen, which is rarer than you think.",
 			},
 			{
 				title: "Losing context when wrapping",
@@ -69,7 +69,7 @@ func main() {
 			},
 			{
 				title: "Returning non-nil error with a valid result",
-				body: "If you return an error, callers expect the other return values to be zero values. Don't return partial results alongside errors — it forces callers to guess what to trust.",
+				body: "If you return an error, callers expect the other return values to be zero values. Don't return partial results alongside errors; it forces callers to guess what to trust.",
 			},
 		],
 		relatedSlugs: ["interfaces", "defer"],
@@ -78,14 +78,14 @@ func main() {
 		slug: "interfaces",
 		name: "Interfaces",
 		tagline:
-			"Implicit satisfaction — if you have the methods, you implement the interface.",
+			"Implicit satisfaction: if you have the methods, you implement the interface.",
 		summary:
-			"A Go interface is just a set of method signatures. Any type that has those methods automatically satisfies the interface — no <code>implements</code> keyword needed. This makes interfaces incredibly flexible and enables loose coupling you'd struggle to achieve in other languages.",
+			"A Go interface is just a set of method signatures. Any type that has those methods automatically satisfies the interface, no <code>implements</code> keyword needed. This makes interfaces incredibly flexible and enables loose coupling you'd struggle to achieve in other languages.",
 		mentalModel:
-			"An interface is a contract defined by the consumer, not the producer. If you need something that can be written to, you define <code>type Writer interface { Write([]byte) (int, error) }</code> and anything with a <code>Write</code> method fits — files, buffers, network connections, your custom type. You never touch those types.",
+			"An interface is a contract defined by the consumer, not the producer. If you need something that can be written to, you define <code>type Writer interface { Write([]byte) (int, error) }</code> and anything with a <code>Write</code> method fits: files, buffers, network connections, your custom type. You never touch those types.",
 		retrievalPrompts: [
-			"Define an interface called Stringer with one method, then write two types that satisfy it without any implements keyword. || type Stringer interface { String() string }. Any type with a String() string method satisfies it automatically. For example: type User struct{ Name string }; func (u User) String() string { return u.Name }. No declaration needed — satisfaction is implicit.",
-			"A function accepts io.Writer. Name three standard library types that satisfy it, and explain why none import the io package to declare it. || os.File, bytes.Buffer, and net.Conn all satisfy io.Writer. None import io because Go interfaces are satisfied implicitly — if a type has Write([]byte) (int, error), it satisfies io.Writer regardless of whether it has ever seen the interface definition.",
+			"Define an interface called Stringer with one method, then write two types that satisfy it without any implements keyword. || type Stringer interface { String() string }. Any type with a String() string method satisfies it automatically. For example: type User struct{ Name string }; func (u User) String() string { return u.Name }. No declaration needed; satisfaction is implicit.",
+			"A function accepts io.Writer. Name three standard library types that satisfy it, and explain why none import the io package to declare it. || os.File, bytes.Buffer, and net.Conn all satisfy io.Writer. None import io because Go interfaces are satisfied implicitly: if a type has Write([]byte) (int, error), it satisfies io.Writer regardless of whether it has ever seen the interface definition.",
 			"Your struct has a method on a pointer receiver. Which satisfies the interface: T or *T? Why? || Only *T satisfies it. A pointer receiver method is only in the method set of *T. Using a plain T value where the interface is expected causes a compile error. However, *T includes methods from both pointer and value receivers.",
 		],
 		codeExample: `package main
@@ -127,9 +127,9 @@ func main() {
 	printAll(items)
 }`,
 		codeExplanation:
-			"<code>printAll</code> accepts any slice of <code>Stringer</code>. Both <code>User</code> and <code>Bot</code> have a <code>String()</code> method, so both satisfy the interface — without either type knowing about the interface.",
+			"<code>printAll</code> accepts any slice of <code>Stringer</code>. Both <code>User</code> and <code>Bot</code> have a <code>String()</code> method, so both satisfy the interface, without either type knowing about the interface.",
 		designRationale:
-			"Go interfaces are satisfied implicitly because the designers wanted to decouple the definition of an abstraction from the types that satisfy it — a type should not need to know about every interface it fits. This means a library can define an interface and any existing type with the right methods satisfies it without modification. The result is composition without inheritance: behaviour is shared through method sets, not class hierarchies.",
+			"Go interfaces are satisfied implicitly because the designers wanted to decouple the definition of an abstraction from the types that satisfy it. A type should not need to know about every interface it fits. This means a library can define an interface and any existing type with the right methods satisfies it without modification. The result is composition without inheritance: behaviour is shared through method sets, not class hierarchies.",
 		commonMistakes: [
 			{
 				title: "Pointer vs value receiver mismatch",
@@ -141,7 +141,7 @@ func main() {
 			},
 			{
 				title: "The empty interface any",
-				body: "<code>any</code> (alias for <code>interface{}</code>) accepts everything. Use it sparingly — you lose all type safety. Prefer a specific interface with the methods you actually need.",
+				body: "<code>any</code> (alias for <code>interface{}</code>) accepts everything. Use it sparingly; you lose all type safety. Prefer a specific interface with the methods you actually need.",
 			},
 		],
 		relatedSlugs: ["http-handler", "error-handling"],
@@ -150,15 +150,15 @@ func main() {
 		slug: "goroutines",
 		name: "Goroutines",
 		tagline:
-			"Lightweight concurrent functions — cheaper than threads by orders of magnitude.",
+			"Lightweight concurrent functions, cheaper than threads by orders of magnitude.",
 		summary:
 			"A goroutine is a function running concurrently with other goroutines in the same address space. Starting one is as cheap as a few kilobytes of stack. The Go runtime multiplexes thousands of goroutines onto a small number of OS threads, handling scheduling for you.",
 		mentalModel:
-			"Think of goroutines as tasks on a to-do list that a team of workers (OS threads) picks up and executes. You can add thousands of tasks and the team handles it — you don't manage which worker does what. The key: goroutines are cheap to create, but you must coordinate their results via channels or sync primitives.",
+			"Think of goroutines as tasks on a to-do list that a team of workers (OS threads) picks up and executes. You can add thousands of tasks and the team handles it; you don't manage which worker does what. The key: goroutines are cheap to create, but you must coordinate their results via channels or sync primitives.",
 		retrievalPrompts: [
-			"What happens to a goroutine if main() returns before it finishes? What is the correct way to wait for it? || The goroutine is killed immediately — the program exits and all goroutines terminate without cleanup. The correct way: use sync.WaitGroup. Call wg.Add(1) before launching, defer wg.Done() inside the goroutine, and wg.Wait() in main.",
-			"You launch 100 goroutines, each appending to a shared slice. What goes wrong, and give two ways to fix it. || Data race — multiple goroutines read and write the slice header concurrently, causing corruption or panics. Fix 1: protect the append with a sync.Mutex. Fix 2: have each goroutine send its value on a channel, and one goroutine collects and appends.",
-			"A goroutine is blocked waiting to receive from a channel nobody will ever write to. What is this, and how do you prevent it? || A goroutine leak. The goroutine runs forever, consuming memory and scheduler resources. Prevent it by always giving goroutines an exit path — pass a context.Context and select on ctx.Done(), or ensure the channel will eventually be closed.",
+			"What happens to a goroutine if main() returns before it finishes? What is the correct way to wait for it? || The goroutine is killed immediately. The program exits and all goroutines terminate without cleanup. The correct way: use sync.WaitGroup. Call wg.Add(1) before launching, defer wg.Done() inside the goroutine, and wg.Wait() in main.",
+			"You launch 100 goroutines, each appending to a shared slice. What goes wrong, and give two ways to fix it. || Data race: multiple goroutines read and write the slice header concurrently, causing corruption or panics. Fix 1: protect the append with a sync.Mutex. Fix 2: have each goroutine send its value on a channel, and one goroutine collects and appends.",
+			"A goroutine is blocked waiting to receive from a channel nobody will ever write to. What is this, and how do you prevent it? || A goroutine leak. The goroutine runs forever, consuming memory and scheduler resources. Prevent it by always giving goroutines an exit path: pass a context.Context and select on ctx.Done(), or ensure the channel will eventually be closed.",
 		],
 		codeExample: `package main
 
@@ -193,7 +193,7 @@ func main() {
 		codeExplanation:
 			"<code>go fetch(url, &wg)</code> launches each fetch concurrently. <code>wg.Add(1)</code> registers a task, <code>wg.Done()</code> marks it complete (via defer), and <code>wg.Wait()</code> blocks until all tasks finish.",
 		designRationale:
-			"Go was designed for servers, and servers must handle many concurrent requests without allocating an OS thread per request. Goroutines are the answer: a scheduling abstraction so cheap — a few kilobytes of initial stack — that spawning one per request is the idiomatic approach. The runtime multiplexes goroutines onto OS threads automatically, so the programmer expresses concurrency naturally without managing thread pools. Concurrency is not a library added later; it is built into the language because the designers expected it to be used pervasively.",
+			"Go was designed for servers, and servers must handle many concurrent requests without allocating an OS thread per request. Goroutines are the answer: a scheduling abstraction so cheap (a few kilobytes of initial stack) that spawning one per request is the idiomatic approach. The runtime multiplexes goroutines onto OS threads automatically, so the programmer expresses concurrency naturally without managing thread pools. Concurrency is not a library added later; it is built into the language because the designers expected it to be used pervasively.",
 		commonMistakes: [
 			{
 				title: "Launching goroutines and not waiting",
@@ -201,11 +201,11 @@ func main() {
 			},
 			{
 				title: "Closing over a loop variable",
-				body: `In older Go (<1.22), <code>for _, v := range items { go func() { use(v) }() }</code> captures the variable <em>reference</em> not the value — all goroutines may see the last value. Fix: pass as argument: <code>go func(v T) { use(v) }(v)</code>.`,
+				body: `In older Go (<1.22), <code>for _, v := range items { go func() { use(v) }() }</code> captures the variable <em>reference</em> not the value, so all goroutines may see the last value. Fix: pass as argument: <code>go func(v T) { use(v) }(v)</code>.`,
 			},
 			{
 				title: "Goroutine leaks",
-				body: "A goroutine blocked on a channel that nobody writes to will leak forever. Always ensure goroutines have a way to exit — use <code>context.Context</code> for cancellation.",
+				body: "A goroutine blocked on a channel that nobody writes to will leak forever. Always ensure goroutines have a way to exit; use <code>context.Context</code> for cancellation.",
 			},
 		],
 		relatedSlugs: ["channels", "sync-waitgroup", "context", "select"],
@@ -215,12 +215,12 @@ func main() {
 		name: "Channels",
 		tagline: "Typed pipes for communicating between goroutines safely.",
 		summary:
-			"Channels are Go's way of sharing data between goroutines without shared memory or locks. A channel is a typed conduit — you send values in, receive them out. The Go proverb: <em>don't communicate by sharing memory; share memory by communicating.</em>",
+			"Channels are Go's way of sharing data between goroutines without shared memory or locks. A channel is a typed conduit: you send values in, receive them out. The Go proverb: <em>don't communicate by sharing memory; share memory by communicating.</em>",
 		mentalModel:
-			"A channel is a conveyor belt between goroutines. One goroutine puts items on the belt, another picks them off. An unbuffered channel means the sender waits until a receiver is ready — they synchronize. A buffered channel has capacity, so the sender can keep going until the buffer is full.",
+			"A channel is a conveyor belt between goroutines. One goroutine puts items on the belt, another picks them off. An unbuffered channel means the sender waits until a receiver is ready, so they synchronize. A buffered channel has capacity, so the sender can keep going until the buffer is full.",
 		retrievalPrompts: [
-			"Two goroutines share an unbuffered channel: A sends, B receives. Which blocks first, and what unblocks it? || Whichever reaches the channel operation first blocks until the other arrives — they rendezvous. The sender blocks on ch <- value until a receiver is ready; the receiver blocks on <-ch until a sender arrives. An unbuffered channel is a synchronisation point, not a buffer.",
-			"When should you close a channel, and who should do it? What happens if you send to it after closing? || Close when no more values will be sent — it signals receivers to stop waiting. Only the sender should close; receivers cannot know when sending is done. Sending to a closed channel panics immediately. Receiving from a closed channel returns the zero value and false for the ok flag.",
+			"Two goroutines share an unbuffered channel: A sends, B receives. Which blocks first, and what unblocks it? || Whichever reaches the channel operation first blocks until the other arrives; they rendezvous. The sender blocks on ch <- value until a receiver is ready; the receiver blocks on <-ch until a sender arrives. An unbuffered channel is a synchronisation point, not a buffer.",
+			"When should you close a channel, and who should do it? What happens if you send to it after closing? || Close when no more values will be sent; it signals receivers to stop waiting. Only the sender should close; receivers cannot know when sending is done. Sending to a closed channel panics immediately. Receiving from a closed channel returns the zero value and false for the ok flag.",
 			"When is a channel the right tool, and when is a mutex simpler? Give a concrete rule. || Use a channel when passing ownership of data between goroutines, or signalling events. Use a mutex when multiple goroutines share and update state (a counter, a cache, a map). Rule: if you are moving data, use a channel; if you are protecting data, use a mutex.",
 		],
 		codeExample: `package main
@@ -255,7 +255,7 @@ func main() {
 		codeExplanation:
 			"Two goroutines form a pipeline. <code>generate</code> sends numbers, <code>square</code> receives them and sends results. <code>close(ch)</code> signals that no more values will be sent, enabling <code>range ch</code> to terminate naturally.",
 		designRationale:
-			"Go adopted CSP (Communicating Sequential Processes) as its concurrency model because shared memory leads to data races that are difficult to reason about under concurrent access. Channels transfer ownership of a value from one goroutine to another, so only one goroutine holds the value at a time — eliminating the need for locks on the data itself. The language proverb captures the intent: don't communicate by sharing memory; share memory by communicating.",
+			"Go adopted CSP (Communicating Sequential Processes) as its concurrency model because shared memory leads to data races that are difficult to reason about under concurrent access. Channels transfer ownership of a value from one goroutine to another, so only one goroutine holds the value at a time, eliminating the need for locks on the data itself. The language proverb captures the intent: don't communicate by sharing memory; share memory by communicating.",
 		commonMistakes: [
 			{
 				title: "Sending to a closed channel (panic)",
@@ -276,15 +276,15 @@ func main() {
 		slug: "defer",
 		name: "Defer",
 		tagline:
-			"Schedule cleanup to run when the function returns — no matter what.",
+			"Schedule cleanup to run when the function returns, no matter what.",
 		summary:
 			"A <code>defer</code> statement schedules a function call to run just before the surrounding function returns. Deferred calls run in LIFO order (last in, first out). They run even if the function panics, making them perfect for cleanup: closing files, releasing locks, stopping timers.",
 		mentalModel:
 			"Defer is like leaving a sticky note for your future self: 'when you're done here, do this.' You write the cleanup right next to the resource acquisition, which makes code far easier to audit. You can't forget to clean up if the cleanup is defined the moment you open something.",
 		retrievalPrompts: [
-			"Where exactly do you place defer f.Close() in openAndRead, and why does position matter? || After os.Open and the error check — never before. If you defer before checking the error and Open fails, f is nil and Close will panic. The pattern is: open, check error, then defer close — in that order.",
-			"A function registers deferred calls in order A, B, C. What order do they execute in, and why? || C, B, A — last in, first out (LIFO). This is intentional: if you open a file then acquire a lock, LIFO ensures you release the lock before closing the file — the correct cleanup order for nested resources.",
-			"You write defer f.Close() inside a loop that opens 100 files. When do the 100 Close calls happen? What is the fix? || All 100 run when the enclosing function returns — not at the end of each loop iteration. All 100 files stay open until the function exits. Fix: extract the open-read-close into a helper function called per iteration, so defer runs at the end of each helper call.",
+			"Where exactly do you place defer f.Close() in openAndRead, and why does position matter? || After os.Open and the error check, never before. If you defer before checking the error and Open fails, f is nil and Close will panic. The pattern is: open, check error, then defer close, in that order.",
+			"A function registers deferred calls in order A, B, C. What order do they execute in, and why? || C, B, A: last in, first out (LIFO). This is intentional: if you open a file then acquire a lock, LIFO ensures you release the lock before closing the file, the correct cleanup order for nested resources.",
+			"You write defer f.Close() inside a loop that opens 100 files. When do the 100 Close calls happen? What is the fix? || All 100 run when the enclosing function returns, not at the end of each loop iteration. All 100 files stay open until the function exits. Fix: extract the open-read-close into a helper function called per iteration, so defer runs at the end of each helper call.",
 		],
 		codeExample: `package main
 
@@ -320,7 +320,7 @@ func main() {
 		codeExplanation:
 			"<code>defer f.Close()</code> is written immediately after successfully opening the file. No matter how many early returns or errors follow, the file will be closed. Without defer you'd need <code>f.Close()</code> before every return.",
 		designRationale:
-			"Go's designers wanted resource cleanup to be written at the same point as resource acquisition — not duplicated across every early-return path. Without defer, adding an error return means remembering to insert a cleanup call before it; missing one leaks the resource. Defer registers the cleanup immediately and guarantees it runs on function exit regardless of how the function returns. LIFO ordering ensures nested resources — open a file, then acquire a lock — are released in the correct reverse sequence.",
+			"Go's designers wanted resource cleanup to be written at the same point as resource acquisition, not duplicated across every early-return path. Without defer, adding an error return means remembering to insert a cleanup call before it; missing one leaks the resource. Defer registers the cleanup immediately and guarantees it runs on function exit regardless of how the function returns. LIFO ordering ensures nested resources (open a file, then acquire a lock) are released in the correct reverse sequence.",
 		commonMistakes: [
 			{
 				title: "Defer in a loop",
@@ -337,15 +337,15 @@ func main() {
 		slug: "structs",
 		name: "Structs",
 		tagline:
-			"Named collections of fields — Go's primary way to model data.",
+			"Named collections of fields: Go's primary way to model data.",
 		summary:
-			"A struct is a composite type that groups together fields with names and types. Unlike classes in OOP languages, Go structs have no inheritance — behaviour is added through methods and composition. Structs are value types by default: assigning or passing a struct copies it.",
+			"A struct is a composite type that groups together fields with names and types. Unlike classes in OOP languages, Go structs have no inheritance; behaviour is added through methods and composition. Structs are value types by default: assigning or passing a struct copies it.",
 		mentalModel:
-			"A struct is a form with labelled fields. When you assign a struct to another variable, you're filling out a new identical form — changes to one don't affect the other. To share a struct across functions and have mutations visible, pass a pointer to it.",
+			"A struct is a form with labelled fields. When you assign a struct to another variable, you're filling out a new identical form, and changes to one don't affect the other. To share a struct across functions and have mutations visible, pass a pointer to it.",
 		retrievalPrompts: [
-			"You pass a struct to a function that mutates a field. Back in the caller, did the field change? When would your answer be different? || No — structs are value types, so the function received a copy. The caller's struct is unchanged. It would be different if you passed a pointer (*MyStruct) — then both point to the same memory and the mutation persists.",
-			"What is the zero value of a struct with Count int, Label string, Active bool? Is it safe to use without initialisation? || Count: 0, Label: \"\", Active: false. Whether it is safe depends on the type's contract. For these fields, yes — all zero values are meaningful. Go's design encourages zero-value structs to be usable without a constructor.",
-			"Explain embedding with type Employee struct { Person }. What does it give you, and how is it different from inheritance? || Embedding promotes Person's fields and methods onto Employee — you write e.Name instead of e.Person.Name. It is composition, not inheritance: Employee does not is-a Person. You cannot substitute an Employee where a Person is expected. The types remain distinct.",
+			"You pass a struct to a function that mutates a field. Back in the caller, did the field change? When would your answer be different? || No. Structs are value types, so the function received a copy. The caller's struct is unchanged. It would be different if you passed a pointer (*MyStruct); then both point to the same memory and the mutation persists.",
+			"What is the zero value of a struct with Count int, Label string, Active bool? Is it safe to use without initialisation? || Count: 0, Label: \"\", Active: false. Whether it is safe depends on the type's contract. For these fields, yes; all zero values are meaningful. Go's design encourages zero-value structs to be usable without a constructor.",
+			"Explain embedding with type Employee struct { Person }. What does it give you, and how is it different from inheritance? || Embedding promotes Person's fields and methods onto Employee, so you write e.Name instead of e.Person.Name. It is composition, not inheritance: Employee does not is-a Person. You cannot substitute an Employee where a Person is expected. The types remain distinct.",
 		],
 		codeExample: `package main
 
@@ -380,9 +380,9 @@ func main() {
 	fmt.Println(u.City) // promoted from Address
 }`,
 		codeExplanation:
-			"Embedding <code>Address</code> inside <code>User</code> promotes its fields — you can write <code>u.City</code> instead of <code>u.Address.City</code>. Methods are defined separately on <code>*User</code> (pointer receiver) so mutations persist.",
+			"Embedding <code>Address</code> inside <code>User</code> promotes its fields, so you can write <code>u.City</code> instead of <code>u.Address.City</code>. Methods are defined separately on <code>*User</code> (pointer receiver) so mutations persist.",
 		designRationale:
-			"Go chose composition over inheritance because class hierarchies create tight coupling that becomes expensive to refactor as requirements change. Structs have methods but no parent class — shared behaviour comes from embedding and interfaces, which can be changed independently. Structs are value types by default so passing them to functions is explicit about copying; you opt into reference semantics with a pointer. Zero values are a first-class design choice: every struct is usable immediately without a constructor, eliminating a whole category of uninitialized-state bugs.",
+			"Go chose composition over inheritance because class hierarchies create tight coupling that becomes expensive to refactor as requirements change. Structs have methods but no parent class; shared behaviour comes from embedding and interfaces, which can be changed independently. Structs are value types by default so passing them to functions is explicit about copying; you opt into reference semantics with a pointer. Zero values are a first-class design choice: every struct is usable immediately without a constructor, eliminating a whole category of uninitialized-state bugs.",
 		commonMistakes: [
 			{
 				title: "Copying large structs unintentionally",
@@ -390,7 +390,7 @@ func main() {
 			},
 			{
 				title: "Zero value confusion",
-				body: 'Every field in a struct starts as its zero value: 0, "", false, nil. This is intentional and useful — but always consider whether a zero-value struct makes sense for your type.',
+				body: 'Every field in a struct starts as its zero value: 0, "", false, nil. This is intentional and useful, but always consider whether a zero-value struct makes sense for your type.',
 			},
 		],
 		relatedSlugs: ["interfaces", "json-decode", "pointers"],
@@ -399,14 +399,14 @@ func main() {
 		slug: "pointers",
 		name: "Pointers",
 		tagline:
-			"A pointer holds the memory address of a value — enabling mutation and sharing.",
+			"A pointer holds the memory address of a value, enabling mutation and sharing.",
 		summary:
 			"Go uses pointers to avoid copying data and to allow functions to mutate their arguments. A pointer <code>*T</code> holds the memory address of a <code>T</code>. You dereference it with <code>*ptr</code> to read or write the value. The address-of operator <code>&amp;</code> gives you a pointer to an existing value.",
 		mentalModel:
 			"A value is a house. A pointer is the street address written on a piece of paper. If you hand someone a copy of your house (value), they can redecorate it without affecting yours. If you hand them the address (pointer), any changes they make are to your actual house.",
 		retrievalPrompts: [
-			"You write one method on Counter with a value receiver and one with a pointer receiver, both incrementing. Which mutation persists after the call? || The pointer receiver mutation persists. The value receiver gets a copy — its change does not escape. The pointer receiver operates on the original. From main, Go auto-addresses a variable for pointer receiver calls, so both can be called on the same Counter.",
-			"A function returns *User. When should it return nil, and what must the caller do before using it? || Return nil when there is no result — for example, user not found. The caller must check if result != nil before dereferencing. Dereferencing nil panics. Better pattern: return (*User, error) — nil pointer for no result, non-nil error for failure.",
+			"You write one method on Counter with a value receiver and one with a pointer receiver, both incrementing. Which mutation persists after the call? || The pointer receiver mutation persists. The value receiver gets a copy; its change does not escape. The pointer receiver operates on the original. From main, Go auto-addresses a variable for pointer receiver calls, so both can be called on the same Counter.",
+			"A function returns *User. When should it return nil, and what must the caller do before using it? || Return nil when there is no result, for example user not found. The caller must check if result != nil before dereferencing. Dereferencing nil panics. Better pattern: return (*User, error); nil pointer for no result, non-nil error for failure.",
 			"All methods on FileWriter use pointer receivers. You accidentally add one with a value receiver. What breaks? || If FileWriter implements an interface, the value receiver method is in the method set of both FileWriter and *FileWriter, but pointer receiver methods are only in *FileWriter. A mismatch may cause an interface satisfaction compile error. go vet also warns about inconsistent receiver types.",
 		],
 		codeExample: `package main
@@ -436,13 +436,13 @@ func main() {
 	fmt.Println(c.count) // 1 — mutated
 }`,
 		codeExplanation:
-			"<code>ValueIncrement</code> receives a copy of <code>Counter</code> — its change doesn't escape. <code>Increment</code> receives a pointer, so the mutation affects the original. This is the most common pointer vs value confusion in Go.",
+			"<code>ValueIncrement</code> receives a copy of <code>Counter</code>, so its change doesn't escape. <code>Increment</code> receives a pointer, so the mutation affects the original. This is the most common pointer vs value confusion in Go.",
 		designRationale:
-			"Go makes pointer semantics explicit because implicit reference passing hides whether a function can mutate its arguments — callers have no way to know without reading the implementation. Explicit pointers make mutation visible at the call site: <code>&x</code> signals 'this function may change x'. Go deliberately omits pointer arithmetic because a pointer's only legitimate uses are sharing a value across function boundaries and enabling mutation, not manual memory navigation.",
+			"Go makes pointer semantics explicit because implicit reference passing hides whether a function can mutate its arguments: callers have no way to know without reading the implementation. Explicit pointers make mutation visible at the call site: <code>&x</code> signals 'this function may change x'. Go deliberately omits pointer arithmetic because a pointer's only legitimate uses are sharing a value across function boundaries and enabling mutation, not manual memory navigation.",
 		commonMistakes: [
 			{
 				title: "Nil pointer dereference",
-				body: "Dereferencing a nil pointer panics. Before dereferencing, always check <code>if ptr != nil</code>. Return pointers from functions only when the zero value is meaningfully different from 'no result' — otherwise return a value and an error.",
+				body: "Dereferencing a nil pointer panics. Before dereferencing, always check <code>if ptr != nil</code>. Return pointers from functions only when the zero value is meaningfully different from 'no result'; otherwise return a value and an error.",
 			},
 			{
 				title: "Mixed pointer and value receivers on the same type",
@@ -461,9 +461,9 @@ func main() {
 		mentalModel:
 			"Context is like a project cancellation memo that travels with every piece of work. If the client disconnects, the memo says 'stop everything'. Every worker checks the memo before starting the next unit of work. If the memo says cancel, they stop cleanly instead of continuing to do useless work.",
 		retrievalPrompts: [
-			"A 3-second context timeout is passed to a function making two sequential 2-second HTTP calls. What happens on the second call? || The context expires at the 3-second mark. The first call uses 2 seconds, leaving 1 second. The HTTP client checks ctx.Done() and cancels when the deadline fires — the second call gets context.DeadlineExceeded.",
+			"A 3-second context timeout is passed to a function making two sequential 2-second HTTP calls. What happens on the second call? || The context expires at the 3-second mark. The first call uses 2 seconds, leaving 1 second. The HTTP client checks ctx.Done() and cancels when the deadline fires, so the second call gets context.DeadlineExceeded.",
 			"Why is context.Context always the first parameter by convention? What does it communicate? || Convention from the standard library, reinforced by linters. Putting it first signals: this function does I/O or can be cancelled. It also means the context is always at a known position, making call signatures immediately scannable without reading the full signature.",
-			"You store a context in a struct field and use it in a method called later. Why is this wrong? || Context carries cancellation for a specific request at a specific moment. Stored in a struct, it is divorced from its lifecycle — by the time the method runs, the context may already be cancelled or belong to a different request. Pass context as a parameter to each method that needs it.",
+			"You store a context in a struct field and use it in a method called later. Why is this wrong? || Context carries cancellation for a specific request at a specific moment. Stored in a struct, it is divorced from its lifecycle: by the time the method runs, the context may already be cancelled or belong to a different request. Pass context as a parameter to each method that needs it.",
 		],
 		codeExample: `package main
 
@@ -495,7 +495,7 @@ func main() {
 		codeExplanation:
 			"<code>context.WithTimeout</code> creates a context that auto-cancels after 1 second. <code>doWork</code> uses <code>select</code> to race between doing real work and the context being cancelled. <code>defer cancel()</code> ensures resources are freed even if we return early.",
 		designRationale:
-			"Go rejected thread-local storage and hidden ambient state because both make the flow of cancellation invisible — a cancelled request cannot propagate the signal to everything working on its behalf without explicit threading. Passing <code>context.Context</code> as the first argument makes deadlines and cancellation visible in the call graph and forces every function doing I/O to acknowledge them. The convention is enforced by idiom rather than the type system, which means any deviation is immediately visible during code review.",
+			"Go rejected thread-local storage and hidden ambient state because both make the flow of cancellation invisible: a cancelled request cannot propagate the signal to everything working on its behalf without explicit threading. Passing <code>context.Context</code> as the first argument makes deadlines and cancellation visible in the call graph and forces every function doing I/O to acknowledge them. The convention is enforced by idiom rather than the type system, which means any deviation is immediately visible during code review.",
 		commonMistakes: [
 			{
 				title: "Not calling cancel()",
@@ -507,7 +507,7 @@ func main() {
 			},
 			{
 				title: "Using context.Background() everywhere",
-				body: "<code>context.Background()</code> never cancels — it's for top-level use (main, tests, server startup). If you're inside an HTTP handler, use <code>r.Context()</code> so the work cancels when the client disconnects.",
+				body: "<code>context.Background()</code> never cancels; it's for top-level use (main, tests, server startup). If you're inside an HTTP handler, use <code>r.Context()</code> so the work cancels when the client disconnects.",
 			},
 		],
 		relatedSlugs: ["goroutines", "select", "http-handler"],
@@ -516,15 +516,15 @@ func main() {
 		slug: "slices",
 		name: "Slices",
 		tagline:
-			"Dynamic arrays with a hidden header — length, capacity, and a pointer to an array.",
+			"Dynamic arrays with a hidden header: length, capacity, and a pointer to an array.",
 		summary:
 			"A slice is a view into an underlying array. It has three parts: a pointer to the array, a length, and a capacity. This makes slices cheap to pass (no copying of elements) but creates subtle aliasing bugs if you're not aware of how they share memory.",
 		mentalModel:
-			"A slice is a window into a row of seats. The window has a start position, a width (length), and a maximum width it could expand to (capacity). Two slices can look at overlapping seats — mutating one changes what the other sees. <code>append</code> either expands the window or, if at capacity, moves everyone to a bigger row.",
+			"A slice is a window into a row of seats. The window has a start position, a width (length), and a maximum width it could expand to (capacity). Two slices can look at overlapping seats, so mutating one changes what the other sees. <code>append</code> either expands the window or, if at capacity, moves everyone to a bigger row.",
 		retrievalPrompts: [
-			"After b := a[1:4], you set b[0] = 99. Does a change? Then you append beyond b's capacity. Does a change now? || Yes — b shares the underlying array, so a[1] becomes 99. After appending beyond capacity, Go allocates a new array for b. From that point b is independent — further mutations to b do not affect a.",
-			"A slice has length 3 and capacity 6. You append one element. What are the new length and capacity? You append four more — what happens? || After one append: length 4, capacity 6 — fits within existing capacity, no allocation. After four more (length 8): exceeds capacity 6, so Go allocates a new array (typically doubles), copies data, and capacity becomes at least 8.",
-			"What is the practical difference between var s []int and s := []int{}? Give one situation where the difference matters. || var s []int is nil (s == nil is true). s := []int{} is non-nil with length 0. Both work with append and range. The difference matters with JSON: a nil slice marshals to null, an empty slice marshals to [] — if your API must return an empty array, use []int{}.",
+			"After b := a[1:4], you set b[0] = 99. Does a change? Then you append beyond b's capacity. Does a change now? || Yes: b shares the underlying array, so a[1] becomes 99. After appending beyond capacity, Go allocates a new array for b. From that point b is independent; further mutations to b do not affect a.",
+			"A slice has length 3 and capacity 6. You append one element. What are the new length and capacity? You append four more, what happens? || After one append: length 4, capacity 6, which fits within existing capacity, no allocation. After four more (length 8): exceeds capacity 6, so Go allocates a new array (typically doubles), copies data, and capacity becomes at least 8.",
+			"What is the practical difference between var s []int and s := []int{}? Give one situation where the difference matters. || var s []int is nil (s == nil is true). s := []int{} is non-nil with length 0. Both work with append and range. The difference matters with JSON: a nil slice marshals to null, an empty slice marshals to []. If your API must return an empty array, use []int{}.",
 		],
 		codeExample: `package main
 
@@ -553,9 +553,9 @@ func main() {
 	fmt.Println(s[0]) // 1 — unaffected
 }`,
 		codeExplanation:
-			"Slicing with <code>s[1:3]</code> shares the underlying array — mutations in <code>a</code> appear in <code>s</code>. <code>append</code> returns a new slice; if it needed to grow, it allocated a new array and <code>s</code> and <code>b</code> no longer share memory. <code>copy</code> always produces a fully independent slice.",
+			"Slicing with <code>s[1:3]</code> shares the underlying array, so mutations in <code>a</code> appear in <code>s</code>. <code>append</code> returns a new slice; if it needed to grow, it allocated a new array and <code>s</code> and <code>b</code> no longer share memory. <code>copy</code> always produces a fully independent slice.",
 		designRationale:
-			"Go separated the concept of a view into data from ownership of data because copying large arrays on every function call would make Go unsuitable for systems programming. A slice — a three-field header of pointer, length, and capacity — is cheap to pass while leaving the underlying array in place. The aliasing behaviour is an explicit design trade-off: slices are deliberately lightweight descriptors, and understanding that two slices can share memory is part of the expected mental model.",
+			"Go separated the concept of a view into data from ownership of data because copying large arrays on every function call would make Go unsuitable for systems programming. A slice (a three-field header of pointer, length, and capacity) is cheap to pass while leaving the underlying array in place. The aliasing behaviour is an explicit design trade-off: slices are deliberately lightweight descriptors, and understanding that two slices can share memory is part of the expected mental model.",
 		commonMistakes: [
 			{
 				title: "Mutating a slice you think is independent",
@@ -563,7 +563,7 @@ func main() {
 			},
 			{
 				title: "nil slice vs empty slice",
-				body: "A nil slice (<code>var s []int</code>) and an empty slice (<code>s := []int{}</code>) both have length 0, but only the nil slice is nil. Both work with <code>append</code> and <code>range</code> — but JSON encodes nil as <code>null</code> and empty as <code>[]</code>.",
+				body: "A nil slice (<code>var s []int</code>) and an empty slice (<code>s := []int{}</code>) both have length 0, but only the nil slice is nil. Both work with <code>append</code> and <code>range</code>, but JSON encodes nil as <code>null</code> and empty as <code>[]</code>.",
 			},
 		],
 		relatedSlugs: ["structs", "json-decode"],
@@ -572,15 +572,15 @@ func main() {
 		slug: "maps",
 		name: "Maps",
 		tagline:
-			"Hash maps with simple syntax — but nil maps and concurrent access will panic.",
+			"Hash maps with simple syntax, but nil maps and concurrent access will panic.",
 		summary:
-			"Maps are Go's built-in hash map. They map keys to values, both of any comparable type. Two things will panic: writing to a nil map, and concurrent reads + writes without synchronisation. Maps are reference types — passing a map to a function passes a reference, not a copy.",
+			"Maps are Go's built-in hash map. They map keys to values, both of any comparable type. Two things will panic: writing to a nil map, and concurrent reads + writes without synchronisation. Maps are reference types; passing a map to a function passes a reference, not a copy.",
 		mentalModel:
-			"A map is a lookup table. The zero value of a map is nil — a table that doesn't exist yet. You must initialise it with <code>make</code> or a literal before writing to it. Reading a missing key never panics — it returns the zero value — but that can silently mask bugs.",
+			"A map is a lookup table. The zero value of a map is nil, a table that doesn't exist yet. You must initialise it with <code>make</code> or a literal before writing to it. Reading a missing key never panics (it returns the zero value) but that can silently mask bugs.",
 		retrievalPrompts: [
-			"You declare var m map[string]int and read m[\"key\"]. What do you get? Then you write m[\"key\"] = 1. What happens? || Reading from a nil map returns the zero value (0) — no panic. Writing to a nil map panics with \"assignment to entry in nil map\". Always initialise: m := make(map[string]int) or m := map[string]int{}.",
-			"How do you distinguish between a key that is missing and a key whose value is 0? Write the idiom. || val, ok := m[\"key\"] — the comma-ok form. If ok is false, the key is absent (val will be 0). If ok is true, the key exists and val is its actual value, which may legitimately be 0.",
-			"Two goroutines read from the same map simultaneously. Is this safe? What if one reads while the other writes? || Concurrent reads are safe. Concurrent read and write — or write and write — is not safe. Go's runtime detects this and panics with \"concurrent map read and map write\". Protect with sync.RWMutex or use sync.Map.",
+			"You declare var m map[string]int and read m[\"key\"]. What do you get? Then you write m[\"key\"] = 1. What happens? || Reading from a nil map returns the zero value (0), no panic. Writing to a nil map panics with \"assignment to entry in nil map\". Always initialise: m := make(map[string]int) or m := map[string]int{}.",
+			"How do you distinguish between a key that is missing and a key whose value is 0? Write the idiom. || val, ok := m[\"key\"], the comma-ok form. If ok is false, the key is absent (val will be 0). If ok is true, the key exists and val is its actual value, which may legitimately be 0.",
+			"Two goroutines read from the same map simultaneously. Is this safe? What if one reads while the other writes? || Concurrent reads are safe. Concurrent read and write (or write and write) is not safe. Go's runtime detects this and panics with \"concurrent map read and map write\". Protect with sync.RWMutex or use sync.Map.",
 		],
 		codeExample: `package main
 
@@ -608,9 +608,9 @@ func main() {
 	fmt.Println(len(scores)) // 1
 }`,
 		codeExplanation:
-			"The comma-ok pattern <code>val, ok := m[key]</code> tells you whether the key exists. Without it, a missing key and a key set to <code>0</code> look identical. Map iteration order is intentionally randomised — never rely on it.",
+			"The comma-ok pattern <code>val, ok := m[key]</code> tells you whether the key exists. Without it, a missing key and a key set to <code>0</code> look identical. Map iteration order is intentionally randomised; never rely on it.",
 		designRationale:
-			"Maps are reference types in Go because the designers observed that maps are almost always shared rather than copied — making them value types would silently copy large data structures on every function call. The zero value is <code>nil</code> rather than an empty map to force explicit initialization: Go prefers deliberate intent over convenient defaults when the default leads to a panic. Map iteration order is randomised on purpose so programs cannot accidentally depend on insertion order, which would be a latent bug waiting for the runtime to change.",
+			"Maps are reference types in Go because the designers observed that maps are almost always shared rather than copied; making them value types would silently copy large data structures on every function call. The zero value is <code>nil</code> rather than an empty map to force explicit initialization: Go prefers deliberate intent over convenient defaults when the default leads to a panic. Map iteration order is randomised on purpose so programs cannot accidentally depend on insertion order, which would be a latent bug waiting for the runtime to change.",
 		commonMistakes: [
 			{
 				title: "Writing to a nil map (panic)",
@@ -633,7 +633,7 @@ func main() {
 		mentalModel:
 			"Imagine handing out raffle tickets. Before each person goes off to do a task, you give them a ticket. When they return, they hand it back. You wait at the door until every ticket has been returned. <code>Add</code> = hand out ticket, <code>Done</code> = return ticket, <code>Wait</code> = watch the door.",
 		retrievalPrompts: [
-			"You call wg.Add(1) inside the goroutine instead of before launching it. Describe the race condition. || Main may call wg.Wait() before the goroutine has executed wg.Add(1). If the counter is 0 at that moment, Wait returns immediately — the program proceeds as if all goroutines finished, even though they have not started. Always call Add before go.",
+			"You call wg.Add(1) inside the goroutine instead of before launching it. Describe the race condition. || Main may call wg.Wait() before the goroutine has executed wg.Add(1). If the counter is 0 at that moment, Wait returns immediately; the program proceeds as if all goroutines finished, even though they have not started. Always call Add before go.",
 			"Why must you pass &wg and never copy a WaitGroup by value? What breaks? || Copying creates a separate counter. Done calls on the copy do not decrement the original's counter, so the original's Wait never returns. The race detector catches this; go vet also flags it.",
 			"A WaitGroup's counter reaches zero and Wait returns. You call wg.Add(1) again. Is this valid? What constraint must hold? || Yes, a WaitGroup can be reused. The constraint: Add must not be called concurrently with Wait when the counter is zero. If a goroutine races to call Add(1) at the exact moment Wait sees zero and starts to return, you get a race. Ensure all Add calls happen-before the corresponding Wait.",
 		],
@@ -663,13 +663,13 @@ func main() {
 	fmt.Println("All workers finished")
 }`,
 		codeExplanation:
-			"<code>wg.Add(1)</code> is called before <code>go worker()</code> — never inside the goroutine. <code>defer wg.Done()</code> ensures Done is called even if the function panics. The WaitGroup is passed as a pointer — never copy it.",
+			"<code>wg.Add(1)</code> is called before <code>go worker()</code>, never inside the goroutine. <code>defer wg.Done()</code> ensures Done is called even if the function panics. The WaitGroup is passed as a pointer; never copy it.",
 		designRationale:
-			"WaitGroup lives in the <code>sync</code> package rather than being a language built-in because Go's designers believe concurrency primitives should be composable library types rather than special syntax. The counter-based API — Add, Done, Wait — is minimal by design: it does exactly one thing and nothing else. Requiring a pointer instead of a value receiver is an enforced constraint; copying a WaitGroup resets the counter in the copy, which the race detector will catch and report.",
+			"WaitGroup lives in the <code>sync</code> package rather than being a language built-in because Go's designers believe concurrency primitives should be composable library types rather than special syntax. The counter-based API (Add, Done, Wait) is minimal by design: it does exactly one thing and nothing else. Requiring a pointer instead of a value receiver is an enforced constraint; copying a WaitGroup resets the counter in the copy, which the race detector will catch and report.",
 		commonMistakes: [
 			{
 				title: "Calling Add inside the goroutine",
-				body: "If you call <code>wg.Add(1)</code> inside the goroutine, the main goroutine might call <code>wg.Wait()</code> before the goroutine runs and adds itself — causing Wait to return immediately.",
+				body: "If you call <code>wg.Add(1)</code> inside the goroutine, the main goroutine might call <code>wg.Wait()</code> before the goroutine runs and adds itself, causing Wait to return immediately.",
 			},
 			{
 				title: "Copying the WaitGroup",
@@ -682,14 +682,14 @@ func main() {
 		slug: "select",
 		name: "Select",
 		tagline:
-			"Wait on multiple channel operations simultaneously — take whichever is ready.",
+			"Wait on multiple channel operations simultaneously: take whichever is ready.",
 		summary:
 			"A <code>select</code> statement is like a switch for channels. It blocks until one of its cases can proceed, then executes that case. If multiple cases are ready simultaneously, one is chosen at random. A <code>default</code> case makes select non-blocking.",
 		mentalModel:
-			"Select is like a waiter watching multiple tables. Whichever table signals first ('ready to order', 'needs the bill', 'wants dessert') gets served. If nobody is ready and there's a default option, the waiter doesn't stand idle — they do the default instead.",
+			"Select is like a waiter watching multiple tables. Whichever table signals first ('ready to order', 'needs the bill', 'wants dessert') gets served. If nobody is ready and there's a default option, the waiter doesn't stand idle; they do the default instead.",
 		retrievalPrompts: [
-			"Two channels are both ready when a select executes. Which case runs, and why? || Go picks one at random. The specification guarantees uniform pseudo-random selection when multiple cases are ready. This prevents programs from depending on a specific ordering that might not hold under different scheduling — both cases have equal probability.",
-			"Write a select that tries to receive from ch but gives up after 2 seconds. || select { case val := <-ch: return val, nil; case <-time.After(2 * time.Second): return zero, errors.New(\"timed out\") }. time.After returns a channel that fires after the duration — the standard Go timeout pattern.",
+			"Two channels are both ready when a select executes. Which case runs, and why? || Go picks one at random. The specification guarantees uniform pseudo-random selection when multiple cases are ready. This prevents programs from depending on a specific ordering that might not hold under different scheduling; both cases have equal probability.",
+			"Write a select that tries to receive from ch but gives up after 2 seconds. || select { case val := <-ch: return val, nil; case <-time.After(2 * time.Second): return zero, errors.New(\"timed out\") }. time.After returns a channel that fires after the duration: the standard Go timeout pattern.",
 			"What does a select with a default case do when no channel is ready? When is it useful, and when is it a problem? || It executes default immediately without blocking. Useful for non-blocking channel checks. A problem in a tight loop: without any blocking the goroutine spins at 100% CPU. Always add time.Sleep or restructure to avoid spinning.",
 		],
 		codeExample: `package main
@@ -732,13 +732,13 @@ func main() {
 	}
 }`,
 		codeExplanation:
-			"The first loop picks whichever channel is ready — ch2 arrives first since it sleeps less. The timeout pattern uses <code>time.After</code> which returns a channel that receives after a duration — a very common Go idiom for preventing indefinite blocking.",
+			"The first loop picks whichever channel is ready (ch2 arrives first since it sleeps less). The timeout pattern uses <code>time.After</code>, which returns a channel that receives after a duration: a very common Go idiom for preventing indefinite blocking.",
 		designRationale:
-			"Select is the language-level answer to 'wait for whichever channel event arrives first', modelled on the POSIX <code>select</code> syscall for file descriptors. Without it, waiting on multiple channels simultaneously would require nested goroutines and additional synchronisation — complexity that belongs in the language, not in application code. When multiple cases are ready simultaneously, Go picks one at random to prevent starvation and to ensure programs are correct under any arrival order rather than relying on a specific one.",
+			"Select is the language-level answer to 'wait for whichever channel event arrives first', modelled on the POSIX <code>select</code> syscall for file descriptors. Without it, waiting on multiple channels simultaneously would require nested goroutines and additional synchronisation: complexity that belongs in the language, not in application code. When multiple cases are ready simultaneously, Go picks one at random to prevent starvation and to ensure programs are correct under any arrival order rather than relying on a specific one.",
 		commonMistakes: [
 			{
 				title: "Busy-looping with default",
-				body: "A select with a <code>default</code> case and channel reads in a loop is a busy-wait spin loop — it consumes 100% CPU. Add a <code>time.Sleep</code> or restructure to block properly.",
+				body: "A select with a <code>default</code> case and channel reads in a loop is a busy-wait spin loop that consumes 100% CPU. Add a <code>time.Sleep</code> or restructure to block properly.",
 			},
 			{
 				title: "Random case selection surprises",
@@ -751,15 +751,15 @@ func main() {
 		slug: "http-handler",
 		name: "HTTP handlers",
 		tagline:
-			"The http.Handler interface — everything in Go's HTTP server is just this.",
+			"The http.Handler interface: everything in Go's HTTP server is just this.",
 		summary:
 			"Go's entire HTTP server is built on one interface: <code>http.Handler</code>, which has a single method <code>ServeHTTP(ResponseWriter, *Request)</code>. Middleware is just a function that wraps one handler with another. This simplicity means the standard library is all you need for production-grade HTTP servers.",
 		mentalModel:
-			"Think of each HTTP handler as a function booth at a fair. The booth receives a request ticket and a response envelope. It reads the ticket, does work, and seals the envelope. Middleware is a booth that passes the envelope to another booth first — adding a stamp (auth check, log entry, rate limit) before or after.",
+			"Think of each HTTP handler as a function booth at a fair. The booth receives a request ticket and a response envelope. It reads the ticket, does work, and seals the envelope. Middleware is a booth that passes the envelope to another booth first, adding a stamp (auth check, log entry, rate limit) before or after.",
 		retrievalPrompts: [
-			"Write the http.Handler interface from memory. How many methods, and what are their signatures? || type Handler interface { ServeHTTP(ResponseWriter, *Request) } — one method. ResponseWriter is also an interface. The entire HTTP ecosystem — middleware, routers, frameworks — is built on this single method.",
+			"Write the http.Handler interface from memory. How many methods, and what are their signatures? || type Handler interface { ServeHTTP(ResponseWriter, *Request) }: one method. ResponseWriter is also an interface. The entire HTTP ecosystem (middleware, routers, frameworks) is built on this single method.",
 			"Write a middleware function that logs request duration. What type does it accept and return? || It accepts http.Handler (the next handler) and returns http.Handler. Inside: record start := time.Now(), call next.ServeHTTP(w, r), then log time.Since(start). Wrap the logic with http.HandlerFunc to convert the function to a Handler.",
-			"You write response headers after calling next.ServeHTTP(w, r). What happens, and why? || The headers are silently ignored. Once ServeHTTP is called, the inner handler likely called w.WriteHeader or wrote the body — both flush the status line and headers. HTTP responses are streamed; you cannot unsend headers. Always set headers before calling next.",
+			"You write response headers after calling next.ServeHTTP(w, r). What happens, and why? || The headers are silently ignored. Once ServeHTTP is called, the inner handler likely called w.WriteHeader or wrote the body; both flush the status line and headers. HTTP responses are streamed; you cannot unsend headers. Always set headers before calling next.",
 		],
 		codeExample: `package main
 
@@ -789,9 +789,9 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }`,
 		codeExplanation:
-			"<code>http.HandlerFunc</code> is an adapter that converts a function with the right signature into an <code>http.Handler</code>. Middleware wraps the inner handler — calling <code>next.ServeHTTP</code> in the middle. You can chain as many wrappers as you need: <code>withAuth(withLogging(handler))</code>.",
+			"<code>http.HandlerFunc</code> is an adapter that converts a function with the right signature into an <code>http.Handler</code>. Middleware wraps the inner handler by calling <code>next.ServeHTTP</code> in the middle. You can chain as many wrappers as you need: <code>withAuth(withLogging(handler))</code>.",
 		designRationale:
-			"Go's HTTP server is built on a single interface — <code>http.Handler</code> with one method — because a minimal abstraction lets middleware be plain function composition rather than a framework-specific mechanism. A function with the right signature becomes a handler via <code>http.HandlerFunc</code>; a handler that wraps another handler is middleware. There is no registration system, no annotation, no magic — the entire middleware stack is visible as nested function calls in <code>main</code>.",
+			"Go's HTTP server is built on a single interface (<code>http.Handler</code> with one method) because a minimal abstraction lets middleware be plain function composition rather than a framework-specific mechanism. A function with the right signature becomes a handler via <code>http.HandlerFunc</code>; a handler that wraps another handler is middleware. There is no registration system, no annotation, no magic. The entire middleware stack is visible as nested function calls in <code>main</code>.",
 		commonMistakes: [
 			{
 				title: "Writing to the response after calling next",
@@ -814,9 +814,9 @@ func main() {
 		mentalModel:
 			"JSON decoding is like filling out a form from a dictionary. The dictionary has arbitrary keys; your form has fixed fields. Struct tags tell the decoder which dictionary key maps to which form field. Keys in the dictionary with no matching field are silently ignored.",
 		retrievalPrompts: [
-			"A struct field is name string (lowercase). Will json.Marshal include it? What must you change? || No — unexported fields are always silently skipped. Change to Name string (uppercase). To keep the JSON key lowercase, add a struct tag: json:\"name\".",
-			"You call json.Unmarshal(data, user) where user is a value, not a pointer. What happens to your struct? || The call silently does nothing useful — Unmarshal needs an addressable value to write into. It may return nil error but the struct in your variable is unchanged. Always pass a pointer: json.Unmarshal(data, &user).",
-			"What is the difference between json:\"field,omitempty\" and json:\"-\"? Give a concrete use case for each. || omitempty omits the field only when it is the zero value — use it for optional fields like a timestamp that may not be set. json:\"-\" always omits regardless of value — use it for sensitive fields like passwords that should never appear in JSON output.",
+			"A struct field is name string (lowercase). Will json.Marshal include it? What must you change? || No. Unexported fields are always silently skipped. Change to Name string (uppercase). To keep the JSON key lowercase, add a struct tag: json:\"name\".",
+			"You call json.Unmarshal(data, user) where user is a value, not a pointer. What happens to your struct? || The call silently does nothing useful. Unmarshal needs an addressable value to write into. It may return nil error but the struct in your variable is unchanged. Always pass a pointer: json.Unmarshal(data, &user).",
+			"What is the difference between json:\"field,omitempty\" and json:\"-\"? Give a concrete use case for each. || omitempty omits the field only when it is the zero value; use it for optional fields like a timestamp that may not be set. json:\"-\" always omits regardless of value; use it for sensitive fields like passwords that should never appear in JSON output.",
 		],
 		codeExample: `package main
 
@@ -852,13 +852,13 @@ func main() {
 	fmt.Println(string(out))
 }`,
 		codeExplanation:
-			'Struct tags control serialisation. <code>json:"-"</code> always excludes a field. <code>omitempty</code> excludes it when it\'s a zero value. Pass a pointer to <code>Unmarshal</code> (<code>&u</code>) — it needs to write to your struct. Use <code>json.NewDecoder(r.Body)</code> in HTTP handlers instead of reading the body into a byte slice first.',
+			'Struct tags control serialisation. <code>json:"-"</code> always excludes a field. <code>omitempty</code> excludes it when it\'s a zero value. Pass a pointer to <code>Unmarshal</code> (<code>&u</code>); it needs to write to your struct. Use <code>json.NewDecoder(r.Body)</code> in HTTP handlers instead of reading the body into a byte slice first.',
 		designRationale:
-			"Go's JSON package uses struct tags — backtick string metadata on field declarations — because they keep the mapping between Go fields and JSON keys visible at the declaration site without code generation. The designers chose runtime reflection over compile-time codegen to keep the user-facing API simple: one package, two functions, no schema files. Unexported fields are always silently ignored because the package respects Go's visibility rules — if a field is not exported, it is not part of the type's public contract.",
+			"Go's JSON package uses struct tags (backtick string metadata on field declarations) because they keep the mapping between Go fields and JSON keys visible at the declaration site without code generation. The designers chose runtime reflection over compile-time codegen to keep the user-facing API simple: one package, two functions, no schema files. Unexported fields are always silently ignored because the package respects Go's visibility rules: if a field is not exported, it is not part of the type's public contract.",
 		commonMistakes: [
 			{
 				title: "Unexported fields silently ignored",
-				body: "Fields starting with a lowercase letter are unexported and always ignored by encoding/json — no error is given. If your JSON isn't serialising, check field names start with uppercase.",
+				body: "Fields starting with a lowercase letter are unexported and always ignored by encoding/json; no error is given. If your JSON isn't serialising, check field names start with uppercase.",
 			},
 			{
 				title: "Decoding into value vs pointer",
@@ -870,15 +870,15 @@ func main() {
 	{
 		slug: "packages",
 		name: "Packages & modules",
-		tagline: "Go's unit of code organisation — one directory, one package.",
+		tagline: "Go's unit of code organisation: one directory, one package.",
 		summary:
 			"Every Go file belongs to a package, declared on the first line. A module is a collection of packages with a single version, defined by <code>go.mod</code>. Exported identifiers start with an uppercase letter; lowercase is package-private. Circular imports are forbidden.",
 		mentalModel:
-			"A package is a room in a building. Everything in the room can see everything else. Uppercase names are windows — visible from outside. Lowercase names are internal furniture — invisible from other rooms. The building's address is the module path in <code>go.mod</code>.",
+			"A package is a room in a building. Everything in the room can see everything else. Uppercase names are windows: visible from outside. Lowercase names are internal furniture: invisible from other rooms. The building's address is the module path in <code>go.mod</code>.",
 		retrievalPrompts: [
-			"Package A imports B, B imports C, C imports A. What does the compiler do, and what is the fix? || The compiler rejects it with \"import cycle not allowed\". Fix: identify the type or function that both A and B need, extract it into a new package that both import — breaking the cycle. Cycles indicate that two packages are logically one, or that a shared abstraction needs its own home.",
-			"What makes an identifier visible to other packages in Go? Is there a keyword? || An identifier is exported if and only if it starts with an uppercase letter. There is no keyword — no public, export, or extern. The compiler enforces this rule purely from the first letter of the name.",
-			"What does placing code under internal/ enforce, and which tool enforces it — programmer, linter, or compiler? || Code in internal/ can only be imported by code in the parent directory and its descendants. The compiler enforces it — importing an internal package from outside its module is a compile error, not just a lint warning.",
+			"Package A imports B, B imports C, C imports A. What does the compiler do, and what is the fix? || The compiler rejects it with \"import cycle not allowed\". Fix: identify the type or function that both A and B need, extract it into a new package that both import, breaking the cycle. Cycles indicate that two packages are logically one, or that a shared abstraction needs its own home.",
+			"What makes an identifier visible to other packages in Go? Is there a keyword? || An identifier is exported if and only if it starts with an uppercase letter. There is no keyword: no public, export, or extern. The compiler enforces this rule purely from the first letter of the name.",
+			"What does placing code under internal/ enforce, and which tool enforces it: programmer, linter, or compiler? || Code in internal/ can only be imported by code in the parent directory and its descendants. The compiler enforces it; importing an internal package from outside its module is a compile error, not just a lint warning.",
 		],
 		codeExample: `// go.mod
 module github.com/you/myapp
@@ -917,9 +917,9 @@ func main() {
 	// user.validate(u) — compile error: unexported
 }`,
 		codeExplanation:
-			"The module path in <code>go.mod</code> is the root of all import paths. <code>internal/</code> packages can only be imported by code within the same module. Uppercase = exported, lowercase = package-private — that's the entire visibility system.",
+			"The module path in <code>go.mod</code> is the root of all import paths. <code>internal/</code> packages can only be imported by code within the same module. Uppercase = exported, lowercase = package-private: that's the entire visibility system.",
 		designRationale:
-			"Go's visibility rule — uppercase exported, lowercase package-private — was chosen because it makes access control obvious from the identifier name without any modifier keyword, and it is enforced by the compiler rather than convention. Circular imports are forbidden at compile time to keep build graphs acyclic: a cycle means two packages are logically one package, and the fix is to extract the shared type into a third. The <code>internal/</code> directory convention enforces package boundaries within a module without additional tooling — the compiler rejects imports that violate it.",
+			"Go's visibility rule (uppercase exported, lowercase package-private) was chosen because it makes access control obvious from the identifier name without any modifier keyword, and it is enforced by the compiler rather than convention. Circular imports are forbidden at compile time to keep build graphs acyclic: a cycle means two packages are logically one package, and the fix is to extract the shared type into a third. The <code>internal/</code> directory convention enforces package boundaries within a module without additional tooling; the compiler rejects imports that violate it.",
 		commonMistakes: [
 			{
 				title: "Circular imports",
@@ -927,7 +927,7 @@ func main() {
 			},
 			{
 				title: "Putting everything in main",
-				body: "As projects grow, keeping all code in <code>package main</code> makes testing nearly impossible. Extract logic into sub-packages early — they're easier to test in isolation.",
+				body: "As projects grow, keeping all code in <code>package main</code> makes testing nearly impossible. Extract logic into sub-packages early; they're easier to test in isolation.",
 			},
 		],
 		relatedSlugs: ["structs", "interfaces", "error-handling"],
