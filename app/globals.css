@@ -4,14 +4,84 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Theme tokens ──────────────────────────────────────────────────────────
+   Light mode is the default (:root). Dark mode applies when .dark is on <html>.
+   Go brand colors use space-separated RGB channels so Tailwind's opacity
+   modifiers (bg-go-cyan/10 etc.) work in both themes.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+	/* Layout */
+	--bg: 255 255 255;
+	--color-surface: #f6f8fa;
+	--color-surface2: #eaeef2;
+	--color-border: #d0d7de;
+	--color-border2: #b6bfc8;
+
+	/* Text */
+	--color-fg: #1f2328;
+	--color-muted: #57606a;
+	--color-faint: #8c959f;
+
+	/* Code block background */
+	--color-code-bg: #f6f8fa;
+
+	/* Go brand — darker variants readable on white */
+	--go-cyan: 0 120 160;
+	--go-teal: 13 148 136;
+	--go-amber: 180 83 9;
+
+	/* Syntax highlighting */
+	--sx-keyword: #cf222e;
+	--sx-type: #8250df;
+	--sx-fn: #0550ae;
+	--sx-string: #0a3069;
+	--sx-number: #953800;
+	--sx-comment: #6e7781;
+	--sx-ident: #1f2328;
+	--sx-punct: #57606a;
+}
+
+.dark {
+	/* Layout */
+	--bg: 13 17 23;
+	--color-surface: #161b22;
+	--color-surface2: #1c2128;
+	--color-border: #30363d;
+	--color-border2: #3d444d;
+
+	/* Text */
+	--color-fg: #e6edf3;
+	--color-muted: #8b949e;
+	--color-faint: #484f58;
+
+	/* Code block background */
+	--color-code-bg: #0d1117;
+
+	/* Go brand — official palette works well on dark */
+	--go-cyan: 0 173 216;
+	--go-teal: 22 199 154;
+	--go-amber: 251 191 36;
+
+	/* Syntax highlighting */
+	--sx-keyword: #ff79c6;
+	--sx-type: #bd93f9;
+	--sx-fn: #00add8;
+	--sx-string: #16c79a;
+	--sx-number: #fbbf24;
+	--sx-comment: #6e7781;
+	--sx-ident: #e6edf3;
+	--sx-punct: #8b949e;
+}
+
+/* ─── Base styles ─────────────────────────────────────────────────────────── */
 @layer base {
 	html {
-		font-size: 17px; /* base bump — everything scales from here */
+		font-size: 17px;
 	}
 
 	body {
-		background-color: #0a0e0a;
-		color: #d4e8d4;
+		background-color: rgb(var(--bg));
+		color: var(--color-muted);
 		font-family: "Outfit", sans-serif;
 		line-height: 1.75;
 		-webkit-font-smoothing: antialiased;
@@ -22,47 +92,44 @@
 	h3,
 	h4 {
 		line-height: 1.2;
-		color: #f0f8f0;
+		color: var(--color-fg);
 	}
 
 	p {
-		color: #9ab89a;
+		color: var(--color-muted);
 		font-size: 1rem;
 		line-height: 1.8;
 	}
 
 	::selection {
-		background: rgba(0, 173, 216, 0.25);
+		background: rgb(var(--go-cyan) / 0.2);
 	}
 
 	::-webkit-scrollbar {
 		width: 6px;
 	}
 	::-webkit-scrollbar-track {
-		background: #0d150d;
+		background: var(--color-surface);
 	}
 	::-webkit-scrollbar-thumb {
-		background: #2a3d2a;
+		background: var(--color-border2);
 		border-radius: 3px;
 	}
 	::-webkit-scrollbar-thumb:hover {
-		background: #3a5a3a;
+		background: var(--color-muted);
 	}
 
-	/* Inline code — used in step body text */
 	code {
 		font-family: "JetBrains Mono", monospace;
 		font-size: 0.82em;
-		background: rgba(0, 173, 216, 0.1);
-		border: 1px solid rgba(0, 173, 216, 0.18);
+		background: rgb(var(--go-cyan) / 0.08);
+		border: 1px solid rgb(var(--go-cyan) / 0.2);
 		padding: 0.15em 0.4em;
 		border-radius: 4px;
-		color: #00c8f8;
+		color: rgb(var(--go-cyan));
 		letter-spacing: -0.01em;
 	}
 
-	/* Code blocks — the GoCodeBlock component controls wrapper styles,
-     but pre/code inside it should be clean */
 	pre {
 		font-family: "JetBrains Mono", monospace;
 		font-size: 0.84rem;
@@ -81,11 +148,10 @@
 }
 
 @layer components {
-	/* Prose content areas — bigger text for readability */
 	.prose-body {
 		font-size: 1rem;
 		line-height: 1.85;
-		color: #9ab89a;
+		color: var(--color-muted);
 	}
 
 	.prose-body code {

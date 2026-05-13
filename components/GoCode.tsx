@@ -154,14 +154,14 @@ function tokenize(code: string): Token[] {
 }
 
 const COLOR: Record<string, string> = {
-	keyword: "#ff79c6", // pink
-	type: "#bd93f9", // purple
-	function: "#00ADD8", // go cyan
-	string: "#16c79a", // go teal
-	number: "#fbbf24", // amber
-	comment: "#4a6a4a", // muted green
-	ident: "#e8f0e8", // default text
-	punct: "#7a9a7a", // muted
+	keyword: "var(--sx-keyword)",
+	type: "var(--sx-type)",
+	function: "var(--sx-fn)",
+	string: "var(--sx-string)",
+	number: "var(--sx-number)",
+	comment: "var(--sx-comment)",
+	ident: "var(--sx-ident)",
+	punct: "var(--sx-punct)",
 }
 
 export function GoCode({
@@ -191,7 +191,7 @@ export function GoCodeBlock({
 	filename?: string
 }) {
 	return (
-		<div className="my-4 overflow-hidden rounded-lg border border-border bg-[#0d1a0d] text-sm">
+		<div className="my-4 overflow-hidden rounded-lg border border-border bg-[var(--color-code-bg)] text-sm">
 			{filename && (
 				<div className="flex items-center gap-2 border-b border-border bg-surface2 px-4 py-2">
 					<span className="h-2 w-2 rounded-full bg-red-500/60" />

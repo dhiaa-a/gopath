@@ -63,25 +63,25 @@ export default async function ConceptPage({
 		<main className="mx-auto max-w-3xl px-6 py-16">
 			{/* Breadcrumb */}
 			<div className="mb-8 flex items-center gap-2 font-mono text-xs text-muted">
-				<Link href="/" className="transition-colors hover:text-white">
+				<Link href="/" className="transition-colors hover:text-foreground">
 					GoPath
 				</Link>
 				<span>/</span>
 				<Link
 					href="/concepts"
-					className="transition-colors hover:text-white"
+					className="transition-colors hover:text-foreground"
 				>
 					Concepts
 				</Link>
 				<span>/</span>
-				<span className="text-white">{concept.name}</span>
+				<span className="text-foreground">{concept.name}</span>
 			</div>
 
 			{/* Header */}
 			<div className="mb-1 font-mono text-xs uppercase tracking-widest text-go-cyan">
 				Concept
 			</div>
-			<h1 className="mb-3 font-serif text-4xl text-white">
+			<h1 className="mb-3 font-serif text-4xl text-foreground">
 				{concept.name}
 			</h1>
 			<p className="mb-10 text-lg text-muted">{concept.tagline}</p>
@@ -112,7 +112,7 @@ export default async function ConceptPage({
 			{/* Code example */}
 			<section className="mb-8">
 				<div className="mb-3 flex items-center justify-between">
-					<h2 className="font-serif text-xl text-white">
+					<h2 className="font-serif text-xl text-foreground">
 						Code example
 					</h2>
 					<a
@@ -134,7 +134,7 @@ export default async function ConceptPage({
 							example.go
 						</span>
 					</div>
-					<pre className="overflow-x-auto p-5 font-mono text-sm leading-7 text-[#e8f0e8]">
+					<pre className="overflow-x-auto p-5 font-mono text-sm leading-7 text-foreground">
 						<GoCodeBlock code={concept.codeExample} />
 					</pre>
 				</div>
@@ -161,7 +161,7 @@ export default async function ConceptPage({
 			<section className="mb-10">
 				<details>
 					<summary className="mb-4 flex cursor-pointer list-none items-center justify-between">
-						<h2 className="font-serif text-xl text-white">
+						<h2 className="font-serif text-xl text-foreground">
 							Common mistakes
 						</h2>
 						<span className="font-mono text-xs text-muted">
@@ -178,7 +178,7 @@ export default async function ConceptPage({
 									<span className="font-mono text-xs text-red-400">
 										✗
 									</span>
-									<span className="font-semibold text-white">
+									<span className="font-semibold text-foreground">
 										{m.title}
 									</span>
 								</div>
@@ -195,7 +195,7 @@ export default async function ConceptPage({
 			{/* Related concepts */}
 			{relatedConcepts.length > 0 && (
 				<section className="mb-10">
-					<h2 className="mb-4 font-serif text-xl text-white">
+					<h2 className="mb-4 font-serif text-xl text-foreground">
 						Related concepts
 					</h2>
 					<div className="flex flex-wrap gap-2">
@@ -205,7 +205,7 @@ export default async function ConceptPage({
 								href={`/concepts/${c.slug}`}
 								className="rounded-lg border border-border bg-surface px-4 py-2.5 transition-colors hover:border-go-cyan/40"
 							>
-								<div className="font-semibold text-white">
+								<div className="font-semibold text-foreground">
 									{c.name}
 								</div>
 								<div className="mt-0.5 text-xs text-muted">
@@ -219,12 +219,12 @@ export default async function ConceptPage({
 
 			{/* See it in practice */}
 			<section className="rounded-lg border border-border bg-surface p-6">
-				<h2 className="mb-4 font-serif text-xl text-white">
+				<h2 className="mb-4 font-serif text-xl text-foreground">
 					See it in practice
 				</h2>
 				<p className="mb-4 text-sm text-muted">
 					The best way to learn{" "}
-					<strong className="text-white">{concept.name}</strong> is to
+					<strong className="text-foreground">{concept.name}</strong> is to
 					use it in a real project.
 				</p>
 				{practiceLinks.length > 0 ? (
@@ -241,7 +241,7 @@ export default async function ConceptPage({
 									{p.code}
 								</span>
 								<div>
-									<div className="text-sm font-semibold text-white">
+									<div className="text-sm font-semibold text-foreground">
 										{p.name}
 									</div>
 									<div className="text-xs text-muted">

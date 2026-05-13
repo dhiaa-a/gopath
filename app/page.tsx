@@ -52,7 +52,7 @@ export default function Home() {
 							<span className="h-1.5 w-1.5 animate-pulse rounded-full bg-go-cyan" />
 							For developers from other languages
 						</div>
-						<h1 className="mb-5 font-serif text-5xl leading-tight text-white">
+						<h1 className="mb-5 font-serif text-5xl leading-tight text-foreground">
 							Learn Go by{" "}
 							<em className="italic text-go-cyan">
 								building real things
@@ -72,7 +72,7 @@ export default function Home() {
 							</Link>
 							<Link
 								href="#why"
-								className="font-mono text-sm text-muted transition-colors hover:text-white"
+								className="font-mono text-sm text-muted transition-colors hover:text-foreground"
 							>
 								Why this works
 							</Link>
@@ -134,7 +134,7 @@ func main() {
 						{ n: "0", l: "Toy examples" },
 					].map((s) => (
 						<div key={s.l} className="text-center">
-							<div className="font-mono text-3xl font-semibold text-white">
+							<div className="font-mono text-3xl font-semibold text-foreground">
 								{s.n}
 							</div>
 							<div className="mt-1 text-xs uppercase tracking-widest text-muted">
@@ -150,7 +150,7 @@ func main() {
 				<div className="mb-2 font-mono text-xs uppercase tracking-widest text-go-cyan">
 					The path
 				</div>
-				<h2 className="mb-3 font-serif text-4xl text-white">
+				<h2 className="mb-3 font-serif text-4xl text-foreground">
 					Three tiers. Nine real projects.
 				</h2>
 				<p className="mb-12 max-w-xl text-muted">
@@ -175,7 +175,7 @@ func main() {
 										>
 											{m.num}
 										</div>
-										<div className="mb-1 font-semibold text-white">
+										<div className="mb-1 font-semibold text-foreground">
 											{m.name}
 										</div>
 										<div className="text-xs leading-relaxed text-muted">
@@ -195,7 +195,7 @@ func main() {
 													{p.code}
 												</div>
 												<div className="min-w-0">
-													<div className="mb-0.5 font-semibold text-white">
+													<div className="mb-0.5 font-semibold text-foreground">
 														{p.name}
 													</div>
 													<div className="mb-2 text-xs text-muted">
@@ -231,7 +231,7 @@ func main() {
 					<div className="mb-2 font-mono text-xs uppercase tracking-widest text-go-cyan">
 						Why GoPath
 					</div>
-					<h2 className="mb-3 font-serif text-4xl text-white">
+					<h2 className="mb-3 font-serif text-4xl text-foreground">
 						Built for people who already code.
 					</h2>
 					<p className="mb-12 max-w-xl text-muted">
@@ -262,7 +262,7 @@ func main() {
 								key={d.h}
 								className="rounded-lg border border-border bg-bg p-6"
 							>
-								<h3 className="mb-2 font-semibold text-white">
+								<h3 className="mb-2 font-semibold text-foreground">
 									{d.h}
 								</h3>
 								<p className="text-sm leading-relaxed text-muted">
@@ -276,7 +276,7 @@ func main() {
 
 			{/* CTA */}
 			<section className="mx-auto max-w-2xl px-6 py-24 text-center">
-				<h2 className="mb-4 font-serif text-4xl text-white">
+				<h2 className="mb-4 font-serif text-4xl text-foreground">
 					Ready to write real Go?
 				</h2>
 				<p className="mb-8 text-muted">

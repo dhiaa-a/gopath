@@ -22,9 +22,9 @@ export const concepts: Concept[] = [
 		mentalModel:
 			'Think of every function with a possible failure as returning two things: the result and a verdict. Like a restaurant order: you get either (food, nil) or (nil, "kitchen is closed"). You check the verdict before eating the food.',
 		retrievalPrompts: [
-			"Without looking at any code, write a function that opens a file and returns its contents as a string — including every place it can fail and what the caller receives.",
-			"What is the difference between `fmt.Errorf(\"context: %v\", err)` and `fmt.Errorf(\"context: %w\", err)`? When does the distinction matter to the caller?",
-			"A colleague proposes replacing all `if err != nil { return err }` blocks with `panic(err)` to reduce verbosity. What breaks in production?",
+			"Without looking, write a function that opens a file and returns its contents as a string — including every place it can fail. || Signature: func readFile(path string) (string, error). It can fail on Open (return \"\", fmt.Errorf(\"open: %w\", err)) and on Read (return \"\", fmt.Errorf(\"read: %w\", err)). The caller always gets two values and must check error before trusting the result.",
+			"What is the difference between fmt.Errorf with %v and %w? When does it matter to the caller? || %v formats the error as a string — the original is lost. %w wraps it so errors.Is and errors.As can unwrap through the chain. The distinction matters when callers need to match a specific error type — with %v they can only do string comparison.",
+			"A colleague proposes replacing all if err != nil blocks with panic to reduce verbosity. What breaks in production? || Panics crash the goroutine unless recovered. In a server, an unrecovered panic in a handler kills the request goroutine. You lose the ability to return user-friendly errors, wrap context, or handle expected failures gracefully. Errors are control flow, not exceptional events.",
 		],
 		codeExample: `package main
 
@@ -84,9 +84,9 @@ func main() {
 		mentalModel:
 			"An interface is a contract defined by the consumer, not the producer. If you need something that can be written to, you define <code>type Writer interface { Write([]byte) (int, error) }</code> and anything with a <code>Write</code> method fits — files, buffers, network connections, your custom type. You never touch those types.",
 		retrievalPrompts: [
-			"Define an interface called `Stringer` that describes something that can format itself as a string. Now write two different types that satisfy it — without declaring anywhere that they implement the interface.",
-			"A function accepts `io.Writer`. Name three types from the standard library that satisfy this interface, and explain why none of them import the `io` package to declare it.",
-			"You define an interface and a struct in the same package. The struct has the method on a pointer receiver. Which of these satisfies the interface: `T` or `*T`? Why?",
+			"Define an interface called Stringer with one method, then write two types that satisfy it without any implements keyword. || type Stringer interface { String() string }. Any type with a String() string method satisfies it automatically. For example: type User struct{ Name string }; func (u User) String() string { return u.Name }. No declaration needed — satisfaction is implicit.",
+			"A function accepts io.Writer. Name three standard library types that satisfy it, and explain why none import the io package to declare it. || os.File, bytes.Buffer, and net.Conn all satisfy io.Writer. None import io because Go interfaces are satisfied implicitly — if a type has Write([]byte) (int, error), it satisfies io.Writer regardless of whether it has ever seen the interface definition.",
+			"Your struct has a method on a pointer receiver. Which satisfies the interface: T or *T? Why? || Only *T satisfies it. A pointer receiver method is only in the method set of *T. Using a plain T value where the interface is expected causes a compile error. However, *T includes methods from both pointer and value receivers.",
 		],
 		codeExample: `package main
 
@@ -156,9 +156,9 @@ func main() {
 		mentalModel:
 			"Think of goroutines as tasks on a to-do list that a team of workers (OS threads) picks up and executes. You can add thousands of tasks and the team handles it — you don't manage which worker does what. The key: goroutines are cheap to create, but you must coordinate their results via channels or sync primitives.",
 		retrievalPrompts: [
-			"What happens to a goroutine if `main()` returns before the goroutine finishes? What is the correct way to wait for it?",
-			"You launch 100 goroutines and each one appends a value to a shared slice. Describe what goes wrong and give two ways to fix it.",
-			"A goroutine is blocked waiting to receive from a channel that nobody will ever write to. What is this called, and how do you prevent it?",
+			"What happens to a goroutine if main() returns before it finishes? What is the correct way to wait for it? || The goroutine is killed immediately — the program exits and all goroutines terminate without cleanup. The correct way: use sync.WaitGroup. Call wg.Add(1) before launching, defer wg.Done() inside the goroutine, and wg.Wait() in main.",
+			"You launch 100 goroutines, each appending to a shared slice. What goes wrong, and give two ways to fix it. || Data race — multiple goroutines read and write the slice header concurrently, causing corruption or panics. Fix 1: protect the append with a sync.Mutex. Fix 2: have each goroutine send its value on a channel, and one goroutine collects and appends.",
+			"A goroutine is blocked waiting to receive from a channel nobody will ever write to. What is this, and how do you prevent it? || A goroutine leak. The goroutine runs forever, consuming memory and scheduler resources. Prevent it by always giving goroutines an exit path — pass a context.Context and select on ctx.Done(), or ensure the channel will eventually be closed.",
 		],
 		codeExample: `package main
 
@@ -219,9 +219,9 @@ func main() {
 		mentalModel:
 			"A channel is a conveyor belt between goroutines. One goroutine puts items on the belt, another picks them off. An unbuffered channel means the sender waits until a receiver is ready — they synchronize. A buffered channel has capacity, so the sender can keep going until the buffer is full.",
 		retrievalPrompts: [
-			"Two goroutines share an unbuffered channel. Goroutine A sends, goroutine B receives. Which one blocks first, and what makes it unblock?",
-			"When should you close a channel, and which goroutine should do it? What happens if you send to a channel after closing it?",
-			"When is a channel the right tool for coordinating goroutines, and when is a mutex simpler? Give a concrete rule.",
+			"Two goroutines share an unbuffered channel: A sends, B receives. Which blocks first, and what unblocks it? || Whichever reaches the channel operation first blocks until the other arrives — they rendezvous. The sender blocks on ch <- value until a receiver is ready; the receiver blocks on <-ch until a sender arrives. An unbuffered channel is a synchronisation point, not a buffer.",
+			"When should you close a channel, and who should do it? What happens if you send to it after closing? || Close when no more values will be sent — it signals receivers to stop waiting. Only the sender should close; receivers cannot know when sending is done. Sending to a closed channel panics immediately. Receiving from a closed channel returns the zero value and false for the ok flag.",
+			"When is a channel the right tool, and when is a mutex simpler? Give a concrete rule. || Use a channel when passing ownership of data between goroutines, or signalling events. Use a mutex when multiple goroutines share and update state (a counter, a cache, a map). Rule: if you are moving data, use a channel; if you are protecting data, use a mutex.",
 		],
 		codeExample: `package main
 
@@ -282,9 +282,9 @@ func main() {
 		mentalModel:
 			"Defer is like leaving a sticky note for your future self: 'when you're done here, do this.' You write the cleanup right next to the resource acquisition, which makes code far easier to audit. You can't forget to clean up if the cleanup is defined the moment you open something.",
 		retrievalPrompts: [
-			"Write `openAndRead(path string)` from memory. Where exactly do you place the `defer f.Close()` call, and why does position matter?",
-			"A function has three deferred calls registered in order A, B, C. What order do they execute in, and why?",
-			"You write `defer f.Close()` inside a loop that opens 100 files. When do the 100 Close calls actually happen? What is the correct fix?",
+			"Where exactly do you place defer f.Close() in openAndRead, and why does position matter? || After os.Open and the error check — never before. If you defer before checking the error and Open fails, f is nil and Close will panic. The pattern is: open, check error, then defer close — in that order.",
+			"A function registers deferred calls in order A, B, C. What order do they execute in, and why? || C, B, A — last in, first out (LIFO). This is intentional: if you open a file then acquire a lock, LIFO ensures you release the lock before closing the file — the correct cleanup order for nested resources.",
+			"You write defer f.Close() inside a loop that opens 100 files. When do the 100 Close calls happen? What is the fix? || All 100 run when the enclosing function returns — not at the end of each loop iteration. All 100 files stay open until the function exits. Fix: extract the open-read-close into a helper function called per iteration, so defer runs at the end of each helper call.",
 		],
 		codeExample: `package main
 
@@ -343,9 +343,9 @@ func main() {
 		mentalModel:
 			"A struct is a form with labelled fields. When you assign a struct to another variable, you're filling out a new identical form — changes to one don't affect the other. To share a struct across functions and have mutations visible, pass a pointer to it.",
 		retrievalPrompts: [
-			"You pass a struct with a `Name string` field to a function that sets `Name = \"changed\"`. Back in the caller, what is the value of `Name`? When would your answer be different?",
-			"What is the zero value of a struct with fields `Count int`, `Label string`, `Active bool`? Is this struct safe to use without initialization?",
-			"Explain embedding in Go using `type Employee struct { Person }`. What does it give you, and how is it different from inheritance?",
+			"You pass a struct to a function that mutates a field. Back in the caller, did the field change? When would your answer be different? || No — structs are value types, so the function received a copy. The caller's struct is unchanged. It would be different if you passed a pointer (*MyStruct) — then both point to the same memory and the mutation persists.",
+			"What is the zero value of a struct with Count int, Label string, Active bool? Is it safe to use without initialisation? || Count: 0, Label: \"\", Active: false. Whether it is safe depends on the type's contract. For these fields, yes — all zero values are meaningful. Go's design encourages zero-value structs to be usable without a constructor.",
+			"Explain embedding with type Employee struct { Person }. What does it give you, and how is it different from inheritance? || Embedding promotes Person's fields and methods onto Employee — you write e.Name instead of e.Person.Name. It is composition, not inheritance: Employee does not is-a Person. You cannot substitute an Employee where a Person is expected. The types remain distinct.",
 		],
 		codeExample: `package main
 
@@ -405,9 +405,9 @@ func main() {
 		mentalModel:
 			"A value is a house. A pointer is the street address written on a piece of paper. If you hand someone a copy of your house (value), they can redecorate it without affecting yours. If you hand them the address (pointer), any changes they make are to your actual house.",
 		retrievalPrompts: [
-			"Write two methods on `Counter`: one with a value receiver that increments, one with a pointer receiver that increments. Call both from main. Which mutation persists and why?",
-			"A function returns `*User`. Under what conditions should it return `nil`, and what must the caller do before using the returned pointer?",
-			"All methods on `FileWriter` use pointer receivers. You accidentally define one method with a value receiver. What breaks, and where does the error appear?",
+			"You write one method on Counter with a value receiver and one with a pointer receiver, both incrementing. Which mutation persists after the call? || The pointer receiver mutation persists. The value receiver gets a copy — its change does not escape. The pointer receiver operates on the original. From main, Go auto-addresses a variable for pointer receiver calls, so both can be called on the same Counter.",
+			"A function returns *User. When should it return nil, and what must the caller do before using it? || Return nil when there is no result — for example, user not found. The caller must check if result != nil before dereferencing. Dereferencing nil panics. Better pattern: return (*User, error) — nil pointer for no result, non-nil error for failure.",
+			"All methods on FileWriter use pointer receivers. You accidentally add one with a value receiver. What breaks? || If FileWriter implements an interface, the value receiver method is in the method set of both FileWriter and *FileWriter, but pointer receiver methods are only in *FileWriter. A mismatch may cause an interface satisfaction compile error. go vet also warns about inconsistent receiver types.",
 		],
 		codeExample: `package main
 
@@ -461,9 +461,9 @@ func main() {
 		mentalModel:
 			"Context is like a project cancellation memo that travels with every piece of work. If the client disconnects, the memo says 'stop everything'. Every worker checks the memo before starting the next unit of work. If the memo says cancel, they stop cleanly instead of continuing to do useless work.",
 		retrievalPrompts: [
-			"A context with a 3-second timeout is passed to a function that makes two sequential HTTP calls, each taking 2 seconds. What happens during the second call?",
-			"Why is `context.Context` always the first parameter by convention? What does putting it first communicate to the reader?",
-			"You store a context in a struct field and use it in a method called later. Why is this wrong, and what should you do instead?",
+			"A 3-second context timeout is passed to a function making two sequential 2-second HTTP calls. What happens on the second call? || The context expires at the 3-second mark. The first call uses 2 seconds, leaving 1 second. The HTTP client checks ctx.Done() and cancels when the deadline fires — the second call gets context.DeadlineExceeded.",
+			"Why is context.Context always the first parameter by convention? What does it communicate? || Convention from the standard library, reinforced by linters. Putting it first signals: this function does I/O or can be cancelled. It also means the context is always at a known position, making call signatures immediately scannable without reading the full signature.",
+			"You store a context in a struct field and use it in a method called later. Why is this wrong? || Context carries cancellation for a specific request at a specific moment. Stored in a struct, it is divorced from its lifecycle — by the time the method runs, the context may already be cancelled or belong to a different request. Pass context as a parameter to each method that needs it.",
 		],
 		codeExample: `package main
 
@@ -522,9 +522,9 @@ func main() {
 		mentalModel:
 			"A slice is a window into a row of seats. The window has a start position, a width (length), and a maximum width it could expand to (capacity). Two slices can look at overlapping seats — mutating one changes what the other sees. <code>append</code> either expands the window or, if at capacity, moves everyone to a bigger row.",
 		retrievalPrompts: [
-			"After `b := a[1:4]`, you set `b[0] = 99`. Does `a` change? Why? Now you `append` five more elements to `b` beyond its capacity. Does `a` change now?",
-			"A slice has length 3 and capacity 6. You append one element. What are the new length and capacity? You append four more. What happens?",
-			"What is the practical difference between `var s []int` and `s := []int{}`? Give one situation where the difference matters.",
+			"After b := a[1:4], you set b[0] = 99. Does a change? Then you append beyond b's capacity. Does a change now? || Yes — b shares the underlying array, so a[1] becomes 99. After appending beyond capacity, Go allocates a new array for b. From that point b is independent — further mutations to b do not affect a.",
+			"A slice has length 3 and capacity 6. You append one element. What are the new length and capacity? You append four more — what happens? || After one append: length 4, capacity 6 — fits within existing capacity, no allocation. After four more (length 8): exceeds capacity 6, so Go allocates a new array (typically doubles), copies data, and capacity becomes at least 8.",
+			"What is the practical difference between var s []int and s := []int{}? Give one situation where the difference matters. || var s []int is nil (s == nil is true). s := []int{} is non-nil with length 0. Both work with append and range. The difference matters with JSON: a nil slice marshals to null, an empty slice marshals to [] — if your API must return an empty array, use []int{}.",
 		],
 		codeExample: `package main
 
@@ -578,9 +578,9 @@ func main() {
 		mentalModel:
 			"A map is a lookup table. The zero value of a map is nil — a table that doesn't exist yet. You must initialise it with <code>make</code> or a literal before writing to it. Reading a missing key never panics — it returns the zero value — but that can silently mask bugs.",
 		retrievalPrompts: [
-			"You declare `var m map[string]int` and then read `m[\"key\"]`. What do you get? Now you write `m[\"key\"] = 1`. What happens?",
-			"How do you distinguish between a key that is missing and a key whose value is `0`? Write the idiom from memory.",
-			"Two goroutines each read from the same map at the same time. Is this safe? What if one reads while the other writes?",
+			"You declare var m map[string]int and read m[\"key\"]. What do you get? Then you write m[\"key\"] = 1. What happens? || Reading from a nil map returns the zero value (0) — no panic. Writing to a nil map panics with \"assignment to entry in nil map\". Always initialise: m := make(map[string]int) or m := map[string]int{}.",
+			"How do you distinguish between a key that is missing and a key whose value is 0? Write the idiom. || val, ok := m[\"key\"] — the comma-ok form. If ok is false, the key is absent (val will be 0). If ok is true, the key exists and val is its actual value, which may legitimately be 0.",
+			"Two goroutines read from the same map simultaneously. Is this safe? What if one reads while the other writes? || Concurrent reads are safe. Concurrent read and write — or write and write — is not safe. Go's runtime detects this and panics with \"concurrent map read and map write\". Protect with sync.RWMutex or use sync.Map.",
 		],
 		codeExample: `package main
 
@@ -633,9 +633,9 @@ func main() {
 		mentalModel:
 			"Imagine handing out raffle tickets. Before each person goes off to do a task, you give them a ticket. When they return, they hand it back. You wait at the door until every ticket has been returned. <code>Add</code> = hand out ticket, <code>Done</code> = return ticket, <code>Wait</code> = watch the door.",
 		retrievalPrompts: [
-			"You call `wg.Add(1)` inside the goroutine instead of before launching it. Describe the race condition this creates.",
-			"Why must you always pass `&wg` to functions and never copy the WaitGroup by value? What breaks if you copy it?",
-			"A WaitGroup's counter reaches zero and `Wait()` returns. Then you call `wg.Add(1)` again. Is this valid? What constraint must hold for it to work?",
+			"You call wg.Add(1) inside the goroutine instead of before launching it. Describe the race condition. || Main may call wg.Wait() before the goroutine has executed wg.Add(1). If the counter is 0 at that moment, Wait returns immediately — the program proceeds as if all goroutines finished, even though they have not started. Always call Add before go.",
+			"Why must you pass &wg and never copy a WaitGroup by value? What breaks? || Copying creates a separate counter. Done calls on the copy do not decrement the original's counter, so the original's Wait never returns. The race detector catches this; go vet also flags it.",
+			"A WaitGroup's counter reaches zero and Wait returns. You call wg.Add(1) again. Is this valid? What constraint must hold? || Yes, a WaitGroup can be reused. The constraint: Add must not be called concurrently with Wait when the counter is zero. If a goroutine races to call Add(1) at the exact moment Wait sees zero and starts to return, you get a race. Ensure all Add calls happen-before the corresponding Wait.",
 		],
 		codeExample: `package main
 
@@ -688,9 +688,9 @@ func main() {
 		mentalModel:
 			"Select is like a waiter watching multiple tables. Whichever table signals first ('ready to order', 'needs the bill', 'wants dessert') gets served. If nobody is ready and there's a default option, the waiter doesn't stand idle — they do the default instead.",
 		retrievalPrompts: [
-			"Two channels are both ready at the exact moment a `select` statement executes. Which case runs, and why?",
-			"Write a `select` that tries to receive from `ch` but gives up and returns an error if nothing arrives within 2 seconds.",
-			"What does a `select` with a `default` case do when no channel is ready? When is this useful, and when is it a performance problem?",
+			"Two channels are both ready when a select executes. Which case runs, and why? || Go picks one at random. The specification guarantees uniform pseudo-random selection when multiple cases are ready. This prevents programs from depending on a specific ordering that might not hold under different scheduling — both cases have equal probability.",
+			"Write a select that tries to receive from ch but gives up after 2 seconds. || select { case val := <-ch: return val, nil; case <-time.After(2 * time.Second): return zero, errors.New(\"timed out\") }. time.After returns a channel that fires after the duration — the standard Go timeout pattern.",
+			"What does a select with a default case do when no channel is ready? When is it useful, and when is it a problem? || It executes default immediately without blocking. Useful for non-blocking channel checks. A problem in a tight loop: without any blocking the goroutine spins at 100% CPU. Always add time.Sleep or restructure to avoid spinning.",
 		],
 		codeExample: `package main
 
@@ -757,9 +757,9 @@ func main() {
 		mentalModel:
 			"Think of each HTTP handler as a function booth at a fair. The booth receives a request ticket and a response envelope. It reads the ticket, does work, and seals the envelope. Middleware is a booth that passes the envelope to another booth first — adding a stamp (auth check, log entry, rate limit) before or after.",
 		retrievalPrompts: [
-			"Write the `http.Handler` interface from memory. How many methods does it have, and what are their signatures?",
-			"Write a middleware function that measures and logs the duration of every request. What type does it accept and what type does it return?",
-			"You write response headers after calling `next.ServeHTTP(w, r)`. What happens, and why?",
+			"Write the http.Handler interface from memory. How many methods, and what are their signatures? || type Handler interface { ServeHTTP(ResponseWriter, *Request) } — one method. ResponseWriter is also an interface. The entire HTTP ecosystem — middleware, routers, frameworks — is built on this single method.",
+			"Write a middleware function that logs request duration. What type does it accept and return? || It accepts http.Handler (the next handler) and returns http.Handler. Inside: record start := time.Now(), call next.ServeHTTP(w, r), then log time.Since(start). Wrap the logic with http.HandlerFunc to convert the function to a Handler.",
+			"You write response headers after calling next.ServeHTTP(w, r). What happens, and why? || The headers are silently ignored. Once ServeHTTP is called, the inner handler likely called w.WriteHeader or wrote the body — both flush the status line and headers. HTTP responses are streamed; you cannot unsend headers. Always set headers before calling next.",
 		],
 		codeExample: `package main
 
@@ -814,9 +814,9 @@ func main() {
 		mentalModel:
 			"JSON decoding is like filling out a form from a dictionary. The dictionary has arbitrary keys; your form has fixed fields. Struct tags tell the decoder which dictionary key maps to which form field. Keys in the dictionary with no matching field are silently ignored.",
 		retrievalPrompts: [
-			"A struct field is `name string` (lowercase). Will `json.Marshal` include it in the output? What must you change, and why?",
-			"You call `json.Unmarshal(data, user)` where `user` is a `User` value, not a pointer. What happens to your struct?",
-			"What is the difference between `json:\"field,omitempty\"` and `json:\"-\"`? Give a concrete case where you'd use each.",
+			"A struct field is name string (lowercase). Will json.Marshal include it? What must you change? || No — unexported fields are always silently skipped. Change to Name string (uppercase). To keep the JSON key lowercase, add a struct tag: json:\"name\".",
+			"You call json.Unmarshal(data, user) where user is a value, not a pointer. What happens to your struct? || The call silently does nothing useful — Unmarshal needs an addressable value to write into. It may return nil error but the struct in your variable is unchanged. Always pass a pointer: json.Unmarshal(data, &user).",
+			"What is the difference between json:\"field,omitempty\" and json:\"-\"? Give a concrete use case for each. || omitempty omits the field only when it is the zero value — use it for optional fields like a timestamp that may not be set. json:\"-\" always omits regardless of value — use it for sensitive fields like passwords that should never appear in JSON output.",
 		],
 		codeExample: `package main
 
@@ -876,9 +876,9 @@ func main() {
 		mentalModel:
 			"A package is a room in a building. Everything in the room can see everything else. Uppercase names are windows — visible from outside. Lowercase names are internal furniture — invisible from other rooms. The building's address is the module path in <code>go.mod</code>.",
 		retrievalPrompts: [
-			"Package A imports package B, which imports package C, which imports package A. What does the compiler do, and what is the correct fix?",
-			"What makes an identifier in Go visible to other packages? Is there a keyword for this?",
-			"What does placing code under `internal/` enforce, and which tool enforces it — the programmer, the linter, or the compiler?",
+			"Package A imports B, B imports C, C imports A. What does the compiler do, and what is the fix? || The compiler rejects it with \"import cycle not allowed\". Fix: identify the type or function that both A and B need, extract it into a new package that both import — breaking the cycle. Cycles indicate that two packages are logically one, or that a shared abstraction needs its own home.",
+			"What makes an identifier visible to other packages in Go? Is there a keyword? || An identifier is exported if and only if it starts with an uppercase letter. There is no keyword — no public, export, or extern. The compiler enforces this rule purely from the first letter of the name.",
+			"What does placing code under internal/ enforce, and which tool enforces it — programmer, linter, or compiler? || Code in internal/ can only be imported by code in the parent directory and its descendants. The compiler enforces it — importing an internal package from outside its module is a compile error, not just a lint warning.",
 		],
 		codeExample: `// go.mod
 module github.com/you/myapp

@@ -1,39 +1,17 @@
 "use client"
 import { useState } from "react"
-import { GoCodeBlock } from "./GoCode"
-
-type PromptState = "closed" | "open" | "explained"
 
 export function RetrievalPrompts({
 	prompts,
-	codeExample,
-	codeExplanation,
 }: {
 	prompts: string[]
 	codeExample: string
 	codeExplanation: string
 }) {
-	const [states, setStates] = useState<PromptState[]>(
-		prompts.map(() => "closed"),
-	)
-	const [answers, setAnswers] = useState<string[]>(prompts.map(() => ""))
+	const [flipped, setFlipped] = useState<boolean[]>(prompts.map(() => false))
 
-	function toggle(i: number) {
-		setStates((prev) =>
-			prev.map((s, idx) =>
-				idx === i ? (s === "closed" ? "open" : "closed") : s,
-			),
-		)
-	}
-
-	function showExplanation(i: number) {
-		setStates((prev) =>
-			prev.map((s, idx) => (idx === i ? "explained" : s)),
-		)
-	}
-
-	function setAnswer(i: number, value: string) {
-		setAnswers((prev) => prev.map((a, idx) => (idx === i ? value : a)))
+	function flip(i: number) {
+		setFlipped((prev) => prev.map((f, idx) => (idx === i ? !f : f)))
 	}
 
 	return (
@@ -41,72 +19,67 @@ export function RetrievalPrompts({
 			<div className="mb-1 font-mono text-xs uppercase tracking-widest text-go-cyan">
 				Retrieval practice
 			</div>
-			<p className="mb-3 text-sm text-muted">
-				Answer before reading on. You don't need to be right — writing
-				forces recall.
+			<p className="mb-4 text-sm text-muted">
+				Think of your answer, then click the card to reveal it.
 			</p>
-			<div className="flex flex-col gap-2">
-				{prompts.map((prompt, i) => (
-					<div
-						key={i}
-						className="overflow-hidden rounded-lg border border-border bg-surface"
-					>
-						<button
-							onClick={() => toggle(i)}
-							className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:border-go-cyan/20"
-						>
-							<span className="font-mono text-[10px] text-go-cyan">
-								{states[i] === "closed" ? "►" : "▼"}
-							</span>
-							<span className="font-mono text-xs text-muted">
-								prompt {i + 1}
-							</span>
-						</button>
+			<div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+				{prompts.map((prompt, i) => {
+					const parts = prompt.split("||")
+					const question = parts[0].trim()
+					const answer = parts[1]?.trim() ?? ""
 
-						{states[i] !== "closed" && (
-							<div className="border-t border-border px-4 pb-4 pt-3">
-								<p className="mb-3 text-sm leading-relaxed text-white">
-									{prompt}
-								</p>
-								<textarea
-									value={answers[i]}
-									onChange={(e) =>
-										setAnswer(i, e.target.value)
-									}
-									rows={4}
-									placeholder="Write your answer before reading on…"
-									className="w-full resize-none rounded border border-border bg-bg px-3 py-2 font-mono text-xs text-muted focus:border-go-cyan/40 focus:outline-none"
-								/>
-								{states[i] === "open" && (
-									<button
-										onClick={() => showExplanation(i)}
-										className="mt-2 font-mono text-[10px] text-muted transition-colors hover:text-go-cyan"
-									>
-										► show explanation
-									</button>
-								)}
-								{states[i] === "explained" && (
-									<div className="mt-4">
-										<div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-muted">
-											explanation
-										</div>
-										<div className="overflow-hidden rounded-lg border border-border bg-bg">
-											<pre className="overflow-x-auto p-4 font-mono text-sm leading-7 text-[#e8f0e8]">
-												<GoCodeBlock code={codeExample} />
-											</pre>
-										</div>
-										<p
-											className="mt-2 text-sm leading-relaxed text-muted"
-											dangerouslySetInnerHTML={{
-												__html: codeExplanation,
-											}}
-										/>
+					return (
+						<button
+							key={i}
+							onClick={() => flip(i)}
+							className="group relative h-44 w-full cursor-pointer text-left"
+							style={{ perspective: "1000px" }}
+						>
+							<div
+								className="relative h-full w-full transition-transform duration-500"
+								style={{
+									transformStyle: "preserve-3d",
+									transform: flipped[i]
+										? "rotateY(180deg)"
+										: "rotateY(0deg)",
+								}}
+							>
+								{/* Front */}
+								<div
+									className="absolute inset-0 flex flex-col rounded-lg border border-border bg-surface p-4"
+									style={{ backfaceVisibility: "hidden" }}
+								>
+									<div className="min-h-0 flex-1 overflow-y-auto">
+										<p className="text-sm leading-relaxed text-foreground">
+											{question}
+										</p>
 									</div>
-								)}
+									<span className="mt-3 shrink-0 font-mono text-[10px] text-muted transition-colors group-hover:text-go-cyan">
+										click to reveal →
+									</span>
+								</div>
+
+								{/* Back */}
+								<div
+									className="absolute inset-0 flex flex-col rounded-lg border border-go-cyan/30 bg-go-cyan/5 p-4"
+									style={{
+										backfaceVisibility: "hidden",
+										transform: "rotateY(180deg)",
+									}}
+								>
+									<div className="min-h-0 flex-1 overflow-y-auto">
+										<p className="text-sm leading-relaxed text-muted">
+											{answer}
+										</p>
+									</div>
+									<span className="mt-3 shrink-0 font-mono text-[10px] text-muted transition-colors group-hover:text-go-cyan">
+										click to flip back →
+									</span>
+								</div>
 							</div>
-						)}
-					</div>
-				))}
+						</button>
+					)
+				})}
 			</div>
 		</section>
 	)

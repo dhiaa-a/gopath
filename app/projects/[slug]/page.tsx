@@ -60,18 +60,18 @@ export default async function ProjectPage({
 		<main className="mx-auto max-w-3xl px-6 py-16">
 			{/* Breadcrumb */}
 			<div className="mb-8 flex items-center gap-2 font-mono text-xs text-muted">
-				<Link href="/" className="transition-colors hover:text-white">
+				<Link href="/" className="transition-colors hover:text-foreground">
 					GoPath
 				</Link>
 				<span className="text-faint">/</span>
 				<Link
 					href="/projects"
-					className="transition-colors hover:text-white"
+					className="transition-colors hover:text-foreground"
 				>
 					Projects
 				</Link>
 				<span className="text-faint">/</span>
-				<span className="text-white">{project.name}</span>
+				<span className="text-foreground">{project.name}</span>
 			</div>
 
 			{/* Header */}
@@ -80,7 +80,7 @@ export default async function ProjectPage({
 			>
 				{project.tierLabel}
 			</div>
-			<h1 className="mb-4 font-serif text-5xl text-white">
+			<h1 className="mb-4 font-serif text-5xl text-foreground">
 				{project.name}
 			</h1>
 			<p className="mb-7 text-xl leading-relaxed text-muted">
@@ -130,7 +130,7 @@ export default async function ProjectPage({
 
 			{/* Steps */}
 			<div className="mb-4 flex items-baseline justify-between">
-				<h2 className="font-serif text-3xl text-white">Steps</h2>
+				<h2 className="font-serif text-3xl text-foreground">Steps</h2>
 				<span className="font-mono text-sm text-faint">
 					guided, not hand-holding
 				</span>
@@ -151,15 +151,17 @@ export default async function ProjectPage({
 								>
 									{step.n}
 								</div>
-								<h3 className="text-xl font-semibold text-white">
+								<h3 className="text-xl font-semibold text-foreground">
 									{step.heading}
 								</h3>
 							</div>
 
 							<div className="ml-14">
-								{priorProject && (
+								{priorProject && prior && (
 									<SpacedReuseCallout
 										projectName={priorProject.name}
+										projectSlug={priorProject.slug}
+										stepN={prior.priorStepN}
 									/>
 								)}
 								{step.blocks ? (
@@ -183,7 +185,7 @@ export default async function ProjectPage({
 				{prevProject ? (
 					<Link
 						href={`/projects/${prevProject.slug}`}
-						className="group flex items-center gap-2 font-mono text-sm text-muted transition-colors hover:text-white"
+						className="group flex items-center gap-2 font-mono text-sm text-muted transition-colors hover:text-foreground"
 					>
 						<span>←</span>
 						<span>{prevProject.name}</span>

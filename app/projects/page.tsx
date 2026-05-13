@@ -25,7 +25,7 @@ export default function ProjectsPage() {
 			<div className="mb-2 font-mono text-xs uppercase tracking-widest text-go-cyan">
 				All projects
 			</div>
-			<h1 className="mb-3 font-serif text-4xl text-white">
+			<h1 className="mb-3 font-serif text-4xl text-foreground">
 				Nine projects. One path.
 			</h1>
 			<p className="mb-12 text-muted">
@@ -56,7 +56,7 @@ export default function ProjectsPage() {
 								>
 									{p.tierLabel}
 								</div>
-								<div className="font-semibold text-white">
+								<div className="font-semibold text-foreground">
 									{p.name}
 								</div>
 								<div className="mt-0.5 text-sm text-muted">
@@ -75,7 +75,7 @@ export default function ProjectsPage() {
 				<p className="mb-4 text-sm text-muted">
 					Total estimated time across all projects
 				</p>
-				<p className="font-mono text-2xl font-semibold text-white">
+				<p className="font-mono text-2xl font-semibold text-foreground">
 					30–45 hours
 				</p>
 				<p className="mt-2 text-xs text-faint">

@@ -66,7 +66,7 @@ function AssessmentBlock({
 			>
 				{a.kind} assessment
 			</div>
-			<div className="mb-2 font-semibold text-white">{a.title}</div>
+			<div className="mb-2 font-semibold text-foreground">{a.title}</div>
 			<p className="mb-4 text-sm leading-relaxed test-muted">
 				{a.description}
 			</p>
@@ -224,7 +224,7 @@ export function ContentRenderer({ blocks }: { blocks: ContentBlock[] }) {
 									<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-go-amber">
 										your task
 									</div>
-									<p className="text-sm leading-relaxed text-white">
+									<p className="text-sm leading-relaxed text-foreground">
 										{block.task}
 									</p>
 									{block.hints && (
@@ -245,7 +245,7 @@ export function ContentRenderer({ blocks }: { blocks: ContentBlock[] }) {
 									<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-go-teal">
 										requirement
 									</div>
-									<p className="text-sm font-medium leading-relaxed text-white">
+									<p className="text-sm font-medium leading-relaxed text-foreground">
 										{block.what}
 									</p>
 								</div>
@@ -309,7 +309,7 @@ export function ContentRenderer({ blocks }: { blocks: ContentBlock[] }) {
 								<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-go-amber">
 									constraint
 								</div>
-								<p className="mb-2 text-sm font-medium text-white">
+								<p className="mb-2 text-sm font-medium text-foreground">
 									{block.what}
 								</p>
 								<p className="text-sm leading-relaxed text-muted">

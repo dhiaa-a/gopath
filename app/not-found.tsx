@@ -4,7 +4,7 @@ export default function NotFound() {
 	return (
 		<main className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
 			<div className="mb-4 font-mono text-sm text-go-cyan">404</div>
-			<h1 className="mb-3 font-serif text-4xl text-white">
+			<h1 className="mb-3 font-serif text-4xl text-foreground">
 				Page not found
 			</h1>
 			<p className="mb-8 max-w-sm text-muted">
@@ -14,7 +14,7 @@ export default function NotFound() {
 			<div className="flex gap-3">
 				<Link
 					href="/"
-					className="rounded border border-border px-4 py-2 font-mono text-sm text-muted transition-colors hover:text-white"
+					className="rounded border border-border px-4 py-2 font-mono text-sm text-muted transition-colors hover:text-foreground"
 				>
 					← Home
 				</Link>

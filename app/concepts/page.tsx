@@ -50,7 +50,7 @@ export default function ConceptsPage() {
 			<div className="mb-2 font-mono text-xs uppercase tracking-widest text-go-cyan">
 				Concepts
 			</div>
-			<h1 className="mb-3 font-serif text-4xl text-white">
+			<h1 className="mb-3 font-serif text-4xl text-foreground">
 				Every concept, explained clearly.
 			</h1>
 			<p className="mb-12 max-w-xl text-muted">
@@ -78,7 +78,7 @@ export default function ConceptsPage() {
 										href={`/concepts/${c.slug}`}
 										className={`group rounded-lg border ${group.border} bg-surface p-4 transition-all hover:-translate-y-0.5 hover:shadow-sm`}
 									>
-										<div className="mb-1 font-semibold text-white group-hover:text-go-cyan">
+										<div className="mb-1 font-semibold text-foreground group-hover:text-go-cyan">
 											{c.name}
 										</div>
 										<div className="text-xs leading-relaxed text-muted">
@@ -110,7 +110,7 @@ export default function ConceptsPage() {
 			</div>
 
 			<div className="mt-12 rounded-lg border border-border bg-surface p-6">
-				<p className="mb-1 font-semibold text-white">
+				<p className="mb-1 font-semibold text-foreground">
 					Using concepts while building
 				</p>
 				<p className="text-sm text-muted">

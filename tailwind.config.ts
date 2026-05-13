@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss"
 
 const config: Config = {
+	darkMode: "class",
 	content: [
 		"./app/**/*.{ts,tsx}",
 		"./components/**/*.{ts,tsx}",
@@ -9,17 +10,21 @@ const config: Config = {
 	theme: {
 		extend: {
 			colors: {
-				bg: "#0a0e0a",
-				surface: "#111611",
-				surface2: "#161d16",
-				border: "#1e2b1e",
-				border2: "#2a3d2a",
-				"go-cyan": "#00ADD8",
-				"go-teal": "#16c79a",
-				"go-amber": "#fbbf24",
-				// brighter muted for readability
-				muted: "#9ab89a",
-				faint: "#4a6a4a",
+				// All semantic colors read from CSS variables so they flip
+				// automatically when the `dark` class is toggled on <html>.
+				bg: "rgb(var(--bg) / <alpha-value>)",
+				surface: "var(--color-surface)",
+				surface2: "var(--color-surface2)",
+				border: "var(--color-border)",
+				border2: "var(--color-border2)",
+				foreground: "var(--color-fg)",
+				muted: "var(--color-muted)",
+				faint: "var(--color-faint)",
+				// Go brand colors — RGB channels allow Tailwind opacity modifiers
+				// (e.g. bg-go-cyan/10) to work against both dark and light backgrounds.
+				"go-cyan": "rgb(var(--go-cyan) / <alpha-value>)",
+				"go-teal": "rgb(var(--go-teal) / <alpha-value>)",
+				"go-amber": "rgb(var(--go-amber) / <alpha-value>)",
 			},
 			fontFamily: {
 				sans: ["Outfit", "sans-serif"],
@@ -27,7 +32,6 @@ const config: Config = {
 				mono: ["JetBrains Mono", "monospace"],
 			},
 			fontSize: {
-				// Slightly larger base sizes
 				xs: ["0.75rem", { lineHeight: "1.5" }],
 				sm: ["0.875rem", { lineHeight: "1.6" }],
 				base: ["1rem", { lineHeight: "1.8" }],

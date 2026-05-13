@@ -19,7 +19,15 @@ export default function RootLayout({
 	children: React.ReactNode
 }) {
 	return (
-		<html lang="en">
+		<html lang="en" suppressHydrationWarning>
+			<head>
+				{/* Runs before React hydrates to avoid a light-flash on dark-mode users */}
+				<script
+					dangerouslySetInnerHTML={{
+						__html: `try{var t=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.classList.toggle('dark',t==='dark')}catch(e){document.documentElement.classList.add('dark')}`,
+					}}
+				/>
+			</head>
 			<body>
 				<Nav />
 				{children}
