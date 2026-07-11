@@ -4,6 +4,22 @@ Append-only. Newest at the top.
 
 ---
 
+## 2026-07-11 — One-Stop brief Phase 0: content monolith split
+
+**Decision:** Executed Phase 0 of BRIEF-ONE-STOP.md on `feat/one-stop-p0`. Each of the 10 projects now lives in `lib/content/projects/<slug>.ts` and each of the 15 concepts in `lib/content/concepts/<slug>.ts`, assembled by per-directory `index.ts` files that preserve the original tier banner comments and ordering. `lib/projects.ts` and `lib/concepts.ts` are now shims re-exporting the same public API (`projects`, `getProject`, `getProjectsByTier`, `concepts`, `Concept`, `getConcept`), so no page, script, or import elsewhere changed. The `Concept` type moved into `lib/content.ts` (the shared types module) so per-slug files can import it without a cycle; `lib/concepts.ts` re-exports it for compatibility. Zero prose edits.
+
+**Verification:** JSON-serialized `projects` + `concepts` (plus lookup-function spot checks) before and after the split and diffed the dumps: byte-identical. This matters because a naive line de-indent corrupts template literals — the first splitter pass did exactly that to concept `codeExample` fields (Go code indented with tabs inside backtick strings), which the diff caught; the final splitter tracks template-literal state and leaves those lines untouched. `npm run build` green (validate, playground cache, 31 static pages).
+
+**Also found:** the project had no local `node_modules` — Next.js and plugins were resolving from a stray `C:\Users\aboturab\node_modules` install, which broke the production build on CSS plugin resolution. Ran `npm install` in the project; build works normally now. Pre-existing issue, unrelated to the split.
+
+**Not touched:** the pending working-tree deletions of `.claude/agents/*.md` and the untracked `BRIEF-ONE-STOP.md` are left as-is — whether to commit them is Aboturab's call (raised in the approved execution plan; also related to the standing "team-setup files not in git" observation).
+
+**Alternatives considered:** codegen re-emitting objects via JSON (destroys formatting and template literals — diff would be unreviewable); per-tier files instead of per-slug (still merge-prone once Phase 3 grows each project 2–3x); moving `getProject`/`getProjectsByTier` into the index (kept them in the shim so the diff stays a pure move).
+
+**Logged by:** Claude Code (engineer, One-Stop brief)
+
+---
+
 ## 2026-05-13 — Open-observations triage + small data-truth fix (pointers concept)
 
 **Decision:** Curated the Open observations section down from six items to one (the still-pending Aboturab call on whether team-setup files get committed to git). Two observations resolved by being folded into Up next (homepage truth-audit finish; Coming-from-X urgency), two promoted to backlog (engineering: first-time concept link affordance; content: T1 P2 curl preamble), one resolved with a small data fix this session (added `pointers` to T1 P1 step 01's `uses` array so the dependency is now truthful in `lib/projects.ts`). Re-ranked Up next: homepage truth-audit finish is #1 (smallest, highest-credibility), Coming-from-X promoted to #2 (load-bearing per persona walkthrough), inline code runner moved to #3 with explicit cross-agent loop framing (engineer feasibility report → PM decision → content UX sign-off → build).

@@ -81,6 +81,20 @@ export type Project = {
 	steps: Step[]
 }
 
+export type Concept = {
+	slug: string
+	name: string
+	tagline: string
+	summary: string
+	mentalModel: string
+	retrievalPrompts: string[]
+	codeExample: string
+	codeExplanation: string
+	designRationale: string
+	commonMistakes: { title: string; body: string }[]
+	relatedSlugs: string[]
+}
+
 export function t(val: LocalizedString, lang: string) {
 	return val[lang as keyof LocalizedString] ?? val.en
 }

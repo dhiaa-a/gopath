@@ -1,6 +1,6 @@
 # GoPath Roadmap
 
-_Last updated: 2026-05-13 by PM (session 2: observation triage + em-dash sweep)_
+_Last updated: 2026-07-11 (One-Stop brief Phase 0: content monolith split)_
 
 > One sentence per sprint: what's the biggest thing that needs to be true by end of week?
 
@@ -8,11 +8,12 @@ _Last updated: 2026-05-13 by PM (session 2: observation triage + em-dash sweep)_
 
 ## Current focus
 
-**Make the homepage truthful and the path to first project effortless.** Before adding features (search, inline runner, progress tracking), make sure what the site already claims is what it actually delivers. Credibility is the moat — a visitor who catches an overclaim won't trust the rest.
+**BRIEF-ONE-STOP.md is the mandate.** GoPath becomes the only Go resource a learner needs: Tier 0 syntax in-house, executable labs, 6–10-step projects, 45–60 concepts, failure labs, idiom track, source reading, capstone. Eight sequential phases; execution plan approved by Aboturab 2026-07-11. While the brief is active, everything in "Up next" below is **frozen** (search, inline runner, progress tracking, Coming-from-X, pricing) — do not pick from it.
 
 ## In progress
 
-- [ ] _(Nothing in flight — pick from Up next.)_
+- [x] **Phase 0 — split the content monolith** (`feat/one-stop-p0`) — done this session; see Done recently.
+- [ ] **Phase 1 — Tier 0: syntax taught in-house** (~3 sessions) — next up. Routing decision (`/basics/[slug]` vs orientation extension) to be made and logged at session start.
 
 ## Open observations
 
@@ -20,7 +21,7 @@ _Anyone can drop a one-liner here. The PM curates it — converts to tasks, park
 
 - **Team-setup files not in git** — _awaiting Aboturab_: `CLAUDE.md`, `ROADMAP.md`, `DECISIONS.md`, and `.claude/` are still untracked on `main`. The working memory only exists on local disk. One-time decision needed on what to track vs. keep local (e.g. `.claude/settings.local.json` typically stays local). Raised PM 2026-05-13, still pending.
 
-## Up next (ranked)
+## Up next (ranked) — FROZEN while BRIEF-ONE-STOP.md is active
 
 1. **Homepage truth-audit (finish the pass)** — _content_ — PM session 1 fixed two overclaims (concept count, Coming-from-X promise). Content's em-dash sweep (session 2) also touched homepage prose. Still owed: full line-by-line read of `app/page.tsx` against what the site actually ships today. Anything the hero or sub-sections promise must be either shipped, fixable in a session, or rewritten. Done = a short note in DECISIONS listing each homepage claim verified.
 2. **"Coming from X" sidebars** — _content + engineer_ — Up Next #2 (was #4). Confirmed load-bearing by content's 2026-05-13 Python-dev persona walkthrough: `flag.String` returning a pointer on T1 P1 step 01 is exactly the kind of friction these sidebars were designed for. `Project` type in `lib/content.ts` has no `fromOtherLang` field today; needs a map keyed by Python / JS / Rust / Java. Once shipped, the original homepage card can come back.
@@ -67,6 +68,7 @@ _Anyone can drop a one-liner here. The PM curates it — converts to tasks, park
 
 ## Done recently (rolling)
 
+- [x] 2026-07-11 — **One-Stop Phase 0:** split `lib/projects.ts` (1,834 lines) and `lib/concepts.ts` (939 lines) into `lib/content/projects/<slug>.ts` × 10 and `lib/content/concepts/<slug>.ts` × 15 plus index files; the old paths are now thin shims with an identical public API. `Concept` type moved to `lib/content.ts`. Verified byte-identical data via JSON dump diff; build green. Largest content file is now 242 lines. Also: project `node_modules` was missing (deps resolved from a stray home-directory install); ran `npm install` locally.
 - [x] 2026-05-13 — Em-dash sweep across all prose (`lib/projects.ts`, `lib/concepts.ts`, `lib/orientation.ts`, `app/page.tsx`). 266 of 267 prose em-dashes replaced with commas, colons, or sentence breaks per voice decision; one intentional em-dash in `SpacedReuseCallout` UI copy kept (component-level, not prose). Build clean.
 - [x] 2026-05-13 — Step 01 of `cli-renamer` now lists `pointers` in `uses`. Data layer is truthful; UI affordance (first-time concept link) tracked in engineering backlog.
 - [x] Concepts system (`lib/concepts.ts`) — 15 entries with mental models, retrieval prompts, design rationale, common mistakes
