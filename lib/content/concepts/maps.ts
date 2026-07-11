@@ -6,7 +6,7 @@ export const maps: Concept = {
 	tagline:
 		"Hash maps with simple syntax, but nil maps and concurrent access will panic.",
 	summary:
-		"Maps are Go's built-in hash map. They map keys to values, both of any comparable type. Two things will panic: writing to a nil map, and concurrent reads + writes without synchronisation. Maps are reference types; passing a map to a function passes a reference, not a copy.",
+		"Maps are Go's built-in hash map. Keys can be any comparable type; values can be anything. Two things will panic: writing to a nil map, and concurrent reads + writes without synchronisation. Passing a map to a function copies only a small header that points at shared data, so the callee's writes are visible to the caller.",
 	mentalModel:
 		"A map is a lookup table. The zero value of a map is nil, a table that doesn't exist yet. You must initialise it with <code>make</code> or a literal before writing to it. Reading a missing key never panics (it returns the zero value) but that can silently mask bugs.",
 	retrievalPrompts: [

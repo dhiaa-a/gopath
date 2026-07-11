@@ -81,6 +81,22 @@ export type Project = {
 	steps: Step[]
 }
 
+export type Tier0Lesson = {
+	slug: string
+	order: number
+	title: string
+	tagline: string
+	estimatedMinutes: number
+	// Prose (and supporting snippets) before the program.
+	intro: ContentBlock[]
+	// The one runnable program the lesson is built around. Max 30 non-empty
+	// lines, enforced by scripts/validate.ts. Rendered with a playground link.
+	program: string
+	// Prose after the program: what to notice, what to change, gotchas.
+	after: ContentBlock[]
+	retrievalPrompts: string[]
+}
+
 export type Concept = {
 	slug: string
 	name: string

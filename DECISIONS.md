@@ -4,6 +4,22 @@ Append-only. Newest at the top.
 
 ---
 
+## 2026-07-11 — One-Stop Phase 1: Tier 0 syntax track at /basics
+
+**Decision:** Shipped the in-house syntax on-ramp as a new page family: `lib/content/tier0/<slug>.ts` (14 lessons) rendered at `/basics` and `/basics/[slug]`, with a `Tier0Lesson` type (intro blocks → one program → after blocks → retrieval prompts) added to `lib/content.ts` and a `lib/tier0.ts` module matching the projects/concepts pattern. Routing went to a new `/basics` family rather than extending orientation: orientation's validation enforces a contiguous 6-page order, its pages carry no program anatomy, and `learn-syntax` has to point *at* the track, which is circular if the track lives inside orientation. Lesson order puts pointers before structs/methods so pointer receivers have footing and the known T1 P1 `flag.String` friction is pre-empted (the pointers lesson closes with exactly that callout).
+
+**Coverage call:** interfaces are deliberately absent from Tier 0, matching the brief's coverage list. The learn-syntax checklist item and the ready-check retrieval prompt that previously demanded interfaces (material the site never taught in-house) were replaced with pointer-parameter and nil-map prompts, which Tier 0 does teach. Tier 1 introduces interfaces in context via the existing concept page. Rule 2 discipline held: zero testing content anywhere in Tier 0.
+
+**Verification:** every lesson program was extracted and machine-checked locally: gofmt-clean, vet-clean, compiles and runs on go1.22.1, and the prose's output claims match actual output (this caught two programs where a TS `\n` escape produced a real newline inside a Go string literal, and one wrong claimed output). validate.ts now mechanically enforces the brief's caps: ≤30 non-empty program lines, ≤20 estimated minutes, 2–3 retrieval prompts, unique slugs, contiguous order, and `/basics/`+`/concepts/`+`/orientation/` link integrity across all three content families.
+
+**Review pass:** a content-agent review (single pass, per session instruction) returned 13 findings including 2 blockers, all fixed: a retrieval answer asserting a nonexistent compiler requirement (`string(rune(65))`), lesson 1's `go build` failing outside a module directory, a false "no way to dump names into your namespace" claim (dot imports exist), a break-it step producing two errors where prose promised one, stale compiler error text, and an unexplained "goroutine" in lesson 1's self-check. One finding fixed outside Phase 1 scope as a small accuracy ride-along: the maps concept summary's "passes a reference" phrasing (now "copies a small header pointing at shared data", also fixing keys-vs-values comparability). Remaining improvement (break-it steps for 8 more lessons) logged as an open observation.
+
+**Alternatives considered:** extending orientation with 14 more pages (breaks its order validation and its "airlock" framing); a generic `blocks`-only lesson shape (loses the enforced program anatomy and the guaranteed playground link); teaching interfaces in Tier 0 anyway (contradicts the brief's list and delays first contact with real building).
+
+**Logged by:** Claude Code (engineer + content, One-Stop brief)
+
+---
+
 ## 2026-07-11 — One-Stop brief Phase 0: content monolith split
 
 **Decision:** Executed Phase 0 of BRIEF-ONE-STOP.md on `feat/one-stop-p0`. Each of the 10 projects now lives in `lib/content/projects/<slug>.ts` and each of the 15 concepts in `lib/content/concepts/<slug>.ts`, assembled by per-directory `index.ts` files that preserve the original tier banner comments and ordering. `lib/projects.ts` and `lib/concepts.ts` are now shims re-exporting the same public API (`projects`, `getProject`, `getProjectsByTier`, `concepts`, `Concept`, `getConcept`), so no page, script, or import elsewhere changed. The `Concept` type moved into `lib/content.ts` (the shared types module) so per-slug files can import it without a cycle; `lib/concepts.ts` re-exports it for compatibility. Zero prose edits.

@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs"
 import { join } from "path"
 import { concepts } from "../lib/concepts"
 import { projects } from "../lib/projects"
+import { tier0Lessons } from "../lib/tier0"
 import type { ContentBlock } from "../lib/content"
 
 const CACHE_DIR = join(process.cwd(), ".cache")
@@ -58,6 +59,10 @@ function collectAll(): string[] {
 
 	for (const c of concepts) {
 		snippets.push(c.codeExample)
+	}
+
+	for (const l of tier0Lessons) {
+		snippets.push(l.program)
 	}
 
 	for (const p of projects) {

@@ -1,6 +1,6 @@
 # GoPath Roadmap
 
-_Last updated: 2026-07-11 (One-Stop brief Phase 0: content monolith split)_
+_Last updated: 2026-07-11 (One-Stop brief Phase 1: Tier 0 syntax track shipped)_
 
 > One sentence per sprint: what's the biggest thing that needs to be true by end of week?
 
@@ -12,14 +12,16 @@ _Last updated: 2026-07-11 (One-Stop brief Phase 0: content monolith split)_
 
 ## In progress
 
-- [x] **Phase 0 — split the content monolith** (`feat/one-stop-p0`) — done this session; see Done recently.
-- [ ] **Phase 1 — Tier 0: syntax taught in-house** (~3 sessions) — next up. Routing decision (`/basics/[slug]` vs orientation extension) to be made and logged at session start.
+- [x] **Phase 0 — split the content monolith** (`feat/one-stop-p0`) — done; see Done recently.
+- [x] **Phase 1 — Tier 0: syntax taught in-house** (`feat/one-stop-p1`) — done; see Done recently.
+- [ ] **Phase 2 — the executable spine (`labs/`)** (~3 sessions) — next up. Upgrade Go toolchain to latest stable first; decide reference-solution layout and log it; add `.gitattributes` for `labs/` line endings.
 
 ## Open observations
 
 _Anyone can drop a one-liner here. The PM curates it — converts to tasks, parks, or resolves. This is how the agents talk between sessions._
 
-- **Team-setup files not in git** — _awaiting Aboturab_: `CLAUDE.md`, `ROADMAP.md`, `DECISIONS.md`, and `.claude/` are still untracked on `main`. The working memory only exists on local disk. One-time decision needed on what to track vs. keep local (e.g. `.claude/settings.local.json` typically stays local). Raised PM 2026-05-13, still pending.
+- **Team-setup files not in git** — _awaiting Aboturab_: `CLAUDE.md`, `ROADMAP.md`, `DECISIONS.md`, and `.claude/` are still untracked on `main`. The working memory only exists on local disk. One-time decision needed on what to track vs. keep local (e.g. `.claude/settings.local.json` typically stays local). Raised PM 2026-05-13, still pending. Related: `.claude/agents/*.md` deletions and `BRIEF-ONE-STOP.md` sit uncommitted in the working tree, also awaiting the call.
+- **Break-it steps for 8 more Basics lessons** — content review 2026-07-11: only 6 of 14 Tier 0 lessons have a deliberate break-it moment (the track's signature move). Obvious candidates exist for the rest: nil map write (maps), nil pointer dereference (pointers), `s[0] = 'H'` (strings). Copy already softened to "often deliberately break"; adding the steps upgrades it back.
 
 ## Up next (ranked) — FROZEN while BRIEF-ONE-STOP.md is active
 
@@ -68,6 +70,7 @@ _Anyone can drop a one-liner here. The PM curates it — converts to tasks, park
 
 ## Done recently (rolling)
 
+- [x] 2026-07-11 — **One-Stop Phase 1:** Tier 0 "Basics" track shipped at `/basics`: 14 micro-lessons (hello → packages, ~3.2h total) in `lib/content/tier0/`, each with one machine-verified ≤30-line program (gofmt/vet/run checked locally), playground link, and 2–3 retrieval prompts. `learn-syntax` now points inward (external resources demoted to a footnote); `ready-check` prompts realigned to Tier 0 coverage (interface prompt swapped for pointer-argument prompt; nil-map trap added). Nav gained "Basics". validate.ts now enforces tier0 slug/order/link integrity plus the brief's caps (≤30-line programs, ≤20 min, 2–3 prompts). Content-agent review pass: 13 findings, 2 blockers, all fixed. Build green, 52 pages.
 - [x] 2026-07-11 — **One-Stop Phase 0:** split `lib/projects.ts` (1,834 lines) and `lib/concepts.ts` (939 lines) into `lib/content/projects/<slug>.ts` × 10 and `lib/content/concepts/<slug>.ts` × 15 plus index files; the old paths are now thin shims with an identical public API. `Concept` type moved to `lib/content.ts`. Verified byte-identical data via JSON dump diff; build green. Largest content file is now 242 lines. Also: project `node_modules` was missing (deps resolved from a stray home-directory install); ran `npm install` locally.
 - [x] 2026-05-13 — Em-dash sweep across all prose (`lib/projects.ts`, `lib/concepts.ts`, `lib/orientation.ts`, `app/page.tsx`). 266 of 267 prose em-dashes replaced with commas, colons, or sentence breaks per voice decision; one intentional em-dash in `SpacedReuseCallout` UI copy kept (component-level, not prose). Build clean.
 - [x] 2026-05-13 — Step 01 of `cli-renamer` now lists `pointers` in `uses`. Data layer is truthful; UI affordance (first-time concept link) tracked in engineering backlog.

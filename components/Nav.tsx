@@ -10,6 +10,7 @@ export default function Nav() {
 
 	const links = [
 		{ href: "/orientation", label: "Orientation" },
+		{ href: "/basics", label: "Basics" },
 		{ href: "/#path", label: "Learning path" },
 		{ href: "/projects", label: "All projects" },
 		{ href: "/concepts", label: "Concepts" },

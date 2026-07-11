@@ -333,39 +333,21 @@ func main() {
 	{
 		slug: "learn-syntax",
 		order: 5,
-		title: "Where to learn Go syntax",
+		title: "Learn Go syntax here",
 		tagline:
-			"Two official resources, when to use each, and a checklist for when you're ready to leave.",
-		estimatedMinutes: 4,
+			"The Basics track teaches every syntax pattern Tier 1 assumes, in about three hours of typing.",
+		estimatedMinutes: 3,
 		blocks: [
 			{
 				type: "text",
 				value: {
-					en: "GoPath teaches you to build with Go, not to write Go from scratch. For the actual syntax (variables, loops, function declarations, struct definitions) use one of the two resources below and come back when you can read Go without squinting.",
+					en: `Syntax is taught on this site. The <a href="/basics" class="${LINK}">Basics track</a> is fourteen micro-lessons, each under twenty minutes: one syntax cluster, taught through a single small program you type, run, and often deliberately break, then locked in with retrieval prompts. It's written for developers who already program in Python, JavaScript, Java, or C#, so it spends its time on what Go does differently, not on what a variable is.`,
 				},
 			},
 			{
 				type: "text",
 				value: {
-					en: `<strong>1. Tour of Go</strong> · <a href="https://go.dev/tour" target="_blank" rel="noopener" class="${LINK}">go.dev/tour</a>`,
-				},
-			},
-			{
-				type: "text",
-				value: {
-					en: "Interactive, runs in the browser, no setup required. Best if you've never written Go before, or if your last attempt was years ago. Work through it linearly; it's short, roughly two hours start to finish. Don't skip the exercises; that's where the patterns stick.",
-				},
-			},
-			{
-				type: "text",
-				value: {
-					en: `<strong>2. Go by Example</strong> · <a href="https://gobyexample.com" target="_blank" rel="noopener" class="${LINK}">gobyexample.com</a>`,
-				},
-			},
-			{
-				type: "text",
-				value: {
-					en: 'Flat reference, one concept per page, copy-pasteable. Best if you\'ve written Java, C#, Rust, Python, or similar, and just need to look up "how does Go do X." Use it as a sidecar: keep a tab open while you work through the projects here.',
+					en: "The track runs from your first compiled binary through variables and zero values, types, functions, control flow, pointers, structs, methods, slices, maps, strings, closures, error handling, and packages with Go's capital-letter visibility rule. That's every syntax pattern the Tier 1 projects assume. The one deliberate omission is interfaces: Tier 1 introduces them in context, with the concept page, at the moment a project first needs one.",
 				},
 			},
 			{
@@ -385,7 +367,7 @@ func main() {
 						en: "Read code that returns (value, error) and handle the error correctly.",
 					},
 					{
-						en: "Define a simple interface and write a type that satisfies it.",
+						en: "Explain what <code>&x</code> and <code>*p</code> do, and when a function needs a pointer parameter.",
 					},
 					{
 						en: "Initialize a slice and a map, and iterate over them with range.",
@@ -396,7 +378,13 @@ func main() {
 				type: "callout",
 				variant: "info",
 				value: {
-					en: "If you can't do all five from memory, go back to Tour of Go. The projects assume you can read Go before you start writing it; nothing on this site teaches syntax in the project body.",
+					en: `If you can't do all five from memory, work through the <a href="/basics" class="${LINK}">Basics track</a> first, then take the ready check on the next page. The projects assume you can read Go before you start writing it.`,
+				},
+			},
+			{
+				type: "text",
+				value: {
+					en: `<em>Other angles, if you want a second voice:</em> <a href="https://go.dev/tour" target="_blank" rel="noopener" class="${LINK}">Tour of Go</a> (official, interactive) and <a href="https://gobyexample.com" target="_blank" rel="noopener" class="${LINK}">Go by Example</a> (flat reference). Neither is required; everything Tier 1 needs is in Basics.`,
 				},
 			},
 		],
@@ -418,7 +406,7 @@ func main() {
 			{
 				type: "text",
 				value: {
-					en: `If you stall on more than one, go back to <a href="/orientation/learn-syntax" class="${LINK}">learn-syntax</a> and spend another hour with Tour of Go. The projects assume this baseline.`,
+					en: `If you stall on more than one, go back to the <a href="/basics" class="${LINK}">Basics track</a> and redo the lessons you stalled on; each is under twenty minutes. The projects assume this baseline.`,
 				},
 			},
 		],
@@ -426,12 +414,12 @@ func main() {
 			"Without looking: what does `:=` do, and how is it different from `var x = ...`? || `:=` is short variable declaration: it declares a new variable and infers its type from the right-hand side. `var x = ...` does the same inference but is a full declaration usable at package scope (`:=` only works inside functions). In practice you'll use `:=` for nearly every local variable.",
 			"If a function returns `(string, error)`, what's the idiomatic way to call it? || `s, err := fn()` immediately followed by `if err != nil { return ... }` (or some other handling). Always check the error before using the value; the value is only meaningful when err is nil. Ignoring the error with `_` is a code smell unless you're certain the error can't happen.",
 			"Write the syntax for a method on a struct type Counter that increments a field. Why does the receiver type matter? || `func (c *Counter) Inc() { c.count++ }`. The `*Counter` pointer receiver matters because a value receiver would receive a copy: the increment would mutate the copy, and the caller's Counter would be unchanged. For any method that mutates state, use a pointer receiver.",
-			'Write a tiny interface Greeter with one method `Greet() string`, then a type that satisfies it. How does the type declare satisfaction? || `type Greeter interface { Greet() string }`. Any type with a matching `Greet() string` method automatically satisfies it. There\'s no `implements` keyword. For example: `type Bot struct{}` and `func (b Bot) Greet() string { return "hi" }`. Bot is now a Greeter, no declaration needed.',
-			'Initialize a slice of strings and a map from string to int, then write a for loop that iterates over the map. || Slice: `s := []string{"a", "b"}`. Map: `m := map[string]int{"a": 1}`. To iterate: `for k, v := range m { ... }`. Range works the same on slices but yields (index, value) instead. Map iteration order is randomized; never rely on it.',
+			"A function needs to double its caller's int variable. Why doesn't `func double(n int) { n = n * 2 }` work, and what's the fix? || Go copies every argument, so the function doubles its own copy and the caller sees nothing. Fix: take a pointer, `func double(n *int) { *n = *n * 2 }`, and call it as `double(&x)`. The `&` hands over x's address; the `*` writes through it.",
+			'Initialize a slice of strings and a map from string to int, then write a for loop that iterates over the map. What goes wrong with `var m map[string]int` followed by `m["a"] = 1`? || Slice: `s := []string{"a", "b"}`. Map: `m := map[string]int{"a": 1}`. Iterate: `for k, v := range m { ... }` (order is randomized; never rely on it). The var form panics on write: a map\'s zero value is nil, readable but not writable. Initialize with a literal or make() first.',
 		],
 		cta: {
 			href: "/projects/cli-renamer",
-			label: "I'm ready — start Tier 1 →",
+			label: "I'm ready: start Tier 1 →",
 		},
 	},
 ]
