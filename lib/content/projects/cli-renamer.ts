@@ -9,6 +9,13 @@ export const cliRenamer: Project = {
 	tierLabel: "FOUNDATIONS",
 	estimatedTime: "2–3 hours",
 	tags: ["os", "flag", "filepath", "error-handling"],
+	lab: {
+		path: "labs/cli-renamer",
+		command: "go run ./check",
+		summary: {
+			en: "A runnable self-check, not a test suite: it builds your renamer, runs it against fixture folders, and shows what your program did next to what was expected.",
+		},
+	},
 	mentalModels: [
 		"input parsing boundary",
 		"stateless transformation",
@@ -143,6 +150,12 @@ for _, e := range entries {
 					task: {
 						en: 'Implement run(*Config) error. Skip directories and files where transformName produces the same name. In dry-run mode print "[DRY RUN] old → new" without calling os.Rename. Return the first error encountered, wrapped with the filename.',
 					},
+					hints: [
+						{
+							label: "the skip-if-unchanged guard never fires here",
+							value: "Worth knowing, because the self-check cannot show you this: while --pattern is required, transformName always returns pattern + \"_\" + base + ext, which is strictly longer than the name it was given, so newName == e.Name() is never true. The guard is dead code today. Write it anyway. It costs one comparison, it is the line that keeps run correct the moment the prefix becomes optional, and os.Rename(x, x) is a syscall you have no reason to make. Cheap guards at the top of a loop are how you stop a later change from turning a no-op into a bug.",
+						},
+					],
 				},
 			],
 		},

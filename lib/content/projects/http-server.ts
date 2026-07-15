@@ -10,6 +10,13 @@ export const httpServer: Project = {
 	tierLabel: "SYSTEMS",
 	estimatedTime: "4–5 hours",
 	tags: ["net/http", "middleware", "context", "httptest", "interfaces"],
+	lab: {
+		path: "labs/http-server",
+		command: "go test -race ./...",
+		summary: {
+			en: "A black-box suite grades your middleware package: eight cases covering chain order, auth rejection and context identity, the rate limit burst, the 429 past it, the token refill that follows, and a 404 captured in slog output.",
+		},
+	},
 	mentalModels: [
 		"handler composition over configuration",
 		"context as request-scoped state",
@@ -165,41 +172,64 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						kind: "integration",
 						title: "Middleware test suite",
 						description:
-							"go test -race ./... must pass with zero data races.",
+							"The lab ships the suite: go test -race ./... in labs/http-server must pass with zero data races. The tests are black-box and call only the exported API stubbed out in middleware/middleware.go.",
+						labPath: "labs/http-server/middleware",
 						testCases: [
 							{
 								description:
-									"Auth: no Authorization header",
-								expected: "HTTP 401",
-							},
-							{
-								description: "Auth: invalid token",
-								expected: "HTTP 401",
-							},
-							{
-								description: "Auth: valid token",
+									"TestAuth/no_Authorization_header",
 								expected:
-									"HTTP 200, user stored in context",
+									"HTTP 401, next handler never runs",
 							},
 							{
-								description: "RateLimit: requests 1–N",
-								expected: "HTTP 200",
+								description: "TestAuth/invalid_token",
+								expected:
+									"HTTP 401, next handler never runs",
 							},
 							{
-								description: "RateLimit: request N+1",
+								description: "TestAuth/valid_token",
+								expected:
+									"HTTP 200, UserFromContext returns the token's user",
+							},
+							{
+								description:
+									"TestChainOrder: two order-revealing middleware through Chain",
+								expected:
+									"mwA runs before mwB, since Chain's first argument is the outermost wrapper",
+							},
+							{
+								description:
+									"TestRateLimitWithinLimit: first N requests from one IP, delivered concurrently",
+								expected: "HTTP 200 for all N",
+							},
+							{
+								description:
+									"TestRateLimitOverLimit: request N+1 from the same IP",
 								expected: "HTTP 429",
 							},
 							{
 								description:
-									"Logging: request returning 404",
-								expected: 'slog output contains "404"',
+									"TestRateLimitRefill: exhaust the burst, then wait one token's worth of time",
+								expected:
+									"the next request gets HTTP 200, proving tokens refilled",
+							},
+							{
+								description:
+									"TestLogging404: request to an unrouted path",
+								expected:
+									"slog output has status=404, plus method and path",
 							},
 						],
-						desiredOutput: "ok  \tyourmodule/middleware\nPASS",
+						desiredOutput:
+							"ok  \tgopath.dev/labs/http-server/middleware\t0.65s",
 						hints: [
 							{
 								label: "-race",
-								value: "go test -race ./... runs the Go race detector. Any unsynchronised concurrent map access will be reported as a data race and fail the test.",
+								value: "go test -race ./... runs the Go race detector. Any unsynchronised concurrent map access will be reported as a data race and fail the test. -race needs cgo; on Windows without gcc, drop the flag.",
+							},
+							{
+								label: "the pinned API",
+								value: "The suite calls Chain, LoggingMiddleware(*slog.Logger), AuthMiddleware(map[string]string), UserFromContext(ctx), and RateLimitMiddleware(n int). The exact signatures are already stubbed in labs/http-server/middleware/middleware.go.",
 							},
 						],
 					},

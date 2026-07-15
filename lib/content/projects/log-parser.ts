@@ -10,6 +10,13 @@ export const logParser: Project = {
 	tierLabel: "FOUNDATIONS",
 	estimatedTime: "3–4 hours",
 	tags: ["goroutines", "channels", "sync", "bufio", "testing"],
+	lab: {
+		path: "labs/log-parser",
+		command: "go test -v ./...",
+		summary: {
+			en: "Your first graded suite: a table-driven test file written to be read, which then grades your ParseLine across eight named subtests.",
+		},
+	},
 	mentalModels: [
 		"fan-out with a worker pool",
 		"channel ownership: senders close",
@@ -31,9 +38,15 @@ export const logParser: Project = {
 	],
 	architecture: [
 		{
+			type: "text",
+			value: {
+				en: "The tree below is the full program you assemble in your own project directory, not the lab's layout. The executable lab scaffolds and grades only ParseLine, which ships in a parser package (parser.go, alongside entry.go for the LogEntry type, the parser_test.go suite, and the reference solution.go); processFile (step 02) and the worker pool with its --workers flag (step 03) are patterns you apply in your own project, not files the lab provides.",
+			},
+		},
+		{
 			type: "code",
 			value: `log_parser.go
- ├── parseLine(line, file string, n int) (LogEntry, bool)
+ ├── ParseLine(line string) (LogEntry, bool)   // the lab grades this, in parser/parser.go
  ├── processFile(path string, out chan<- LogEntry) error
  ├── worker(tasks <-chan string, out chan<- LogEntry, errs chan<- error, wg *sync.WaitGroup)
  ├── dispatch(paths []string, tasks chan<- string)
@@ -67,7 +80,7 @@ log_parser_test.go`,
 						en: "A CSV importer splits each row by comma, checks the field count matches the header, converts numeric columns with strconv.Atoi, and returns (Row, false) for any malformed row rather than aborting the entire import.",
 					},
 					task: {
-						en: 'Write parseLine(line, file string, lineNum int) (LogEntry, bool). The format is: "2024-01-15T10:30:00Z INFO message here". Parse the timestamp with time.Parse(time.RFC3339, ...). Return false (never an error) for any line that doesn\'t match. Store file and lineNum in the entry for debugging.',
+						en: 'Write ParseLine(line string) (LogEntry, bool) in the lab\'s parser package (labs/log-parser/parser/parser.go). The format is: "2024-01-15T10:30:00Z INFO message here". Parse the timestamp with time.Parse(time.RFC3339, ...). Return false (never an error) for any line that doesn\'t match. Exported, because the lab\'s test suite lives outside the package and can only call what you export.',
 					},
 				},
 			],
@@ -95,7 +108,7 @@ return scanner.Err() // nil means clean EOF`,
 						en: "A log rotator scans a multi-gigabyte nginx access log line by line to count 5xx status codes without ever loading the file into memory: the same file that would OOM the process if read with os.ReadFile.",
 					},
 					task: {
-						en: 'Write processFile(path string, out chan<- LogEntry) error. Open the file, scan line by line, call parseLine, and send successful entries into out. Count skipped lines and print a summary with log.Printf("skipped %d malformed lines in %s").',
+						en: 'Write processFile(path string, out chan<- LogEntry) error. Open the file, scan line by line, call ParseLine, and send successful entries into out. Count skipped lines and print a summary with log.Printf("skipped %d malformed lines in %s").',
 					},
 				},
 			],
@@ -147,7 +160,7 @@ go func() { wg.Wait(); close(results) }() // closer`,
 		},
 		{
 			n: "04",
-			heading: { en: "Write table-driven tests for parseLine" },
+			heading: { en: "Read the table-driven suite that grades ParseLine" },
 			uses: [],
 			blocks: [
 				{
@@ -182,16 +195,17 @@ go func() { wg.Wait(); close(results) }() // closer`,
 						en: "The Go standard library tests net/url.Parse with a table of 60+ cases covering schemes, hosts, paths, query strings, fragments, and edge cases like missing slashes and duplicate keys. Each is a single row; adding coverage is trivial.",
 					},
 					task: {
-						en: "Write TestParseLine covering: a valid INFO line, a valid WARN line, a malformed timestamp, a line with only two space-separated fields, and an empty string. Run go test ./... and confirm all five subtests pass. The output must show named subtests, not just PASS.",
+						en: "Open labs/log-parser/parser/parser_test.go and read it top to bottom; the comments walk through the table, the anonymous struct, t.Run, and got/want. It covers five contract cases (a valid INFO line, a valid WARN line, a malformed timestamp, a line with only two space-separated fields, an empty string) plus three edge cases. From labs/log-parser, run go test -v ./... until every named subtest passes. Then add one row of your own to the table and predict its outcome before you run again.",
 					},
 				},
 				{
 					type: "assessment",
 					assessment: {
 						kind: "unit",
-						title: "parseLine test suite",
+						title: "ParseLine test suite",
 						description:
-							"Run go test ./... and five named subtests must pass.",
+							"From labs/log-parser, run go test -v ./... . The shipped table-driven suite grades your ParseLine: the five contract subtests below plus three edge cases (interior spaces kept in the message, an RFC3339 zone offset, a single-word message).",
+						labPath: "labs/log-parser/parser/parser_test.go",
 						testCases: [
 							{
 								description: "Valid INFO line",
@@ -220,12 +234,17 @@ go func() { wg.Wait(); close(results) }() // closer`,
 								expected: "ok=false",
 							},
 						],
-						desiredOutput: `--- PASS: TestParseLine/valid_INFO_line
---- PASS: TestParseLine/valid_WARN_line
---- PASS: TestParseLine/malformed_timestamp
---- PASS: TestParseLine/only_two_fields
---- PASS: TestParseLine/empty_string
-PASS`,
+						desiredOutput: `--- PASS: TestParseLine (0.00s)
+    --- PASS: TestParseLine/valid_INFO_line (0.00s)
+    --- PASS: TestParseLine/valid_WARN_line (0.00s)
+    --- PASS: TestParseLine/malformed_timestamp (0.00s)
+    --- PASS: TestParseLine/only_two_fields (0.00s)
+    --- PASS: TestParseLine/empty_string (0.00s)
+    --- PASS: TestParseLine/message_keeps_interior_spaces (0.00s)
+    --- PASS: TestParseLine/timestamp_with_zone_offset (0.00s)
+    --- PASS: TestParseLine/single_word_message (0.00s)
+PASS
+ok      gopath.dev/labs/log-parser/parser`,
 					},
 				},
 			],
@@ -235,7 +254,7 @@ PASS`,
 		{
 			type: "text",
 			value: {
-				en: "You built a concurrent pipeline from scratch: pure parsing, buffered I/O, a fan-out worker pool with proper channel ownership, and your first test suite. The channel ownership rule (senders close, receivers range) is the rule you will apply in every concurrent project from here.",
+				en: "You built a concurrent pipeline from scratch: pure parsing, buffered I/O, a fan-out worker pool with proper channel ownership, and you read and passed your first table-driven test suite. The channel ownership rule (senders close, receivers range) is the rule you will apply in every concurrent project from here.",
 			},
 		},
 	],

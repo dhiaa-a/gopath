@@ -1,3 +1,5 @@
+import { existsSync, readdirSync } from "node:fs"
+import path from "node:path"
 import { concepts } from "../lib/concepts"
 import { projects } from "../lib/projects"
 import { orientationPages, OrientationPage } from "../lib/orientation"
@@ -44,6 +46,63 @@ for (const project of projects) {
 	for (const tag of project.tags) {
 		if (!KNOWN_TAGS.has(tag)) {
 			fail(`${project.slug}: unknown tag "${tag}" — add it to KNOWN_TAGS in scripts/validate.ts if intentional`)
+		}
+	}
+}
+
+// ─── Labs ──────────────────────────────────────────────────────────────────
+// Phase 2 contract: every project ships an executable lab at labs/<slug>,
+// the project links it, and every assessment references a real path in it.
+
+const labsRoot = path.resolve(process.cwd(), "labs")
+
+for (const project of projects) {
+	if (!project.lab) {
+		fail(`${project.slug}: no lab — every project links its lab (labs/<slug>)`)
+		continue
+	}
+	const expected = `labs/${project.slug}`
+	if (project.lab.path !== expected) {
+		fail(`${project.slug}: lab.path is "${project.lab.path}", expected "${expected}"`)
+	}
+	if (!project.lab.command.trim()) {
+		fail(`${project.slug}: lab.command is empty`)
+	}
+	for (const required of ["go.mod", "README.md"]) {
+		if (!existsSync(path.join(labsRoot, project.slug, required))) {
+			fail(`${project.slug}: lab is missing ${expected}/${required}`)
+		}
+	}
+	for (const step of project.steps) {
+		for (const block of step.blocks) {
+			if (block.type !== "assessment") continue
+			const labPath = block.assessment.labPath
+			if (!labPath) {
+				fail(`${project.slug} step ${step.n}: assessment has no labPath — assessments must reference the real suite`)
+				continue
+			}
+			if (labPath !== expected && !labPath.startsWith(`${expected}/`)) {
+				fail(`${project.slug} step ${step.n}: labPath "${labPath}" is outside ${expected}`)
+			}
+			if (!existsSync(path.resolve(process.cwd(), labPath))) {
+				fail(`${project.slug} step ${step.n}: labPath "${labPath}" does not exist on disk`)
+			}
+		}
+	}
+}
+
+// Orphan check: every module directly under labs/ must belong to a project.
+// Future tracks from the One-Stop brief are allowlisted before they exist.
+{
+	const futureTracks = new Set(["failures", "idioms", "capstone"])
+	const projectSlugs = new Set(projects.map((p) => p.slug))
+	if (existsSync(labsRoot)) {
+		for (const entry of readdirSync(labsRoot, { withFileTypes: true })) {
+			if (!entry.isDirectory()) continue
+			if (futureTracks.has(entry.name)) continue
+			if (!projectSlugs.has(entry.name)) {
+				fail(`labs/${entry.name}: no project with this slug — orphaned lab`)
+			}
 		}
 	}
 }

@@ -10,6 +10,13 @@ export const configWatcher: Project = {
 	tierLabel: "FOUNDATIONS",
 	estimatedTime: "3–4 hours",
 	tags: ["select", "atomic", "time", "goroutines", "benchmarks"],
+	lab: {
+		path: "labs/config-watcher",
+		command: "go test -bench . -benchmem ./...",
+		summary: {
+			en: "Grades your Store and MutexStore from steps 03 and 04 with one shared correctness suite, benchmarks both under parallel load, and gates on atomic.Value beating the RWMutex.",
+		},
+	},
 	mentalModels: [
 		"select as a channel multiplexer",
 		"debounce with time.AfterFunc",
@@ -174,11 +181,12 @@ fmt.Println(cfg.Port)`,
 						kind: "benchmark",
 						title: "atomic.Value vs RWMutex under parallel load",
 						description:
-							"Run go test -bench=. -benchmem -count=5. Both benchmarks must complete. The atomic version must be faster.",
+							"The real suite lives in labs/config-watcher. Port your two stores into config/store.go and run go test -bench . -benchmem -count=5 ./... there: BenchmarkAtomicLoad and BenchmarkMutexLoad (config/bench_test.go) must complete with 0 allocs/op. Then run the gate, go test -tags gate -run TestGate ./..., which reruns both benchmarks in one process and fails unless the atomic version is strictly faster.",
+						labPath: "labs/config-watcher/config",
 						desiredMetrics:
-							"BenchmarkAtomicLoad:  < 5 ns/op,   0 allocs/op\nBenchmarkMutexLoad:  10–40 ns/op,  0 allocs/op",
+							"BenchmarkAtomicLoad:  < 5 ns/op,   0 allocs/op\nBenchmarkMutexLoad:  10–50 ns/op,  0 allocs/op",
 						metricsAchievable:
-							"On an M1 Mac with GOMAXPROCS=8: atomic ~1.2 ns/op, RWMutex ~22 ns/op. The gap widens with more goroutines because atomic has zero contention; every RLock still touches the mutex's memory, invalidating cache lines shared across cores.",
+							"On an M1 Mac with GOMAXPROCS=8: atomic ~1.2 ns/op, RWMutex ~22 ns/op. The gap widens with more goroutines because atomic has zero contention; every RLock still touches the mutex's memory, invalidating cache lines shared across cores. An Intel mobile CPU such as the i5-1135G7 lands the RWMutex Load closer to 45 to 50 ns/op; that is a correct result, not a broken one, and the relative gate still passes because it compares the two stores in the same process.",
 						hints: [
 							{
 								label: "why RunParallel",

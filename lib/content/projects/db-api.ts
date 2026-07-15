@@ -10,6 +10,13 @@ export const dbApi: Project = {
 	tierLabel: "PRODUCTION",
 	estimatedTime: "6–8 hours",
 	tags: ["postgres", "pgx", "migrations", "repository", "testing"],
+	lab: {
+		path: "labs/db-api",
+		command: "go test ./...",
+		summary: {
+			en: "Grades the API at two layers: handler unit tests against a hand-rolled mock repository on every run, and an opt-in integration suite that drives the full Create, Get, Update, Delete lifecycle against whatever Postgres TEST_DATABASE_URL points at.",
+		},
+	},
 	mentalModels: [
 		"repository interface as a boundary",
 		"dependency injection through constructors",
@@ -44,6 +51,12 @@ internal/
  │    ├── handlers.go
  │    └── handlers_test.go  — MockRepo
 cmd/server/main.go`,
+		},
+		{
+			type: "text",
+			value: {
+				en: "Scope note: that tree is the full production shape, and the steps below teach it. The executable lab at labs/db-api ships a focused slice of it, flat rather than nested: an api/ package (the TaskRepository interface, the handlers, and the mock suite) and a postgres/ package (the pgx repository and the integration suite). It does not ship golang-migrate or a migrations/ directory; the integration test applies a single schema.sql before it runs, which is all one table needs, so step 01's versioned-migration constraint is the production pattern to understand, not a directory to go hunting for here. There is no internal/ or cmd/server/main.go either: the suites construct the server directly, so wiring a main binary is left out of scope.",
+			},
 		},
 	],
 	steps: [
@@ -131,10 +144,10 @@ cmd/server/main.go`,
 				{
 					type: "constraint",
 					what: {
-						en: "Unit tests must use a MockTaskRepository: no real database. Cover every handler: success, not-found, invalid input, and duplicate. Additionally write one integration test against a real Postgres instance (testcontainers-go) exercising Create → GetByID → Update → Delete.",
+						en: "Unit tests must use a MockTaskRepository: no real database. Cover every handler: success, not-found, invalid input, and duplicate. Additionally run an integration test against a real Postgres instance exercising Create → GetByID → Update → Delete. The lab ships both suites; the integration one connects to whatever database TEST_DATABASE_URL points at.",
 					},
 					rationale: {
-						en: "The repository interface exists so tests never need a database. The mock lets you exercise every handler branch in milliseconds. The integration test proves the SQL is correct; mocks cannot do that. testcontainers-go spins up a real Postgres container and tears it down after, with no manual setup.",
+						en: "The repository interface exists so tests never need a database. The mock lets you exercise every handler branch in milliseconds. The integration test proves the SQL is correct; mocks cannot do that. A throwaway Docker container is the easiest real Postgres to point it at, and the env var means no container tooling is baked into the tests themselves.",
 					},
 				},
 				{
@@ -143,7 +156,8 @@ cmd/server/main.go`,
 						kind: "system",
 						title: "Handler unit tests + integration lifecycle",
 						description:
-							"go test -race ./... must pass. The integration test must run against a real Postgres container.",
+							"From labs/db-api, go test ./... runs the handler unit suite (TestCreateTask, TestGetTask, TestListTasks, TestUpdateTask, TestDeleteTask) against a hand-rolled mock repository; no database needed. The integration suite in labs/db-api/postgres skips unless TEST_DATABASE_URL points at a real Postgres, so with no database the postgres 'ok' line is a skip, not a pass: repo.go is never run and never graded. Set TEST_DATABASE_URL (see the throwaway Postgres hint below) and the same command applies schema.sql and grades the SQL: the full lifecycle, list ordering with limit/offset paging, not-found mapping, the duplicate-title path, and a WithTx rollback against the real database.",
+						labPath: "labs/db-api",
 						testCases: [
 							{
 								description: "POST /tasks: valid body",
@@ -155,28 +169,57 @@ cmd/server/main.go`,
 									'HTTP 400, {"error":"title required"}',
 							},
 							{
-								description: "GET /tasks/:id: exists",
+								description:
+									"POST /tasks: duplicate title (repo returns ErrDuplicate)",
+								expected: "HTTP 409, error JSON",
+							},
+							{
+								description: "GET /tasks/{id}: exists",
 								expected: "HTTP 200, task JSON",
 							},
 							{
-								description: "GET /tasks/:id: not found",
-								expected: "HTTP 404",
+								description: "GET /tasks/{id}: not found",
+								expected: "HTTP 404, error JSON",
 							},
 							{
-								description: "DELETE /tasks/:id",
-								expected: "HTTP 204",
+								description: "DELETE /tasks/{id}",
+								expected: "HTTP 204, empty body",
 							},
 							{
 								description:
-									"Integration: Create → Get → Update → Delete",
+									"Integration: Create → Get → Update → Delete over HTTP",
 								expected: "final GET returns 404",
 							},
+							{
+								description:
+									"Integration: List after seeding rows",
+								expected:
+									"ascending id order, limit/offset paging honored, id/title/done shape",
+							},
+							{
+								description:
+									"Integration: Update/Delete a missing id",
+								expected:
+									"404 and errors.Is(err, api.ErrNotFound) from the real row count",
+							},
+							{
+								description:
+									"Integration: WithTx callback returns an error",
+								expected:
+									"task created inside the transaction is gone after rollback",
+							},
 						],
-						desiredOutput: "PASS",
+						desiredOutput: `# go test ./...   (no TEST_DATABASE_URL set)
+ok      gopath.dev/labs/db-api/api        # handler suite, graded against the mock
+ok      gopath.dev/labs/db-api/postgres   # SKIPPED, not passed: repo.go was never run
+
+# TEST_DATABASE_URL=postgres://... go test ./...   (a throwaway Postgres)
+ok      gopath.dev/labs/db-api/api
+ok      gopath.dev/labs/db-api/postgres   # SQL graded: lifecycle, list paging, not-found, duplicate, rollback`,
 						hints: [
 							{
-								label: "testcontainers",
-								value: "github.com/testcontainers/testcontainers-go: spins up a real Postgres container, runs migrations, tears down after test.",
+								label: "throwaway Postgres",
+								value: "docker run --rm -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:16, then TEST_DATABASE_URL='postgres://postgres:postgres@127.0.0.1:5432/postgres' go test ./postgres/. The suite applies schema.sql and truncates before each test.",
 							},
 							{
 								label: "mock pattern",

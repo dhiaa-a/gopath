@@ -1,0 +1,19 @@
+# Regenerates userspb/ from proto/users.proto. Run from this directory:
+#
+#   buf generate
+#
+# The generated code is committed, so running the lab never needs buf or
+# protoc. Regenerate only if you change the proto. Plugin versions that
+# match the committed output:
+#
+#   go install github.com/bufbuild/buf/cmd/buf@v1.32.2
+#   go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.34.2
+#   go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.4.0
+version: v2
+plugins:
+  - local: protoc-gen-go
+    out: .
+    opt: module=gopath.dev/labs/grpc-service
+  - local: protoc-gen-go-grpc
+    out: .
+    opt: module=gopath.dev/labs/grpc-service

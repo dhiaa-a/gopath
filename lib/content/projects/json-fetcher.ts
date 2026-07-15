@@ -9,6 +9,13 @@ export const jsonFetcher: Project = {
 	tierLabel: "FOUNDATIONS",
 	estimatedTime: "2–3 hours",
 	tags: ["net/http", "encoding/json", "structs", "defer"],
+	lab: {
+		path: "labs/json-fetcher",
+		command: "go run ./check",
+		summary: {
+			en: "A check program runs your binary against a local server serving fixture JSON and shows your output next to the expected output, including the 500 and broken-JSON paths; a self-check, not a graded suite.",
+		},
+	},
 	mentalModels: [
 		"type-safe decoding at the boundary",
 		"resource cleanup with defer",
@@ -119,7 +126,7 @@ if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 						en: "A Stripe webhook handler decodes the request body directly into an Event struct using json.NewDecoder(r.Body). It never calls io.ReadAll first; for large payloads this would buffer megabytes unnecessarily.",
 					},
 					task: {
-						en: 'Complete fetch() with json.NewDecoder decoding. Then write printResult(*WeatherResponse) that prints temperature to one decimal place and wind speed rounded to the nearest integer. Add a --city flag accepting "london", "paris", or "baghdad" mapped to hardcoded lat/lon. The user should never type coordinates.',
+						en: 'Complete fetch() with json.NewDecoder decoding. Then write printResult(*WeatherResponse) that prints exactly two lines, "Temperature: 18.3 C" and "Wind speed: 15 km/h" (your values will differ): temperature to one decimal place, wind speed rounded to the nearest integer. Add a --city flag accepting "london", "paris", or "baghdad" mapped to hardcoded lat/lon; the user should never type coordinates. Add a --base-url flag defaulting to the real Open-Meteo endpoint: the lab check points it at a local server, which is how an HTTP client gets verified without the live internet.',
 					},
 				},
 			],

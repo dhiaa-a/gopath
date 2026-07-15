@@ -22,6 +22,21 @@ export type Assessment = {
 	desiredMetrics?: string
 	metricsAchievable?: string
 	hints?: Hint[]
+	// Repo-relative path to the real, runnable suite that this assessment
+	// describes, e.g. "labs/log-parser". Validated by scripts/validate.ts.
+	labPath?: string
+}
+
+// Every project ships an executable lab under labs/<slug>: a self-contained
+// Go module the learner clones and runs with the standard toolchain.
+export type ProjectLab = {
+	// Repo-relative lab directory, always "labs/<slug>". Must exist on disk.
+	path: string
+	// The one command the learner runs from inside the lab directory.
+	command: string
+	// One sentence on what the lab checks. For T1 P1–P2 this must read as a
+	// self-check, never as a graded exam (pedagogy rule 1).
+	summary: LocalizedString
 }
 
 export type ContentBlock =
@@ -73,6 +88,7 @@ export type Project = {
 	tierLabel: string
 	estimatedTime: string
 	tags: string[]
+	lab?: ProjectLab
 	mentalModels?: string[]
 	systemOverview?: ContentBlock[]
 	architecture?: ContentBlock[]

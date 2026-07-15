@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { getProject, projects } from "@/lib/projects"
 import { priorConceptOccurrence } from "@/lib/relations"
 import { ContentRenderer } from "@/components/ContentRenderer"
+import { LabCard } from "@/components/LabCard"
 import { ProjectSection } from "@/components/ProjectSection"
 import { SpacedReuseCallout } from "@/components/SpacedReuseCallout"
 
@@ -107,6 +108,9 @@ export default async function ProjectPage({
 					</span>
 				))}
 			</div>
+
+			{/* Lab */}
+			{project.lab && <LabCard lab={project.lab} tier={project.tier} />}
 
 			{/* Mental Models */}
 			{project.mentalModels && project.mentalModels.length > 0 && (

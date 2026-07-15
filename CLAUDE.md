@@ -143,6 +143,8 @@ All agents can and should pull from the public web when relevant. Cite sources i
 ```
 gopath/
 ├── app/
+│   ├── basics/[slug]/      — Tier 0 syntax micro-lesson page
+│   ├── basics/             — Tier 0 index
 │   ├── concepts/[slug]/    — concept detail page
 │   ├── concepts/           — concept index (grouped)
 │   ├── orientation/[slug]/ — orientation page
@@ -153,19 +155,27 @@ gopath/
 ├── components/
 │   ├── ContentRenderer.tsx — renders all block types
 │   ├── GoCode.tsx          — custom Go syntax highlighter, zero deps
+│   ├── LabCard.tsx         — links a project to its executable lab
 │   ├── Nav.tsx, ThemeToggle.tsx
 │   ├── RetrievalPrompts.tsx — flip-card retrieval practice
 │   ├── SpacedReuseCallout.tsx — spaced reuse prompt
 │   └── ProjectSection.tsx
+├── labs/                   — executable spine: one Go module per project
+│   ├── check.sh            — gofmt/vet/build/test/gates across every module
+│   └── <project-slug>/     — self-contained module: starter, suite, reference
 ├── lib/
-│   ├── concepts.ts         — single source of truth for concepts
-│   ├── projects.ts         — single source of truth for projects
+│   ├── content/projects/   — one module per project (source of truth)
+│   ├── content/concepts/   — one module per concept (source of truth)
+│   ├── content/tier0/      — Tier 0 micro-lessons (source of truth)
+│   ├── concepts.ts         — thin shim re-exporting lib/content/concepts
+│   ├── projects.ts         — thin shim re-exporting lib/content/projects
+│   ├── tier0.ts            — thin shim re-exporting lib/content/tier0
 │   ├── orientation.ts      — single source of truth for orientation
-│   ├── content.ts          — block/step/project type definitions
+│   ├── content.ts          — block/step/project/lab type definitions
 │   ├── relations.ts        — concept ↔ project lookups
 │   └── playground.ts       — reads cached share IDs at runtime
 └── scripts/
-    ├── validate.ts         — runs in `npm run build`
+    ├── validate.ts         — runs in `npm run build`; also validates labs links
     └── playground-shares.ts — caches Go Playground share IDs at build
 ```
 

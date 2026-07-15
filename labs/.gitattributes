@@ -1,0 +1,3 @@
+# Labs must check out with LF everywhere: check.sh gates on `gofmt -l`,
+# and gofmt flags CRLF files as unformatted on learner machines.
+* text=auto eol=lf

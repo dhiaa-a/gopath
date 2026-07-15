@@ -10,6 +10,13 @@ export const grpcService: Project = {
 	tierLabel: "PRODUCTION",
 	estimatedTime: "5–7 hours",
 	tags: ["grpc", "protobuf", "interceptors", "streaming", "bufconn"],
+	lab: {
+		path: "labs/grpc-service",
+		command: "go test ./...",
+		summary: {
+			en: "A bufconn suite dials your server through the generated client stub and pins seven behaviors: NotFound on unknown ids, the exact seeded user back, a three-user stream in order, InvalidArgument on empty email, a created user stored and read back under a fresh id, and Unauthenticated when the token is missing or wrong.",
+		},
+	},
 	mentalModels: [
 		"contract-first design",
 		"generated type safety",
@@ -124,7 +131,7 @@ cmd/server/main.go`,
 				{
 					type: "constraint",
 					what: {
-						en: "All tests must use bufconn (no real TCP ports). Tests must cover: GetUser returning NotFound, GetUser returning a valid user, ListUsers streaming at least three items, CreateUser returning InvalidArgument on empty email, and the auth interceptor rejecting a missing token.",
+						en: "All tests must use bufconn (no real TCP ports). Tests must cover: GetUser returning NotFound, GetUser returning a valid user, ListUsers streaming at least three items, CreateUser returning InvalidArgument on empty email, CreateUser storing a new user and reading it back under a fresh id, and the auth interceptor rejecting both a missing token and a wrong one.",
 					},
 					rationale: {
 						en: "bufconn creates an in-memory listener. A grpc.Dial with a custom dialer pointing at it gives you a real gRPC round-trip (client stub, interceptors, your handler, response) with zero network overhead and no port allocation. You used net.Dial for TCP integration tests in T2; bufconn is the gRPC equivalent.",
@@ -136,32 +143,52 @@ cmd/server/main.go`,
 						kind: "system",
 						title: "gRPC service test suite",
 						description:
-							"go test -race ./... must pass. The streaming test must verify all items arrive in order.",
+							"The lab ships the suite: go test ./... in labs/grpc-service must pass. Every test dials your server over bufconn through the generated client stub, so serialization, interceptor dispatch, and status codes cross a real gRPC round-trip. The generated code in userspb/ is committed; running the lab needs neither buf nor protoc. The suite is race-clean; add -race where cgo is available.",
+						labPath: "labs/grpc-service",
 						testCases: [
 							{
-								description: "GetUser: unknown ID",
+								description:
+									"TestGetUserUnknownID: GetUser with an id nobody seeded",
 								expected: "codes.NotFound",
 							},
 							{
-								description: "GetUser: known ID",
-								expected: "correct User proto message",
+								description:
+									"TestGetUserKnownID: GetUser with a seeded id",
+								expected:
+									"the exact seeded User message (proto.Equal)",
 							},
 							{
 								description:
-									"ListUsers: server sends 3 users",
-								expected: "3 messages received in order",
+									"TestListUsersStreamsInOrder: ListUsers over 3 seeded users",
+								expected:
+									"3 messages in seed order, then io.EOF",
 							},
 							{
 								description:
-									"CreateUser: empty email field",
+									"TestCreateUserEmptyEmail: CreateUser with an empty email field",
 								expected: "codes.InvalidArgument",
 							},
 							{
-								description: "Auth interceptor: no token",
-								expected: "codes.Unauthenticated",
+								description:
+									"TestCreateUserStores: CreateUser with a valid name and email, then GetUser on the returned id",
+								expected:
+									"a non-empty fresh id, the email echoed back, and the same user read back (proto.Equal)",
+							},
+							{
+								description:
+									"TestAuthNoToken: unary call with no authorization metadata",
+								expected:
+									"codes.Unauthenticated from the interceptor",
+							},
+							{
+								description:
+									"TestAuthWrongToken: unary call whose authorization metadata is present but wrong",
+								expected:
+									"codes.Unauthenticated (the interceptor checks the token value, not just presence)",
 							},
 						],
-						desiredOutput: "PASS",
+						desiredOutput:
+							"ok  \tgopath.dev/labs/grpc-service/server\t0.65s",
 						hints: [
 							{
 								label: "bufconn import",

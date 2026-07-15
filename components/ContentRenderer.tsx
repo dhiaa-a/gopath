@@ -70,6 +70,22 @@ function AssessmentBlock({
 				{a.description}
 			</p>
 
+			{a.labPath && (
+				<div className="mb-4 font-mono text-xs">
+					<span className="mr-2 text-[10px] uppercase tracking-widest text-muted">
+						the real suite
+					</span>
+					<a
+						href={`https://github.com/dhiaa-a/gopath/tree/main/${a.labPath}`}
+						target="_blank"
+						rel="noopener noreferrer"
+						className={`${accent[a.kind] ?? "text-go-cyan"} hover:underline`}
+					>
+						{a.labPath}
+					</a>
+				</div>
+			)}
+
 			{a.testCases && a.testCases.length > 0 && (
 				<div className="mb-4">
 					<div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-muted">

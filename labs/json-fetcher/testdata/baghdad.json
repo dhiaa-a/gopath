@@ -1,0 +1,21 @@
+{
+  "latitude": 33.31,
+  "longitude": 44.37,
+  "generationtime_ms": 0.024,
+  "utc_offset_seconds": 10800,
+  "timezone": "Asia/Baghdad",
+  "timezone_abbreviation": "+03",
+  "elevation": 41.0,
+  "current_units": {
+    "time": "iso8601",
+    "interval": "seconds",
+    "temperature_2m": "°C",
+    "wind_speed_10m": "km/h"
+  },
+  "current": {
+    "time": "2026-07-12T12:00",
+    "interval": 900,
+    "temperature_2m": 43.86,
+    "wind_speed_10m": 3.6
+  }
+}
