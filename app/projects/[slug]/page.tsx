@@ -6,6 +6,7 @@ import { ContentRenderer } from "@/components/ContentRenderer"
 import { LabCard } from "@/components/LabCard"
 import { ProjectSection } from "@/components/ProjectSection"
 import { SpacedReuseCallout } from "@/components/SpacedReuseCallout"
+import { StepRecap } from "@/components/StepRecap"
 
 export function generateStaticParams() {
 	return projects.map((p) => ({ slug: p.slug }))
@@ -97,7 +98,7 @@ export default async function ProjectPage({
 				<span
 					className={`inline-flex items-center gap-1.5 rounded border px-3 py-1.5 font-mono text-sm ${c.badge}`}
 				>
-					⏱ {project.estimatedTime}
+					⏱ {project.estimatedTime} to build
 				</span>
 				{project.tags.map((t) => (
 					<span
@@ -180,6 +181,9 @@ export default async function ProjectPage({
 									/>
 								)}
 								<ContentRenderer blocks={step.blocks} />
+								{step.retrievalPrompt && (
+									<StepRecap prompt={step.retrievalPrompt} />
+								)}
 							</div>
 						</div>
 					)

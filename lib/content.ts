@@ -70,6 +70,35 @@ export type ContentBlock =
 			rationale: LocalizedString
 			hints?: Hint[]
 	  }
+	// Verify — the step's claim, made checkable. A step that builds something
+	// ends by running something real, almost always in the project's lab.
+	// Prose that cannot be run is not a verify block.
+	| {
+			type: "verify"
+			// Exactly what to run, copy-pasteable, from the directory named in
+			// `where`.
+			command: string
+			// Where the command runs. Usually the lab directory.
+			where?: string
+			// What you should see. Concrete: an exit code, a line of output, a
+			// file that now exists.
+			expect: LocalizedString
+			// Repo path backing this check. Validated to exist on disk.
+			labPath?: string
+			note?: LocalizedString
+	  }
+	// Break it — cause one failure on purpose and watch it happen. The
+	// learner predicts before revealing `why`, which is where the learning is:
+	// a mechanism you predicted wrong is a mechanism you now remember.
+	| {
+			type: "breakIt"
+			// The single thing to change. One line, reversible.
+			change: LocalizedString
+			// What they will see: the panic, the hang, the wrong number.
+			observe: LocalizedString
+			// The mechanism, revealed only after they have committed to a guess.
+			why: LocalizedString
+	  }
 	| { type: "assessment"; assessment: Assessment }
 
 export type Step = {
@@ -77,6 +106,11 @@ export type Step = {
 	heading: LocalizedString
 	uses: string[]
 	blocks: ContentBlock[]
+	// Recap, the closing beat of the step anatomy: one retrieval prompt in the
+	// "question || answer" form the flip cards already use. A step field
+	// rather than a block, so it always renders last and cannot drift up into
+	// the middle of the step.
+	retrievalPrompt?: string
 }
 
 export type Project = {

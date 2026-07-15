@@ -107,6 +107,53 @@ for (const project of projects) {
 	}
 }
 
+// ─── Step anatomy and the tier spine (Phase 3) ─────────────────────────────
+// The tier contract is the pedagogical spine: T1 shows a pattern, T2 states a
+// requirement, T3 states a constraint only. A project must never reach for a
+// block from another tier, which is how the spine gets flattened.
+{
+	const buildBlockForTier = { 1: "pattern", 2: "requirement", 3: "constraint" } as const
+	const buildBlocks = new Set(["pattern", "requirement", "constraint"])
+
+	for (const project of projects) {
+		const allowed = buildBlockForTier[project.tier]
+		for (const step of project.steps) {
+			for (const block of step.blocks) {
+				if (buildBlocks.has(block.type) && block.type !== allowed) {
+					fail(
+						`${project.slug} step ${step.n}: tier ${project.tier} project uses a "${block.type}" block; tier ${project.tier} builds with "${allowed}"`,
+					)
+				}
+			}
+
+			// Verify blocks are the "done is checkable" promise. A command that
+			// points at a lab path must point at a real one.
+			for (const block of step.blocks) {
+				if (block.type !== "verify") continue
+				if (!block.command.trim()) {
+					fail(`${project.slug} step ${step.n}: verify block has an empty command`)
+				}
+				if (block.labPath && !existsSync(path.resolve(process.cwd(), block.labPath))) {
+					fail(
+						`${project.slug} step ${step.n}: verify labPath "${block.labPath}" does not exist on disk`,
+					)
+				}
+			}
+
+			// Recap prompts reuse the flip-card "question || answer" contract.
+			// A prompt with no answer renders a card that reveals nothing.
+			if (step.retrievalPrompt !== undefined) {
+				const parts = step.retrievalPrompt.split("||")
+				if (parts.length !== 2 || !parts[0].trim() || !parts[1].trim()) {
+					fail(
+						`${project.slug} step ${step.n}: retrievalPrompt must be "question || answer"; got ${JSON.stringify(step.retrievalPrompt)}`,
+					)
+				}
+			}
+		}
+	}
+}
+
 // ─── Concepts ──────────────────────────────────────────────────────────────
 
 // Every relatedSlug must exist in concepts
