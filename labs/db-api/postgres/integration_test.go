@@ -31,6 +31,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"gopath.dev/labs/db-api/api"
+	"gopath.dev/labs/db-api/config"
 	"gopath.dev/labs/db-api/postgres"
 )
 
@@ -41,19 +42,40 @@ const skipMsg = "TEST_DATABASE_URL not set; skipping integration tests.\n" +
 
 // setup connects, applies schema.sql, and empties the tasks table. Each test
 // starts from the same blank slate, so order and reruns cannot matter.
+//
+// It builds the pool through your own config package rather than calling
+// pgxpool.New directly, so the whole chain gets exercised: Load validates the
+// URL, PoolConfig applies the limits, and pgxpool connects with them. Note
+// how the getenv parameter pays off here: the suite hands Load a function
+// that answers DATABASE_URL out of TEST_DATABASE_URL, so the integration
+// tests read a different variable than production without config knowing or
+// caring, and without anything mutating the process environment.
 func setup(t *testing.T) *postgres.Repository {
 	t.Helper()
-	url := os.Getenv("TEST_DATABASE_URL")
-	if url == "" {
+	dsn := os.Getenv("TEST_DATABASE_URL")
+	if dsn == "" {
 		t.Skip(skipMsg)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	pool, err := pgxpool.New(ctx, url)
+	cfg, err := config.Load(func(key string) string {
+		if key == config.EnvDatabaseURL {
+			return dsn
+		}
+		return ""
+	})
 	if err != nil {
-		t.Fatalf("parse TEST_DATABASE_URL: %v", err)
+		t.Fatalf("config.Load from TEST_DATABASE_URL: %v", err)
+	}
+	poolCfg, err := cfg.PoolConfig()
+	if err != nil {
+		t.Fatalf("PoolConfig: %v", err)
+	}
+	pool, err := pgxpool.NewWithConfig(ctx, poolCfg)
+	if err != nil {
+		t.Fatalf("connect to %s: %v", cfg, err)
 	}
 	t.Cleanup(pool.Close)
 
@@ -253,6 +275,91 @@ func TestIntegrationDuplicateTitle(t *testing.T) {
 	_, err := repo.Create(ctx, "only once")
 	if !errors.Is(err, api.ErrDuplicate) {
 		t.Fatalf("second Create: err = %v, want errors.Is(err, api.ErrDuplicate)", err)
+	}
+}
+
+// TestIntegrationHostileTitlesAreJustData is the injection test, and it is
+// the one test in this module that cannot be faked. A mock repository proves
+// nothing here: the question is what PostgreSQL does with these bytes, and
+// only PostgreSQL can answer it.
+//
+// Each title below is a string that breaks a query built by concatenation.
+// Against $1 placeholders every one of them is an unremarkable title: it goes
+// in, it comes back byte for byte, and the table is still standing at the
+// end. That is not the placeholders escaping anything. pgx's default exec
+// mode sends the statement and the parameters as separate messages in the
+// extended protocol, so the server has finished parsing the SQL before it has
+// looked at a single byte of your data. Data that arrives after parsing
+// cannot become syntax. There is nothing to escape because there is no
+// ambiguity to resolve.
+//
+// If any case here fails, the message tells you which one, and the cause is
+// always the same: something built that query with Sprintf.
+func TestIntegrationHostileTitlesAreJustData(t *testing.T) {
+	repo := setup(t)
+	ctx := context.Background()
+
+	titles := []struct {
+		name  string
+		title string
+	}{
+		{
+			// The attack everyone has heard of.
+			name:  "statement terminator and a drop",
+			title: `'; DROP TABLE tasks; --`,
+		},
+		{
+			// The same bug, with no attacker involved. You do not need
+			// somebody hostile to find this: you need a customer with an
+			// apostrophe in their name. Concatenated, this is not an
+			// exploit, it is a syntax error, and it is the same defect.
+			name:  "an ordinary apostrophe",
+			title: `Call O'Brien about the invoice`,
+		},
+		{
+			// Tautology injection: the shape that turns a WHERE clause into
+			// a full table read rather than destroying anything.
+			name:  "always-true tautology",
+			title: `anything' OR '1'='1`,
+		},
+		{
+			// Backslashes are an escape character in some databases and not
+			// in Postgres by default, which is exactly why hand-rolled
+			// escaping is a losing game: the rules are per-server and per
+			// setting, and your string formatter knows none of them.
+			name:  "trailing backslash",
+			title: `windows\path\`,
+		},
+	}
+
+	for _, tc := range titles {
+		t.Run(tc.name, func(t *testing.T) {
+			created, err := repo.Create(ctx, tc.title)
+			if err != nil {
+				t.Fatalf("Create(%q): %v\nA hostile-looking title is still a title. If this is a syntax error, the query was built by concatenation.", tc.title, err)
+			}
+			if created.Title != tc.title {
+				t.Fatalf("Create returned title %q, want %q byte for byte", created.Title, tc.title)
+			}
+
+			// Read it back through a second query, so the round trip covers
+			// both the write path and the read path.
+			got, err := repo.GetByID(ctx, created.ID)
+			if err != nil {
+				t.Fatalf("GetByID(%d): %v", created.ID, err)
+			}
+			if got.Title != tc.title {
+				t.Fatalf("stored title = %q, want %q byte for byte.\nThe payload is data. It is not supposed to be interpreted, escaped, stripped, or cleaned up: it round trips exactly.", got.Title, tc.title)
+			}
+
+			// And the table is still there. This is the assertion that would
+			// have caught the drop, and it is deliberately the last one:
+			// with a concatenated query the test above already failed, and
+			// this is what tells you why.
+			if _, err := repo.List(ctx, 1, 0); err != nil {
+				t.Fatalf("List after storing %q: %v\nIf the tasks table no longer exists, the title stopped being data and became SQL.", tc.title, err)
+			}
+		})
 	}
 }
 

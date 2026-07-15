@@ -32,15 +32,17 @@ func (s *Server) Shutdown()                // close the listener, wait for every
 
 Those two bounds leave a gap between them: a `Shutdown` that closes the listener and returns immediately clears both, because every test client has already disconnected by the time goleak looks, so its connection goroutine is gone on its own. `TestShutdownWaitsForActiveConn` closes that gap. It keeps one client parked mid-exchange, calls `Shutdown` in a goroutine, and asserts `Shutdown` does not return until the client closes: a `Shutdown` that only drops the listener returns while that goroutine is still running and fails on the spot.
 
+`TestSlowClientDoesNotBlockOthers` closes a second gap of the same shape. Nothing in the first four tests overlaps two clients: each sends its lines and hangs up in under a millisecond, so a server that serves one connection to completion before calling `Accept` again passes all of them, goleak included, without ever running two connections at once. That server is not the one this project describes. The test parks one client mid-exchange and requires a second to be served while it sits there, which is the cheapest honest way to ask whether there is really a goroutine per connection.
+
 On the wire, per connection:
 
 - every `\n`-terminated line comes back uppercased and `\n`-terminated: `hello` in, `HELLO` out
 - the exact line `quit` makes the server close the connection, with no echo
 - an idle connection is evicted after 30 seconds via `conn.SetDeadline`, reset after every line
 
-The suite does not sit out the 30-second idle deadline; implement it anyway. A client that loses power never sends FIN, and without a deadline its goroutine blocks in a read forever, which turns your next `Shutdown` into a hang.
+The suite does not sit out the 30-second idle deadline; implement it anyway. A client that loses power never sends FIN, and without a deadline its goroutine blocks in a read forever, which turns your next `Shutdown` into a hang. This one is a deliberate hole rather than an oversight: checking it quickly needs a knob to shorten the timeout, that knob is a field on `Server` that exists only so a test can reach it, and a 30-second wait in every run is worse than the gap. So the deadline is on you, and deleting the per-line reset keeps the whole suite green. Green is not the same as correct, here or anywhere.
 
-Five tests. The first four each pin one wire behavior; the fifth pins the shutdown guarantee:
+Six tests. Four pin one wire behavior each; two pin the guarantees the wire cannot show you:
 
 | Test | Asserts |
 | --- | --- |
@@ -48,6 +50,7 @@ Five tests. The first four each pin one wire behavior; the fifth pins the shutdo
 | `TestEchoMultiLine` | three lines sent in one TCP write come back as three replies, in order: framing belongs to your scanner, not to the client's write boundaries |
 | `TestQuit` | after `quit` the client reads EOF and zero extra bytes |
 | `TestConcurrent` | 10 clients at once, 5 lines each, every reply matching its own connection |
+| `TestSlowClientDoesNotBlockOthers` | one client parked mid-exchange while a second is served: there is really a goroutine per connection, not an accept loop that serves one caller at a time |
 | `TestShutdownWaitsForActiveConn` | a client kept open across `Shutdown`: `Shutdown` stays blocked until the client closes, so it waits for the connection goroutine, not just the listener |
 
 Every dial, read, write, and shutdown in the suite carries a deadline, so a server that blocks forever fails in seconds with a named guarantee instead of hanging the run.
@@ -61,7 +64,13 @@ go test -race ./...
 
 The starter compiles but fails every test; each failure message says which part of the contract is missing. Work until the run is green.
 
-`-race` needs cgo. On Windows without a gcc toolchain it fails with a cgo error; install a C compiler or drop the flag and run `go test ./...`. The tests still drive 10 concurrent connections either way, the detector just cannot watch them without cgo.
+`-race` needs cgo. Without a C toolchain the run stops before a single test executes:
+
+```
+go: -race requires cgo; enable cgo by setting CGO_ENABLED=1
+```
+
+That is the whole failure, and it is not a problem with your code. Install a C compiler (on Windows, a gcc such as the one in mingw-w64) or drop the flag and run `go test ./...`. The tests still drive 10 concurrent connections either way; the detector just cannot watch them without cgo.
 
 ## Done when
 
@@ -69,4 +78,4 @@ The starter compiles but fails every test; each failure message says which part 
 ok  	gopath.dev/labs/tcp-echo/echo	0.5s
 ```
 
-All five tests pass, goleak stays silent, and where `-race` runs, no data race is reported. If you instead see `found unexpected goroutines` followed by a stack trace, that stack is your leak: it names the exact line where a goroutine of yours is still blocked after `Shutdown` returned.
+All six tests pass, goleak stays silent, and where `-race` runs, no data race is reported. If you instead see `found unexpected goroutines` followed by a stack trace, that stack is your leak: it names the exact line where a goroutine of yours is still blocked after `Shutdown` returned.

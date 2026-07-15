@@ -23,6 +23,25 @@ type Task struct {
 	Done  bool   `json:"done"`
 }
 
+// The two bounds the handlers enforce at the boundary. They are here, in the
+// pinned file, because a limit a client can hit is part of the contract: it
+// belongs in the same place as the routes and the JSON tags, not buried as a
+// magic number three calls down.
+const (
+	// MaxTitleRunes bounds a title in runes rather than bytes. Postgres
+	// TEXT has no length limit worth relying on (a value can reach 1GB), so
+	// this bound is a decision about the domain and nothing else. Counting
+	// bytes would silently give a Japanese title a third of the room an
+	// English one gets, since UTF-8 spends three bytes on most CJK
+	// codepoints and one on ASCII.
+	MaxTitleRunes = 200
+
+	// MaxBodyBytes caps the request body. Without a cap, json.Decoder reads
+	// whatever the client sends: the only limit on memory is the client's
+	// patience, and it costs an attacker one curl to find that out.
+	MaxBodyBytes = 64 << 10 // 64 KiB
+)
+
 // ErrNotFound is returned by a repository when the requested task does not
 // exist. Handlers translate it to 404. It is a sentinel so callers can test
 // for it with errors.Is even after the repository wraps it with context.

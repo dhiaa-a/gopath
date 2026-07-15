@@ -18,3 +18,23 @@ type Result struct {
 	Output any
 	Err    error
 }
+
+// GenericJob and GenericResult are Job and Result with the two `any` fields
+// replaced by type parameters. They are pinned by the suite in the same way.
+//
+// The names are a lab artifact: both pools live in one package so you can read
+// them side by side, and `Job` was taken. A real package ships one of these,
+// and it is called Job.
+type GenericJob[In any] struct {
+	ID      int
+	Payload In
+}
+
+// GenericResult is the outcome of one GenericJob. Err stays a plain error:
+// "it failed" is not a domain-specific type and parameterizing it would buy
+// nothing.
+type GenericResult[Out any] struct {
+	JobID  int
+	Output Out
+	Err    error
+}

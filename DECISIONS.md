@@ -4,6 +4,37 @@ Append-only. Newest at the top.
 
 ---
 
+## 2026-07-15 — One-Stop Phase 3 (part 2): T2/T3 depth pass, and what running the claims found
+
+**Scope:** depth pass on the remaining six projects (http-server, worker-pool, tcp-echo, grpc-service, db-api, observability). All 11 projects now carry the full step anatomy across all 93 steps. Totals: **T1 30-38h (target 30-40, hit), T2 40-46h (target 40-50, hit), T3 54-62h (target 60-80, MISSED, see below).**
+
+**The `-race` headline command was broken on Windows and is now fixed.** `http-server`, `tcp-echo` and `worker-pool` each had `lab.command: "go test -race ./..."`, which the project page renders as *the* command to run. On a stock Windows toolchain it fails before a single test: `go: -race requires cgo; enable cgo by setting CGO_ENABLED=1`. The LabCard is the front door, and a front door that fails for a large share of developers is broken. All three are now `go test ./...`. `-race` is not dropped: it stays taught inside the steps (7 mentions in tcp-echo alone), in every lab README with the exact cgo error quoted, and in the assessments, which are still the standard the learner is held to. This also makes all 11 commands consistent; `config-watcher`, `db-api` and `grpc-service` already used the plain form.
+
+**`benchstat@latest` has been a broken instruction, in two places.** `go install golang.org/x/perf/cmd/benchstat@latest` fails on Go 1.22: x/perf bumped its requirement to Go 1.25 in Feb 2026 and the module refuses to build. Verified directly. Both `observability` and `config-watcher` told learners to run it. Now pinned to `@400946f43c82` (verified: installs and runs) in both. The same hint also paired it with `-count=5`, which benchstat cannot use: it needs at least 6 samples for a confidence interval and prints `± ∞` below that, so the promised "mean ± variance" never appeared. Verified by running it. Now `-count=10`. Note `config-watcher`'s lab README keeps `-count=5` deliberately: that one feeds raw `go test` output for reading by eye, where five samples is fine.
+
+**The brief itself prescribed an exercise that cannot work.** Phase 3 names "input validation and SQL injection (db-api)", and the obvious demo is concatenating a `'; DROP TABLE` payload and watching it land. Against pgx it does not: pgx v5 defaults to `QueryExecModeCacheStatement` (extended protocol) and Postgres refuses more than one statement in a Parse message, so the payload errors instead. Following the brief literally would have shipped a demo that does not reproduce, which is precisely what the brief's own bar ("every claim about behavior must be runnable") exists to prevent. The shipped version is better teaching anyway: four outcomes, three of them surprises, including `O'Brien` breaking the same concatenated query with no attacker involved, and `windows\path\` surviving only because `standard_conforming_strings` has defaulted on since Postgres 9.1.
+
+**Dependency promotion (grpc-service):** `google.golang.org/genproto/googleapis/rpc` moves indirect to direct so `CreateUser` can attach a standard `google.rpc.BadRequest` error detail. **Same pinned version, no bump, `go.sum` unchanged**, grpc and protobuf untouched. Rejected alternative: hand-rolling a detail proto, which teaches a private convention instead of the standard every gRPC client already understands.
+
+**Rule 3 stays pinned, and both agents were told to recommend rather than implement.** Neither invented a gate. Two concrete proposals now exist for the owner to accept or reject:
+
+- **grpc-service:** codegen'd message allocation count via `testing.AllocsPerRun` over `proto.Marshal`/`Unmarshal`, gated relatively in-process. Deterministic, no cgo, no timing, machine-independent, and it teaches something true (generated messages are allocation-heavy). Explicitly rejected p99-over-bufconn: bufconn measures a pipe, not a network, so the number is architecture noise.
+- **db-api:** a query-count budget via a `pgx.QueryTracer`, failing when `GET /tasks?limit=50` issues more than one query. Makes N+1 machine-checkable and relative, and needs no benchmark harness. Rejected connection-pool saturation as asserting config rather than a code property.
+
+`ship-it`, built this phase, shows what a rule-3-compliant T3 looks like: zero dropped requests across a rolling shutdown, a count rather than a timing, proven to bite three ways.
+
+**worker-pool keeps two pools rather than one generic one.** The brief says "worker-pool gets a generic-worker step". Rewriting the graded pool to `Pool[In,Out]` would have destroyed working assets (notably the 100-round `TestSubmitStopRace`) to prove a point about types. Instead `GenericPool` ships alongside the concrete one, both graded, so the comparison is the lesson. This follows the codebase's own precedent: `config-watcher` builds `Store` and `MutexStore` and gates on the relationship. Measured payoff, not asserted: boxed 1 alloc/op and 15 B/op against generic 0 and 0.
+
+**T3 misses its target honestly: 54-62h against 60-80.** Every estimate is bottom-up and justified per project, and the whole point of the estimatedTime decision was that the number must be earned by content. Inflating the figures to reach 60 would reintroduce exactly the dishonesty that decision removed. Closing the gap means more T3 material, not bigger numbers. The projects sit at 9 steps against the brief's 6-10 ceiling, so there is roughly one step of headroom each; the honest options are to spend it where real material exists, or to accept that T3 is a ~10% smaller tier than the brief guessed. Flagged, not papered over. Site total is now 124-146h against the brief's 150-250 ambition, before Phases 5 (failure labs), 6 (idioms), 7 (source reading) and 8 (capstone) add theirs.
+
+**What the depth pass actually bought, which is worth naming.** The agents were required to run every claim rather than restate it, and that turned up shipped content that was confidently wrong rather than merely thin: `parser_test.go` (the file rule 2 calls the lesson) taught a `time.Parse` gotcha that stopped being true in Go 1.20; `config-watcher` claimed a serial benchmark shows atomic and mutex as similar when they are 12x apart; `worker-pool` step 02 taught context cancellation against an API with no context parameter; a fully synchronous echo server passed `TestConcurrent`; the http-server middleware suite passed a wrapper logging `status=0` for every success. None of those are visible by reading. All of them are obvious the moment someone runs the thing.
+
+**Alternatives considered:** keeping `-race` as the headline and telling Windows users to install gcc (punishes the majority to keep a purity that the steps already teach); inflating T3 estimates to hit 60h (reintroduces the exact dishonesty the estimatedTime decision removed); rewriting worker-pool's graded suite to be generic (destroys working assets to make a typing point).
+
+**Logged by:** Claude Code (engineer + content, One-Stop brief)
+
+---
+
 ## 2026-07-15 — One-Stop Phase 3: step anatomy, and the pins carried into it
 
 **Owner instruction (2026-07-15):** put a pin in the Phase 2 blockers and keep moving; make reasonable assumptions and log everything for review when the product is complete. This entry is that log. Nothing below was approved by Aboturab; it is all assumption, recorded so it can be reversed cheaply.

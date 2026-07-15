@@ -10,6 +10,7 @@ package middleware_test
 
 import (
 	"bytes"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -259,5 +260,41 @@ func TestLogging404(t *testing.T) {
 	}
 	if !strings.Contains(out, "path=/missing") {
 		t.Fatalf("slog output must record the request path as path=/missing.\nlog output: %q", out)
+	}
+}
+
+// TestLoggingCapturesAnImplicit200AndTheByteCount covers the case the 404
+// cannot reach, and it is the common one: a handler that never calls
+// WriteHeader at all. Every 200 on a normal service looks like this.
+//
+// WriteHeader is optional. The first Write sends the 200 for you, and it
+// does that inside net/http's own ResponseWriter, below your wrapper, so
+// your wrapper never sees a WriteHeader call for the majority of the
+// requests it logs. A wrapper whose status starts at zero therefore logs
+// status=0 for every successful request on the service, while the response
+// on the wire says 200 the entire time. Nothing is broken except the only
+// record you have of what happened.
+func TestLoggingCapturesAnImplicit200AndTheByteCount(t *testing.T) {
+	var buf bytes.Buffer
+	logger := slog.New(slog.NewTextHandler(&buf, nil))
+
+	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// No WriteHeader. This is what most handlers do.
+		io.WriteString(w, "hello")
+	})
+	h := middleware.Chain(next, middleware.LoggingMiddleware(logger))
+
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/greet", nil))
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d (logging must pass the request through)", rec.Code, http.StatusOK)
+	}
+	out := buf.String()
+	if !strings.Contains(out, "status=200") {
+		t.Fatalf("the response was a 200 and the log must say so. The handler never called WriteHeader: net/http wrote the 200 itself, underneath your wrapper, so the wrapper has to already hold 200 before the handler starts.\nlog output: %q", out)
+	}
+	if !strings.Contains(out, "bytes=5") {
+		t.Fatalf("the handler wrote 5 bytes (%q), so the log must record bytes=5. Override Write on the wrapper too and accumulate what the inner Write returns.\nlog output: %q", "hello", out)
 	}
 }

@@ -8,11 +8,13 @@ This is your persistent context. Read it at the start of every session. The peda
 
 ## What GoPath is
 
-A project-based Go learning platform. Learners ship 9 real programs across three tiers and graduate with portfolio-grade Go work. Not a tutorial site, not a video course.
+A project-based Go learning platform. Learners ship 11 real programs across three tiers and graduate with portfolio-grade Go work. Not a tutorial site, not a video course.
 
-- **T1 — Foundations** (4 projects): syntax, std lib, idioms, first real programs. Anchor: **Config Watcher**.
-- **T2 — Systems** (3 projects): concurrency, networking, real systems. Anchor: **TCP Echo Server**.
-- **T3 — Production** (3 projects): production-grade work, hard-gated by benchmarks.
+- **T1 — Foundations** (4 projects, 30–38h): syntax, std lib, idioms, first real programs. Anchor: **Config Watcher**.
+- **T2 — Systems** (3 projects, 40–46h): concurrency, networking, real systems. Anchor: **TCP Echo Server**.
+- **T3 — Production** (4 projects, 54–62h): production-grade work, hard-gated by benchmarks. `ship-it` was added in the One-Stop brief's Phase 3 to close the deployment hole.
+
+Every project has an executable lab at `labs/<slug>` and every step ends by running something real. Hour figures are build time, not reading time, and they are bottom-up per project: do not adjust them to hit a target, adjust the content.
 
 The site also includes:
 

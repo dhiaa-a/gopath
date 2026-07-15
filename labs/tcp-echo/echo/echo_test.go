@@ -211,9 +211,60 @@ func TestConcurrent(t *testing.T) {
 	}
 }
 
-// TestShutdownWaitsForActiveConn is the test the other four cannot be: it
-// holds a connection open across Shutdown. Each test above closes its client
-// before Shutdown runs (t.Cleanup unwinds the dial's Close ahead of
+// TestSlowClientDoesNotBlockOthers pins the half of the design this project
+// is named for: a goroutine per connection. The four tests above cannot see
+// it. Every client in TestConcurrent sends its five lines and hangs up in
+// well under a millisecond, and nothing makes two of them overlap, so a
+// server that accepts one connection, serves it to completion, and only
+// then calls Accept again passes all four. Serial and concurrent handling
+// are indistinguishable when no client ever has to wait for another.
+//
+// This test overlaps two clients on purpose. It parks the first
+// mid-exchange, connected and quiet, which leaves the server's handler for
+// it blocked in Scan. Then a second client dials and demands a reply. With
+// a goroutine per connection, the accept loop went straight back to Accept
+// and the second client is served while the first sits idle. With
+// s.handleConn(conn) called directly from the accept loop, the loop is
+// still inside the first client's handler, Accept is never reached again,
+// and the second client waits until its deadline.
+//
+// Note what still works in the broken case: the second client's dial
+// succeeds. The kernel completes the TCP handshake and parks the connection
+// in the listen backlog whether or not your program ever accepts it, which
+// is why "the client connected" proves nothing about a server.
+func TestSlowClientDoesNotBlockOthers(t *testing.T) {
+	s := startServer(t)
+
+	// One round trip, then silence. This client stays connected, and its
+	// handler stays parked in Scan, for the rest of the test.
+	slow := dial(t, s)
+	slowR := bufio.NewReader(slow)
+	if _, err := fmt.Fprintln(slow, "first"); err != nil {
+		t.Fatalf("first client: writing %q: %v", "first", err)
+	}
+	if got := readLine(t, slowR, "first"); got != "FIRST" {
+		t.Fatalf("first client: echo for %q = %q, want %q", "first", got, "FIRST")
+	}
+
+	// A second client arrives while the first is still connected. It must
+	// be served anyway.
+	second := dial(t, s)
+	secondR := bufio.NewReader(second)
+	if _, err := fmt.Fprintln(second, "second"); err != nil {
+		t.Fatalf("second client: writing %q: %v", "second", err)
+	}
+	line, err := secondR.ReadString('\n')
+	if err != nil {
+		t.Fatalf("second client: reading the echo for %q: %v; the first client is still connected and idle, and it must not stop the server from serving anyone else. Hand every accepted connection to its own goroutine so the accept loop gets straight back to Accept", "second", err)
+	}
+	if got := strings.TrimRight(line, "\r\n"); got != "SECOND" {
+		t.Fatalf("second client: echo = %q, want %q", got, "SECOND")
+	}
+}
+
+// TestShutdownWaitsForActiveConn is the test the first four cannot be: it
+// holds a connection open across Shutdown. Each of those tests closes its
+// client before Shutdown runs (t.Cleanup unwinds the dial's Close ahead of
 // startServer's Shutdown), so a Server whose Shutdown only closes the
 // listener passes all four, and goleak too: by the time goleak checks, the
 // client is long gone and the connection goroutine has already returned on

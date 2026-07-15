@@ -10,7 +10,7 @@ const KNOWN_TAGS = new Set([
 	"os", "flag", "filepath", "error-handling",
 	"net/http", "encoding/json", "structs", "defer",
 	"goroutines", "channels", "sync", "bufio", "testing",
-	"select", "atomic", "time", "benchmarks",
+	"select", "atomic", "time", "benchmarks", "generics",
 	"middleware", "context", "httptest", "interfaces",
 	"errgroup", "net", "io", "integration-testing",
 	"grpc", "protobuf", "interceptors", "streaming", "bufconn",

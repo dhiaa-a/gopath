@@ -10,6 +10,8 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
+	"unicode/utf8"
 )
 
 type server struct {
@@ -55,6 +57,62 @@ func repoError(w http.ResponseWriter, err error) {
 	}
 }
 
+// decodeBody caps the body before reading a byte of it, then decodes. The cap
+// has to be installed here, on r.Body, rather than checked afterwards: by the
+// time you could measure an oversized body you would already have read it.
+func decodeBody(w http.ResponseWriter, r *http.Request, v any) error {
+	r.Body = http.MaxBytesReader(w, r.Body, MaxBodyBytes)
+	return json.NewDecoder(r.Body).Decode(v)
+}
+
+// badBody maps a decode failure to a status. A body over the cap is 413 and
+// not 400, because the two say different things to a client: 400 means "this
+// JSON is malformed, fix it", 413 means "this JSON is fine and too big, send
+// less". Collapsing them sends a client off to debug a syntax error that is
+// not there.
+func badBody(w http.ResponseWriter, err error) {
+	var maxErr *http.MaxBytesError
+	if errors.As(err, &maxErr) {
+		writeError(w, http.StatusRequestEntityTooLarge, "request body too large")
+		return
+	}
+	writeError(w, http.StatusBadRequest, "invalid json")
+}
+
+// validateTitle enforces what a title must be, and returns the cleaned value
+// that will actually be stored.
+//
+// Note what it does not do: it does not look for quotes, semicolons, or the
+// word DROP. Injection is not defended here and cannot be. It is defended by
+// the $1 in the query, one layer down. Every check below is about the domain
+// and the database's own limits, which is a completely different question
+// that happens to live in the same function.
+func validateTitle(w http.ResponseWriter, raw string) (string, bool) {
+	// Trim first, so " " is empty rather than a one-character title. The
+	// trimmed value is what gets stored: accepting a title and silently
+	// storing a different one is worse than rejecting it.
+	title := strings.TrimSpace(raw)
+	if title == "" {
+		writeError(w, http.StatusBadRequest, "title required")
+		return "", false
+	}
+	// Postgres documents that "the character with code zero (sometimes
+	// called NUL) cannot be stored" in a character type. A Go string holds
+	// one happily, and JSON carries it as a perfectly legal u0000 escape,
+	// so the value arrives here entirely valid and turns into a database
+	// error the moment it reaches the INSERT. Caught here it is a 400 the
+	// client can fix. Missed here it is a 500 that pages someone.
+	if strings.ContainsRune(title, 0) {
+		writeError(w, http.StatusBadRequest, "title contains a null byte")
+		return "", false
+	}
+	if utf8.RuneCountInString(title) > MaxTitleRunes {
+		writeError(w, http.StatusBadRequest, "title too long")
+		return "", false
+	}
+	return title, true
+}
+
 // pathID parses the {id} segment. A non-numeric ID is the client's mistake,
 // so it gets 400, not 404: the resource was never named correctly.
 func pathID(w http.ResponseWriter, r *http.Request) (int64, bool) {
@@ -70,15 +128,15 @@ func (s *server) create(w http.ResponseWriter, r *http.Request) {
 	var in struct {
 		Title string `json:"title"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid json")
+	if err := decodeBody(w, r, &in); err != nil {
+		badBody(w, err)
 		return
 	}
-	if in.Title == "" {
-		writeError(w, http.StatusBadRequest, "title required")
+	title, ok := validateTitle(w, in.Title)
+	if !ok {
 		return
 	}
-	task, err := s.repo.Create(r.Context(), in.Title)
+	task, err := s.repo.Create(r.Context(), title)
 	if err != nil {
 		repoError(w, err)
 		return
@@ -139,15 +197,15 @@ func (s *server) update(w http.ResponseWriter, r *http.Request) {
 		Title string `json:"title"`
 		Done  bool   `json:"done"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid json")
+	if err := decodeBody(w, r, &in); err != nil {
+		badBody(w, err)
 		return
 	}
-	if in.Title == "" {
-		writeError(w, http.StatusBadRequest, "title required")
+	title, ok := validateTitle(w, in.Title)
+	if !ok {
 		return
 	}
-	task := &Task{ID: id, Title: in.Title, Done: in.Done}
+	task := &Task{ID: id, Title: title, Done: in.Done}
 	if err := s.repo.Update(r.Context(), task); err != nil {
 		repoError(w, err)
 		return

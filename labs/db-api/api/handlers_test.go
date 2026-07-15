@@ -208,6 +208,186 @@ func TestCreateTask(t *testing.T) {
 	})
 }
 
+// rejectingRepo is a repository that must never be called. Every method fails
+// the test by name and says what it was handed, which is the real assertion in
+// TestTitleValidation: validation that happens after the write is not
+// validation.
+//
+// The other tests in this file pass a bare &mockRepo{}, whose unset fields
+// panic on an unexpected call. That is the louder option and it is the right
+// one for a single case. It is the wrong one here: a panic takes the whole
+// test binary down with it, so the first bad title would hide the other five,
+// and a table exists precisely to report all of its rows.
+func rejectingRepo(t *testing.T) *mockRepo {
+	t.Helper()
+	return &mockRepo{
+		createFn: func(_ context.Context, title string) (*api.Task, error) {
+			t.Errorf("repository Create was called with %q; validation must reject it before storage", title)
+			return &api.Task{ID: 1, Title: title}, nil
+		},
+		updateFn: func(_ context.Context, task *api.Task) error {
+			t.Errorf("repository Update was called with %q; validation must reject it before storage", task.Title)
+			return nil
+		},
+	}
+}
+
+// TestTitleValidation runs every rejectable title against both routes that
+// accept one, and asserts twice per row: the client gets the right 400, and
+// the repository was never consulted at all.
+func TestTitleValidation(t *testing.T) {
+	cases := []struct {
+		name      string
+		title     string
+		wantError string
+	}{
+		{
+			// A title of spaces is not a title. Trim, then check, or " "
+			// is a perfectly good one-character task forever.
+			name:      "whitespace only",
+			title:     "   \t\n  ",
+			wantError: "title required",
+		},
+		{
+			// Legal JSON, legal Go string, and Postgres documents that it
+			// cannot be stored in a character type. Rejected here it is a
+			// 400; passed through it is a 500 from the INSERT.
+			name:      "null byte",
+			title:     "tidy the kitchen\x00",
+			wantError: "title contains a null byte",
+		},
+		{
+			name:      "one rune over the limit",
+			title:     strings.Repeat("a", api.MaxTitleRunes+1),
+			wantError: "title too long",
+		},
+	}
+
+	routes := []struct {
+		method string
+		path   string
+		body   func(title string) string
+	}{
+		{http.MethodPost, "/tasks", func(title string) string {
+			return mustJSON(map[string]any{"title": title})
+		}},
+		{http.MethodPut, "/tasks/3", func(title string) string {
+			return mustJSON(map[string]any{"title": title, "done": true})
+		}},
+	}
+
+	for _, tc := range cases {
+		for _, route := range routes {
+			t.Run(tc.name+" via "+route.method, func(t *testing.T) {
+				rec := do(t, rejectingRepo(t), route.method, route.path, route.body(tc.title))
+
+				if rec.Code != http.StatusBadRequest {
+					t.Errorf("status = %d, want %d", rec.Code, http.StatusBadRequest)
+					return
+				}
+				if msg := wantError(t, rec); msg != tc.wantError {
+					t.Errorf("error = %q, want %q", msg, tc.wantError)
+				}
+			})
+		}
+	}
+}
+
+// TestTitleAtTheLimitIsAccepted is the other half of the bound. A limit that
+// rejects the value it says it allows is an off-by-one nobody notices until a
+// client hits it.
+func TestTitleAtTheLimitIsAccepted(t *testing.T) {
+	title := strings.Repeat("a", api.MaxTitleRunes)
+	repo := &mockRepo{
+		createFn: func(_ context.Context, got string) (*api.Task, error) {
+			return &api.Task{ID: 1, Title: got}, nil
+		},
+	}
+	rec := do(t, repo, http.MethodPost, "/tasks", mustJSON(map[string]any{"title": title}))
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("status = %d, want %d: a title of exactly MaxTitleRunes is legal", rec.Code, http.StatusCreated)
+	}
+}
+
+// TestTitleIsCountedInRunesNotBytes pins which unit the bound uses. The title
+// below is well under the rune limit and well over it in bytes, so a handler
+// that reaches for len() rejects a title it should accept. Every non-ASCII
+// language on earth finds this bug for you eventually.
+func TestTitleIsCountedInRunesNotBytes(t *testing.T) {
+	// Each of these runes costs 3 bytes in UTF-8.
+	title := strings.Repeat("日", api.MaxTitleRunes)
+	if len(title) <= api.MaxTitleRunes {
+		t.Fatalf("test is not testing what it thinks: %d bytes", len(title))
+	}
+	repo := &mockRepo{
+		createFn: func(_ context.Context, got string) (*api.Task, error) {
+			return &api.Task{ID: 1, Title: got}, nil
+		},
+	}
+	rec := do(t, repo, http.MethodPost, "/tasks", mustJSON(map[string]any{"title": title}))
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("status = %d, want %d.\n%d runes is at the limit; %d bytes is over it. len() counts bytes, utf8.RuneCountInString counts runes.",
+			rec.Code, http.StatusCreated, api.MaxTitleRunes, len(title))
+	}
+}
+
+// TestTitleIsTrimmedBeforeItIsStored proves the cleaned value is the stored
+// value. Validating a trimmed copy and then storing the raw one is a real and
+// popular bug: every check passes and the row is still wrong.
+func TestTitleIsTrimmedBeforeItIsStored(t *testing.T) {
+	var got string
+	repo := &mockRepo{
+		createFn: func(_ context.Context, title string) (*api.Task, error) {
+			got = title
+			return &api.Task{ID: 1, Title: title}, nil
+		},
+	}
+	rec := do(t, repo, http.MethodPost, "/tasks", `{"title":"  padded  "}`)
+
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusCreated)
+	}
+	if got != "padded" {
+		t.Fatalf("repository received %q, want %q: validate the trimmed value and store the same one", got, "padded")
+	}
+}
+
+// TestOversizedBodyIsRejected is the one case none of the title checks can
+// catch. The body is valid JSON and its title is perfectly fine; there is
+// simply far too much of everything else. Without a cap on r.Body, Decode
+// reads all of it into memory and answers 201, and the only bound on what a
+// stranger can make this process allocate is their upload bandwidth.
+func TestOversizedBodyIsRejected(t *testing.T) {
+	body := mustJSON(map[string]any{
+		"title": "perfectly fine title",
+		"junk":  strings.Repeat("x", api.MaxBodyBytes*2),
+	})
+	if len(body) <= api.MaxBodyBytes {
+		t.Fatalf("test body is only %d bytes, under the %d cap", len(body), api.MaxBodyBytes)
+	}
+
+	// No createFn: an oversized body must never reach the repository.
+	rec := do(t, &mockRepo{}, http.MethodPost, "/tasks", body)
+
+	if rec.Code != http.StatusRequestEntityTooLarge {
+		t.Fatalf("status = %d, want %d.\nThe title is valid, so no title check can reject this: the body has to be capped before Decode reads it. http.MaxBytesReader is the cap; errors.As on *http.MaxBytesError is how you tell it apart from malformed JSON.",
+			rec.Code, http.StatusRequestEntityTooLarge)
+	}
+	wantError(t, rec)
+}
+
+// mustJSON builds a request body. Going through encoding/json rather than
+// string concatenation means the null-byte case above is transported the way
+// a real client would send it, as a u0000 escape, rather than as something
+// this test invented.
+func mustJSON(v any) string {
+	b, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return string(b)
+}
+
 func TestGetTask(t *testing.T) {
 	t.Run("exists", func(t *testing.T) {
 		repo := &mockRepo{

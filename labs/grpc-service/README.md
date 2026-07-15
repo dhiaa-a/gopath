@@ -6,16 +6,34 @@ This lab grades the `server` package from the Tier 3 gRPC project. The suite is 
 
 ```
 proto/users.proto   the contract; field numbers are the wire format
-userspb/            Go code generated from the proto: committed, never edited
+proto/wire_demo.proto  not the contract: three shapes of the same three
+                       fields, so ./wire can decode one message as each
+userspb/            Go code generated from users.proto: committed, never edited
+wirepb/             generated from wire_demo.proto: committed, never edited
 buf.yaml
 buf.gen.yaml        codegen config, see "Regenerating" below
 server/
   server.go         yours: the skeleton you fill in (build tag !solution)
   server_test.go    the suite; read it, it is the contract
   solution.go       reference implementation (build tag solution)
+wire/               demo: what protobuf puts on the wire (graded: no)
+deadline/           demo: a context deadline crossing the wire (graded: no)
+details/            demo: what a status error carries besides its code
 ```
 
 `solution.go` is compiled only with `-tags solution`, so `go test` always grades your file, never the reference. Do not open `solution.go` until your run is green.
+
+## The three demos
+
+None of these are graded and none of them are optional reading. Each one exists because a claim the project makes is only worth making if you can watch it happen.
+
+```
+go run ./wire       # field names are not on the wire; field numbers are
+go run ./deadline   # a client timeout becomes the server's ctx deadline
+go run ./details    # your CreateUser's error, field by field
+```
+
+`./wire` and `./deadline` are self-contained and run before you have written anything. `./details` boots **your** `server` package, so it reports whatever your code currently does; run it with `-tags solution` to see the same call against the reference.
 
 ## The contract
 
@@ -41,7 +59,7 @@ Seven cases, one per line of the project's assessment block:
 Two sharp edges the suite will catch:
 
 - Return status errors, never raw Go errors. A raw `error` crosses the wire as `codes.Unknown`, and `TestGetUserUnknownID` will print exactly that code back at you.
-- A map alone cannot satisfy `TestListUsersStreamsInOrder`. Go randomizes map iteration order on purpose; you need to remember arrival order separately.
+- A map alone cannot satisfy `TestListUsersStreamsInOrder`. Go randomizes map iteration order on purpose; you need to remember arrival order separately. Be warned that this one is a *weak* red: with three keys the randomization is a rotation inside a single bucket, so ranging the map replays seed order roughly 3 runs in 4, and the test passes. `-count=10` is how you see it.
 
 One scope note: `AuthUnaryInterceptor` guards unary RPCs only. gRPC routes streaming calls through a separate hook (`grpc.StreamServerInterceptor`), so `ListUsers` is deliberately unguarded here. A production service registers both.
 
@@ -57,7 +75,11 @@ The starter skeleton compiles but fails every test with `codes.Unimplemented`; e
 ## Done when
 
 ```
+?   	gopath.dev/labs/grpc-service/deadline	[no test files]
+?   	gopath.dev/labs/grpc-service/details	[no test files]
 ?   	gopath.dev/labs/grpc-service/userspb	[no test files]
+?   	gopath.dev/labs/grpc-service/wire	[no test files]
+?   	gopath.dev/labs/grpc-service/wirepb	[no test files]
 ok  	gopath.dev/labs/grpc-service/server	0.6s
 ```
 
@@ -65,7 +87,7 @@ All seven cases pass through a real gRPC round-trip. That, not a hand-tested cli
 
 ## Regenerating the generated code
 
-Running the lab needs neither buf nor protoc: `userspb/` is committed. Regenerate only if you change `proto/users.proto`:
+Running the lab needs neither buf nor protoc: `userspb/` and `wirepb/` are committed. Regenerate only if you change a file under `proto/`:
 
 ```
 go install github.com/bufbuild/buf/cmd/buf@v1.32.2

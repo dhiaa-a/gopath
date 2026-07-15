@@ -3,5 +3,6 @@
 before.txt
 after.txt
 cpu.out
+mem.out
 *.test
 *.test.exe

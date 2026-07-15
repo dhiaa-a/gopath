@@ -43,8 +43,12 @@ to the code.
 
    ```
    cd svc
-   go test -run '^$' -bench . -benchmem -count=5 > before.txt
+   go test -run '^$' -bench . -benchmem -count=10 > before.txt
    ```
+
+   `-count=10`, not 5: benchstat needs at least 6 samples to compute a
+   confidence interval at the 0.95 level and prints `± ∞` on every row below
+   that. Ten leaves margin for the machine to misbehave during one of them.
 
    On Windows PowerShell, `>` writes UTF-16, which benchstat cannot read; use
    `| Out-File -Encoding utf8 before.txt` instead, or run these commands in
@@ -70,7 +74,7 @@ to the code.
 4. Re-measure with identical flags:
 
    ```
-   go test -run '^$' -bench . -benchmem -count=5 > after.txt
+   go test -run '^$' -bench . -benchmem -count=10 > after.txt
    ```
 
 5. Prove it is not noise:
@@ -80,9 +84,20 @@ to the code.
    ```
 
    benchstat is the one external tool in this project, and it stays optional
-   for the machine check below:
-   `go install golang.org/x/perf/cmd/benchstat@latest`. A p-value above 0.05
-   means the difference could be variance; more `-count` runs or a bigger win.
+   for the machine check below. Note that the usual install line does not work
+   on this lab's toolchain: `golang.org/x/perf` now requires Go 1.25 or newer,
+   so `@latest` fails to build on Go 1.22. Pin a commit from before that bump:
+
+   ```
+   go install golang.org/x/perf/cmd/benchstat@400946f43c82
+   ```
+
+   A p-value above 0.05 means the difference could be variance; more `-count`
+   runs or a bigger win. Read the `BenchmarkBaseline` row as well as the
+   `BenchmarkOptimized` one: you did not edit `baseline.go`, so it is a control
+   group, and it should report `~`. If it reports a significant change instead,
+   the two files were measured under different conditions and the drift
+   contaminates every row in the table.
 
 6. The gate, the machine check, from the lab root:
 
@@ -113,16 +128,21 @@ go tool pprof -http=:8081 "http://127.0.0.1:6060/debug/pprof/profile?seconds=30"
 ```
 
 Start the load first, then take the profile while it runs: pprof samples for
-30 seconds, and an idle service produces an empty profile. The service
-renders through `Optimized`, so the flamegraph shows your code, slow before
-the fix and flat after it.
+30 seconds, and an idle service produces an empty profile with
+`Total samples = 0`. The service renders through `Optimized`, so the
+flamegraph shows your code, slow before the fix and flat after it.
+
+The `-http` view needs a browser and Graphviz. The same data prints to a
+terminal with `-top` (ranked functions) and `-list 'Optimized$'` (per source
+line), which is what the project's verify steps use.
 
 ## Done means
 
 - `go test ./...` green: it started green and stayed green.
 - `go test -tags gate -run TestGate ./...` green.
-- For the project's step 04 deliverable: the flamegraph screenshot naming the
-  bottleneck, the benchstat output with p < 0.05, and one written paragraph
+- For the project's step 09 deliverable: the pprof output naming the source
+  line, the `benchstat before.txt after.txt` comparison at `-count=10`
+  including the `BenchmarkBaseline` control row, and one written paragraph
   explaining why the fix reduced copying and allocation.
 
 The reference fix is `svc/solution.go`, sealed behind the `solution` build

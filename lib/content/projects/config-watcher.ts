@@ -617,7 +617,7 @@ func (s *MutexStore) store(c *Config) {
 							},
 							{
 								label: "benchstat",
-								value: "go install golang.org/x/perf/cmd/benchstat@latest. Run: go test -bench=. -count=5 > bench.txt then benchstat bench.txt for mean ± variance across runs.",
+								value: "go install golang.org/x/perf/cmd/benchstat@latest fails on Go 1.22: x/perf now requires Go 1.25 or newer and the module refuses to build. Pin a commit from before that bump: go install golang.org/x/perf/cmd/benchstat@400946f43c82. Then: go test -bench=. -benchmem -count=10 -run '^$' ./... > bench.txt and benchstat bench.txt. Use -count=10, not 5: benchstat needs at least 6 samples for a confidence interval and prints ± ∞ below that, which is it telling you the run proved nothing about variance.",
 							},
 							{
 								label: "on ratios, not absolutes",

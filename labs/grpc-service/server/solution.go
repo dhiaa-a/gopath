@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"sync"
 
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -79,9 +80,15 @@ func (s *Server) ListUsers(req *userspb.ListUsersRequest, stream userspb.UserSer
 
 // CreateUser rejects an empty email with codes.InvalidArgument before
 // touching storage, then stores the user under a fresh id.
+//
+// The rejection carries a google.rpc.BadRequest detail naming the offending
+// field. The suite only checks the code, so this is above the bar on
+// purpose: it is what ./details exists to show. status.WithDetails keeps the
+// code intact and marshals the detail into the status, so a client can
+// branch on the field name instead of grepping the message text.
 func (s *Server) CreateUser(ctx context.Context, req *userspb.CreateUserRequest) (*userspb.User, error) {
 	if req.GetEmail() == "" {
-		return nil, status.Error(codes.InvalidArgument, "email must not be empty")
+		return nil, invalidField("email", "email must not be empty")
 	}
 
 	s.mu.Lock()
@@ -95,6 +102,23 @@ func (s *Server) CreateUser(ctx context.Context, req *userspb.CreateUserRequest)
 	s.users[u.Id] = u
 	s.order = append(s.order, u.Id)
 	return u, nil
+}
+
+// invalidField builds an InvalidArgument status that names the field it is
+// complaining about in a machine-readable detail, not only in its message.
+// If attaching the detail fails (it cannot here: BadRequest always
+// marshals), fall back to the bare status rather than losing the rejection.
+func invalidField(field, desc string) error {
+	st := status.New(codes.InvalidArgument, desc)
+	withDetail, err := st.WithDetails(&errdetails.BadRequest{
+		FieldViolations: []*errdetails.BadRequest_FieldViolation{
+			{Field: field, Description: desc},
+		},
+	})
+	if err != nil {
+		return st.Err()
+	}
+	return withDetail.Err()
 }
 
 // AuthUnaryInterceptor admits a unary call only when the incoming
