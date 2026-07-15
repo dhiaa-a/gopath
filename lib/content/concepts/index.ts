@@ -10,8 +10,13 @@ import { context } from "./context"
 import { slices } from "./slices"
 import { maps } from "./maps"
 import { syncWaitgroup } from "./sync-waitgroup"
+import { syncMutex } from "./sync-mutex"
+import { raceDetector } from "./race-detector"
 import { select } from "./select"
 import { httpHandler } from "./http-handler"
+import { serverTimeouts } from "./server-timeouts"
+import { gracefulShutdown } from "./graceful-shutdown"
+import { slog } from "./slog"
 import { jsonDecode } from "./json-decode"
 import { packages } from "./packages"
 
@@ -27,8 +32,13 @@ export const concepts: Concept[] = [
 	slices,
 	maps,
 	syncWaitgroup,
+	syncMutex,
+	raceDetector,
 	select,
 	httpHandler,
+	serverTimeouts,
+	gracefulShutdown,
+	slog,
 	jsonDecode,
 	packages,
 ]

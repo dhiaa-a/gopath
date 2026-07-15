@@ -26,7 +26,7 @@ type User struct {
 	ID        int    \`json:"id"\`
 	Name      string \`json:"name"\`
 	Email     string \`json:"email"\`
-	Password  string \`json:"-"\`          // always omitted
+	Password  string \`json:"-"\`                    // always omitted
 	CreatedAt string \`json:"created_at,omitempty"\` // omit if empty
 }
 
@@ -37,7 +37,7 @@ func main() {
 	if err := json.Unmarshal([]byte(raw), &u); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("%+v\n", u) // {ID:1 Name:Alice Email:alice@...}
+	fmt.Printf("%+v\\n", u) // {ID:1 Name:Alice Email:alice@...}
 
 	// Encode
 	u.Password = "secret" // won't appear in output

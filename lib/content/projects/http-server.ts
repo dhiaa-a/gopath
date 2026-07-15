@@ -208,7 +208,7 @@ func (r *statusRecorder) WriteHeader(code int) {
 		{
 			n: "03",
 			heading: { en: "One line per request, and make it queryable" },
-			uses: ["interfaces"],
+			uses: ["slog", "interfaces"],
 			blocks: [
 				{
 					type: "text",
@@ -498,7 +498,7 @@ b.tokens--`,
 		{
 			n: "07",
 			heading: { en: "That map is shared. The detector is the only thing that knows." },
-			uses: ["goroutines", "maps"],
+			uses: ["sync-mutex", "race-detector", "goroutines", "maps"],
 			blocks: [
 				{
 					type: "text",
@@ -580,7 +580,7 @@ if !allowed {
 		{
 			n: "08",
 			heading: { en: "The zero value of http.Server has no deadlines at all" },
-			uses: ["structs"],
+			uses: ["server-timeouts"],
 			blocks: [
 				{
 					type: "text",
@@ -650,7 +650,7 @@ return &http.Server{
 		{
 			n: "09",
 			heading: { en: "Shutdown waits. Close does not." },
-			uses: ["context", "channels", "select", "error-handling"],
+			uses: ["graceful-shutdown", "context", "channels", "select", "error-handling"],
 			blocks: [
 				{
 					type: "text",

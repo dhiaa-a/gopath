@@ -1,42 +1,15 @@
 import Link from "next/link"
 import { concepts } from "@/lib/concepts"
+import { conceptGroups } from "@/lib/content/concepts/groups"
 
-// Group concepts thematically
-const groups = [
-	{
-		label: "Fundamentals",
-		slugs: [
-			"error-handling",
-			"interfaces",
-			"structs",
-			"pointers",
-			"packages",
-		],
-		color: "text-go-cyan",
-		border: "border-go-cyan/20",
-		bg: "bg-go-cyan/5",
-	},
-	{
-		label: "Concurrency",
-		slugs: [
-			"goroutines",
-			"channels",
-			"select",
-			"sync-waitgroup",
-			"context",
-		],
-		color: "text-go-teal",
-		border: "border-go-teal/20",
-		bg: "bg-go-teal/5",
-	},
-	{
-		label: "Standard library",
-		slugs: ["http-handler", "json-decode", "slices", "maps", "defer"],
-		color: "text-go-amber",
-		border: "border-go-amber/20",
-		bg: "bg-go-amber/5",
-	},
-]
+// The grouping itself lives in lib/content/concepts/groups.ts, where
+// validate.ts can hold it to "every concept is in exactly one group". Only
+// the colour per group is a presentation decision, so only it lives here.
+const groupStyles: Record<string, { color: string; border: string }> = {
+	Fundamentals: { color: "text-go-cyan", border: "border-go-cyan/20" },
+	Concurrency: { color: "text-go-teal", border: "border-go-teal/20" },
+	"Standard library": { color: "text-go-amber", border: "border-go-amber/20" },
+}
 
 export default function ConceptsPage() {
 	return (
@@ -53,7 +26,8 @@ export default function ConceptsPage() {
 			</p>
 
 			<div className="flex flex-col gap-10">
-				{groups.map((group) => {
+				{conceptGroups.map((group) => {
+					const style = groupStyles[group.label]
 					const groupConcepts = group.slugs
 						.map((s) => concepts.find((c) => c.slug === s))
 						.filter(Boolean) as typeof concepts
@@ -61,7 +35,7 @@ export default function ConceptsPage() {
 					return (
 						<div key={group.label}>
 							<div
-								className={`mb-4 font-mono text-xs uppercase tracking-widest ${group.color}`}
+								className={`mb-4 font-mono text-xs uppercase tracking-widest ${style.color}`}
 							>
 								{group.label}
 							</div>
@@ -70,7 +44,7 @@ export default function ConceptsPage() {
 									<Link
 										key={c.slug}
 										href={`/concepts/${c.slug}`}
-										className={`group rounded-lg border ${group.border} bg-surface p-4 transition-all hover:-translate-y-0.5 hover:shadow-sm`}
+										className={`group rounded-lg border ${style.border} bg-surface p-4 transition-all hover:-translate-y-0.5 hover:shadow-sm`}
 									>
 										<div className="mb-1 font-semibold text-foreground group-hover:text-go-cyan">
 											{c.name}

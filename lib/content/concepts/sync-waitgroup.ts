@@ -25,7 +25,7 @@ import (
 func worker(id int, wg *sync.WaitGroup) {
 	defer wg.Done() // always called, even on panic
 	time.Sleep(time.Duration(id) * 100 * time.Millisecond)
-	fmt.Printf("Worker %d done\n", id)
+	fmt.Printf("Worker %d done\\n", id)
 }
 
 func main() {

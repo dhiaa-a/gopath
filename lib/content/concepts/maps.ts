@@ -32,7 +32,7 @@ func main() {
 
 	// Iterate — order is randomised every run
 	for name, score := range scores {
-		fmt.Printf("%s: %d\n", name, score)
+		fmt.Printf("%s: %d\\n", name, score)
 	}
 
 	// Delete a key

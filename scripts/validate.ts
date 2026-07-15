@@ -1,6 +1,7 @@
 import { existsSync, readdirSync } from "node:fs"
 import path from "node:path"
 import { concepts } from "../lib/concepts"
+import { conceptGroups } from "../lib/content/concepts/groups"
 import { projects } from "../lib/projects"
 import { orientationPages, OrientationPage } from "../lib/orientation"
 import { tier0Lessons } from "../lib/tier0"
@@ -156,11 +157,47 @@ for (const project of projects) {
 
 // ─── Concepts ──────────────────────────────────────────────────────────────
 
+// Unique slugs
+{
+	const seen = new Set<string>()
+	for (const concept of concepts) {
+		if (seen.has(concept.slug)) {
+			fail(`concepts: duplicate slug "${concept.slug}"`)
+		}
+		seen.add(concept.slug)
+	}
+}
+
 // Every relatedSlug must exist in concepts
 for (const concept of concepts) {
 	for (const slug of concept.relatedSlugs) {
 		if (!conceptSlugs.has(slug)) {
 			fail(`concept "${concept.slug}": relatedSlugs contains unknown slug "${slug}"`)
+		}
+	}
+}
+
+// Every concept appears in exactly one group on /concepts. The index renders
+// only what the taxonomy lists, so a concept missing from it is a page that
+// exists, that steps link to, and that nothing on /concepts can reach.
+{
+	const timesGrouped = new Map<string, number>()
+	for (const group of conceptGroups) {
+		for (const slug of group.slugs) {
+			if (!conceptSlugs.has(slug)) {
+				fail(`concept group "${group.label}": unknown concept "${slug}"`)
+			}
+			timesGrouped.set(slug, (timesGrouped.get(slug) ?? 0) + 1)
+		}
+	}
+	for (const concept of concepts) {
+		const n = timesGrouped.get(concept.slug) ?? 0
+		if (n === 0) {
+			fail(
+				`concept "${concept.slug}": in no group in lib/content/concepts/groups.ts, so it would not appear on /concepts`,
+			)
+		} else if (n > 1) {
+			fail(`concept "${concept.slug}": in ${n} concept groups, expected exactly one`)
 		}
 	}
 }
