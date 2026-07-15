@@ -1,8 +1,12 @@
-// Package config is the store slice of the live config reloader: the two
-// implementations of "hold the current *Config so that readers never block",
-// one behind sync/atomic.Value and one behind sync.RWMutex. The suite in
-// this package grades both; the benchmarks and the gate settle which one
-// belongs on the hot path.
+// Package config is the graded slice of the live config reloader: the part
+// that survives without a file system or a third-party dependency.
+//
+// Two halves. Debounce collapses a burst of file system events into one
+// reload, which is the step 02 loop with fsnotify factored out. Store and
+// MutexStore are the two implementations of "hold the current *Config so
+// that readers never block", one behind sync/atomic.Value and one behind
+// sync.RWMutex. The suite grades all three; the benchmarks and the gate
+// settle which store belongs on the hot path.
 package config
 
 // Config is the parsed configuration the rest of the program reads. The

@@ -41,11 +41,13 @@ var boxes = []cityBox{
 }
 
 // fakeAPI mimics the Open-Meteo forecast endpoint from fixture files.
-// Requests to /status500/... always fail with HTTP 500 and requests to
-// /badjson/... return truncated JSON; everything else is matched to a city
-// by its latitude/longitude query parameters.
+// Requests to /status500/... always fail with HTTP 500, requests to
+// /badjson/... return truncated JSON, and requests to /hang/... are accepted
+// and never answered; everything else is matched to a city by its
+// latitude/longitude query parameters.
 type fakeAPI struct {
 	fixtures map[string][]byte
+	done     chan struct{} // closed when the check tears the server down
 
 	mu       sync.Mutex
 	note     string // why the last request was rejected, shown on failure
@@ -87,6 +89,16 @@ func (s *fakeAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprint(w, `{"latitude": 51.5, "current": {"temperature_2m":`)
 		return
+	case strings.HasPrefix(r.URL.Path, "/hang"):
+		// Accept the request and never answer it. A client with a Timeout
+		// gives up and closes the connection, which cancels this request's
+		// context and unblocks the receive below. A client without one waits
+		// here until the check kills the process.
+		select {
+		case <-r.Context().Done():
+		case <-s.done:
+		}
+		return
 	}
 
 	q := r.URL.Query()
@@ -112,14 +124,20 @@ func (s *fakeAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type scenario struct {
-	name    string
-	city    string // value passed to --city
-	path    string // path the base URL points at on the local server
-	wantOut string // exact stdout (LF, no trailing newline) for clean runs
-	wantErr bool   // the program must notice a problem and exit non-zero
-	needle  string // substring the output must contain on error runs
-	hint    string // printed when the scenario fails
+	name      string
+	city      string        // value passed to --city
+	path      string        // path the base URL points at on the local server
+	wantOut   string        // exact stdout (LF, no trailing newline) for clean runs
+	wantErr   bool          // the program must notice a problem and exit non-zero
+	needle    string        // substring the output must contain on error runs
+	noContact bool          // the program must fail before it reaches the server
+	budget    time.Duration // how long the program gets; 0 means defaultBudget
+	slow      string        // why this scenario takes a while, printed before it runs
+	hint      string        // printed when the scenario fails
 }
+
+// defaultBudget is generous: a scenario that hits it has hung, not run slowly.
+const defaultBudget = 30 * time.Second
 
 var scenarios = []scenario{
 	{
@@ -144,6 +162,15 @@ var scenarios = []scenario{
 		hint:    "43.86 rounds to 43.9 and 3.6 rounds to 4; formatting rounds, it does not truncate",
 	},
 	{
+		name:      "unknown city is refused",
+		city:      "atlantis",
+		path:      "/v1/forecast",
+		wantErr:   true,
+		needle:    "atlantis",
+		noContact: true,
+		hint:      "buildURL has no coordinates for atlantis, so it must return an error naming the city; main already turns that into a non-zero exit. A map read for a missing key returns the zero value rather than failing, so the comma-ok form is what tells absent from present-and-zero.",
+	},
+	{
 		name:    "server answers 500",
 		city:    "london",
 		path:    "/status500/v1/forecast",
@@ -157,6 +184,15 @@ var scenarios = []scenario{
 		path:    "/badjson/v1/forecast",
 		wantErr: true,
 		hint:    "the json.Decoder error must reach main and turn into a non-zero exit, not get ignored",
+	},
+	{
+		name:    "server never answers",
+		city:    "london",
+		path:    "/hang/v1/forecast",
+		wantErr: true,
+		budget:  13 * time.Second,
+		slow:    "about 10s: it waits for your client to give up",
+		hint:    "this server accepts the connection and then goes silent forever, so nothing below you will ever report an error. A zero-value http.Client has no deadline of its own: give it one with &http.Client{Timeout: 10 * time.Second}.",
 	},
 }
 
@@ -200,10 +236,13 @@ func run(target string) error {
 		return err
 	}
 	defer ln.Close()
-	api := &fakeAPI{fixtures: fixtures}
+	api := &fakeAPI{fixtures: fixtures, done: make(chan struct{})}
 	srv := &http.Server{Handler: api}
 	go func() { _ = srv.Serve(ln) }()
 	defer srv.Close()
+	// Runs before srv.Close (defers are LIFO): unblock the /hang handler
+	// first, then shut the server down.
+	defer close(api.done)
 	base := "http://" + ln.Addr().String()
 
 	passed := 0
@@ -224,7 +263,19 @@ func run(target string) error {
 func runScenario(i, total int, exe, base string, api *fakeAPI, sc scenario) bool {
 	api.reset()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	budget := sc.budget
+	if budget == 0 {
+		budget = defaultBudget
+	}
+
+	// Printed before the run, not after, so a scenario that takes ten seconds
+	// says why while you are waiting on it.
+	fmt.Printf("[%d/%d] %s ... ", i, total, sc.name)
+	if sc.slow != "" {
+		fmt.Printf("(%s) ", sc.slow)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), budget)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, exe, "--city", sc.city, "--base-url", base+sc.path)
 	var stdout, stderr bytes.Buffer
@@ -237,7 +288,7 @@ func runScenario(i, total int, exe, base string, api *fakeAPI, sc scenario) bool
 
 	var problems []string
 	if ctx.Err() != nil {
-		problems = append(problems, "your program ran for 30 seconds without finishing; it is probably waiting on something that never arrives")
+		problems = append(problems, fmt.Sprintf("your program ran for %s without finishing, so the check killed it; it is waiting on something that never arrives", budget))
 	}
 	if sc.wantErr {
 		if runErr == nil {
@@ -255,11 +306,14 @@ func runScenario(i, total int, exe, base string, api *fakeAPI, sc scenario) bool
 			problems = append(problems, "stdout does not match the expected output")
 		}
 	}
-	if requests == 0 {
+	if sc.noContact {
+		if requests != 0 {
+			problems = append(problems, "your program sent a request to the server; input this program has no way to handle must be refused before anything goes out on the wire")
+		}
+	} else if requests == 0 {
 		problems = append(problems, "the local test server never saw a request from your program; the endpoint must come from the --base-url flag, not a hardcoded URL")
 	}
 
-	fmt.Printf("[%d/%d] %s ... ", i, total, sc.name)
 	if len(problems) == 0 {
 		fmt.Println("ok")
 		return true

@@ -9,6 +9,7 @@ import { tcpEcho } from "./tcp-echo"
 import { grpcService } from "./grpc-service"
 import { dbApi } from "./db-api"
 import { observability } from "./observability"
+import { shipIt } from "./ship-it"
 
 export const projects: Project[] = [
 	// ─────────────────────────────────────────────────────────────────────────
@@ -63,4 +64,8 @@ export const projects: Project[] = [
 	// ─────────────────────────────────────────────────────────────────────────
 
 	observability,
+
+	// ─────────────────────────────────────────────────────────────────────────
+
+	shipIt,
 ]

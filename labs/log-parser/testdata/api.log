@@ -1,0 +1,8 @@
+2024-01-15T09:14:02Z INFO listening on :8080
+2024-01-15T09:14:03Z DEBUG cache warm start
+2024-01-15T09:15:31Z INFO GET /healthz 200
+not-a-timestamp INFO upstream logged this without a date
+2024-01-15T09:16:44Z WARN upstream slow: 1.4s
+2024-01-15T09:17:01Z INFO GET /v1/users 200
+2024-01-15T09:18:12Z ERROR upstream timeout after 3s
+2024-01-15T09:18:13Z INFO retrying request

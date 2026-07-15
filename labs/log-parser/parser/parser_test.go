@@ -110,12 +110,30 @@ func TestParseLine(t *testing.T) {
 			// of the format, and time.Parse(time.RFC3339, ...) accepts
 			// them; a hand-rolled layout string ending in a literal Z
 			// would fail this row.
-			name: "timestamp with zone offset",
+			name: "timestamp with whole hour offset",
 			line: "2024-01-15T10:30:00+02:00 INFO deploy started",
 			want: parser.LogEntry{
 				Timestamp: ts("2024-01-15T10:30:00+02:00"),
 				Level:     "INFO",
 				Message:   "deploy started",
+			},
+			ok: true,
+		},
+		{
+			// Half-hour offsets are real: +05:30 is all of India. This row
+			// looks like a duplicate of the one above and is not. It is the
+			// row that forces the comparison at the bottom of this file to
+			// be written with Equal instead of ==, and the comment down
+			// there explains why. Delete this row and the suite would still
+			// pass against a correct parser, still pass against a naive
+			// == comparison, and quietly stop testing the thing it exists
+			// to test.
+			name: "timestamp with half hour offset",
+			line: "2024-01-15T10:30:00+05:30 WARN clock skew 40ms",
+			want: parser.LogEntry{
+				Timestamp: ts("2024-01-15T10:30:00+05:30"),
+				Level:     "WARN",
+				Message:   "clock skew 40ms",
 			},
 			ok: true,
 		},
@@ -165,12 +183,26 @@ func TestParseLine(t *testing.T) {
 			}
 
 			// Field by field beats got != tc.want here for one concrete
-			// reason: time.Time. Its == compares unexported fields,
-			// including a location pointer, and each time.Parse of an
-			// offset like +02:00 allocates a fresh Location. The zone
-			// offset row would fail struct equality even against a
-			// correct ParseLine. Comparing instants takes
-			// time.Time.Equal; the string fields take plain ==.
+			// reason: time.Time. LogEntry is a comparable struct, so ==
+			// compiles and looks right, but == on a time.Time compares its
+			// unexported fields, and one of them is a *Location.
+			//
+			// Whether two Parses of the same offset produce the same
+			// *Location is an implementation detail of the time package,
+			// and it is not consistent. time.FixedZone keeps a cache of
+			// unnamed whole-hour zones, so the +02:00 row gets the same
+			// pointer twice and passes ==. +05:30 is not a whole hour,
+			// misses that cache, allocates a fresh Location per call, and
+			// so fails == against a completely correct ParseLine. (A third
+			// path: when the offset matches the zone your machine is set
+			// to, Parse reuses Local and == passes again. Same code, same
+			// input, different answer depending on where the laptop is.)
+			//
+			// None of that is worth memorising, which is rather the point.
+			// The time package's own documentation settles it in one line:
+			// "In general, prefer t.Equal(u) to t == u, since t == u also
+			// compares Location and the monotonic clock reading."
+			// Instants take Equal; the string fields take plain ==.
 			if !got.Timestamp.Equal(tc.want.Timestamp) {
 				t.Errorf("Timestamp: got %v, want %v", got.Timestamp, tc.want.Timestamp)
 			}

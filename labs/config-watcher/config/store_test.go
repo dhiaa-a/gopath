@@ -48,7 +48,11 @@ func TestLoadReturnsInitialConfig(t *testing.T) {
 				t.Fatal("Load returned nil: the constructor must store the initial config before anyone can call Load")
 			}
 			if got != initial {
-				t.Errorf("Load returned %+v, want the exact *Config passed to the constructor (%+v)", got, initial)
+				// Printed with %p as well as %+v on purpose: a Load that
+				// returns a defensive copy fails here with two values that
+				// print identically, and the addresses are the only visible
+				// difference. Load must hand back the stored pointer itself.
+				t.Errorf("Load returned %+v at %p, want the exact *Config passed to the constructor, %+v at %p; a copy is not the stored config", got, got, initial, initial)
 			}
 		})
 	}

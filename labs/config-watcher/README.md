@@ -1,20 +1,35 @@
 # Lab: config-watcher
 
-Steps 03 and 04 of the project have you build the same store twice: `Store`
-keeps the current `*Config` in a `sync/atomic.Value`, `MutexStore` guards a
-plain field with a `sync.RWMutex`. This lab grades that work. One correctness
-suite proves both implementations honor the same contract under concurrent
-readers, the two benchmarks from the assessment measure both under parallel
-load, and a gate test enforces the claim the whole design rests on: the
-atomic version is strictly faster.
+This lab grades the two pieces of the reloader that hold still long enough to
+be graded.
 
-The watcher itself (fsnotify, the select loop, the debounce timer, the HTTP
-handler) stays in your project repo. It needs a third-party dependency and a
-config file format, and a benchmark suite is the wrong home for both. What
-the lab pins is the API the rest of the program depends on:
+**The debounce** (step 02). One save produces a burst of file system events;
+`Debounce` collapses the burst into a single reload and stops cleanly when its
+context is cancelled. The suite proves a burst of any length fires exactly
+once, and that a reload armed just before shutdown never lands after it.
+
+**The store** (steps 04 through 08). The same contract built twice: `Store`
+keeps the current `*Config` in a `sync/atomic.Value`, `MutexStore` guards a
+plain field with a `sync.RWMutex`. One correctness suite proves both honor
+that contract under concurrent readers, the two benchmarks from the assessment
+measure both under parallel load, and a gate test enforces the claim the whole
+design rests on: the atomic version is strictly faster.
+
+What stays in your project repo is everything that needs a file system or a
+dependency: fsnotify, the config file format, `loadFromFile`, the HTTP
+handler. A benchmark suite is the wrong home for those. Note that `Debounce`
+takes a plain `<-chan struct{}` rather than an fsnotify channel for exactly
+this reason, and that is not a lab convenience: a debounce that names its
+event source cannot be tested without producing real file system events.
+Factoring the timer logic away from its trigger is what makes it checkable
+here in milliseconds, and it is how you would write it anyway.
+
+What the lab pins is the API the rest of the program depends on:
 
 ```go
 type Config struct{ Port int; LogLevel string }
+
+Debounce(ctx, events <-chan struct{}, window time.Duration, fire func())
 
 NewStore(initial *Config) *Store            // atomic.Value inside
 (*Store) Load() *Config                     // hot path: one atomic pointer read
@@ -27,17 +42,19 @@ NewMutexStore(initial *Config) *MutexStore  // sync.RWMutex inside
 
 ## Where your code goes
 
-`config/store.go` is yours. The stubs compile and return zero values, so
-`go test ./...` starts out failing with test failures, not build errors.
-Port your step 03 and step 04 implementations into it, or build them here
-and copy them back.
+`config/debounce.go` and `config/store.go` are yours. The stubs compile and
+return zero values, so `go test ./...` starts out failing with test failures,
+not build errors. Port your step 02, 04, and 06 implementations into them, or
+build them here and copy them back.
 
 ## Run it
 
 From this directory:
 
 ```
-go test ./...                            # correctness, both stores
+go test ./...                            # correctness: debounce and both stores
+go test -run TestDebounce ./...          # step 02 only
+go test -run 'TestLoad|TestStore' ./...  # the store contract only
 go test -bench . -benchmem ./...         # tests plus both Load benchmarks
 go test -tags gate -run TestGate ./...   # the gate: atomic must beat mutex
 ```
@@ -57,7 +74,8 @@ go test -race ./...
 
 ## What done looks like
 
-- `go test ./...` green.
+- `go test ./...` green: the debounce collapses a burst and stops on cancel,
+  and both stores honor the same contract under concurrent readers.
 - Both benchmarks complete with `0 allocs/op`, and `BenchmarkAtomicLoad` is
   clearly faster. Expect roughly 1 to 2 ns/op for atomic and 10 to 50 ns/op
   for the mutex, with the gap widening as core count grows.
@@ -72,9 +90,9 @@ More cores, more stealing, wider gap.
 
 ## The reference and the benchmarks
 
-`config/solution.go` holds the reference implementations behind the
-`solution` build tag; CI runs the suite against it to prove the lab is
-passable. Do not open it until your run is green.
+`config/solution.go` and `config/debounce_solution.go` hold the reference
+implementations behind the `solution` build tag; CI runs the suite against
+them to prove the lab is passable. Do not open them until your run is green.
 
 The benchmarks in `config/bench_test.go` ship complete rather than stubbed.
 Step 04 teaches you to write benchmarks, and these are written exactly the

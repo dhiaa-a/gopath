@@ -4,6 +4,31 @@ Append-only. Newest at the top.
 
 ---
 
+## 2026-07-15 — One-Stop Phase 3: step anatomy, and the pins carried into it
+
+**Owner instruction (2026-07-15):** put a pin in the Phase 2 blockers and keep moving; make reasonable assumptions and log everything for review when the product is complete. This entry is that log. Nothing below was approved by Aboturab; it is all assumption, recorded so it can be reversed cheaply.
+
+**Pinned, NOT resolved (carried forward, still owed):**
+1. **`-race` has never run.** Windows without cgo cannot start the detector. Five suites (tcp-echo, http-server, worker-pool, db-api, grpc-service) teach `-race` as the primary command and are race-clean by construction only. **Assumption made:** they are correct. First CI run must be `RACE=1 ./labs/check.sh`. If that is red, Phase 2's claims are wrong and Phase 3 content built on them inherits the error.
+2. **Rule 3 vs the contract-style T3 labs.** `grpc-service` and `db-api` are T3 with no benchmark gate; their assessment blocks predate the brief and state no metric. **Assumption made: leave them alone.** Phase 2 refused to invent a metric and Phase 3 continues that refusal, because rule 3 is protected and inventing a gate is a curriculum decision, not an engineering one. If the answer is "they are exempt, they are contract labs", that needs one line here. If the answer is "give them metrics", that is a content task and the labs need new gates.
+3. **`.claude/agents/*.md` deletions** remain uncommitted, along with the `.claude/` tracking question. Untouched. `.claude/launch.json` was created this session (a dev-server config for the preview tooling) and deliberately left untracked rather than half-resolving the question in one direction.
+
+**Step anatomy, encoded rather than documented.** The brief specifies a fixed six-part step: motivation, concept, build, verify, break it, recap. Three of those had no representation in the types, which meant the anatomy could only ever be a convention that drifts. Added: a `verify` block (command + where + expect + optional labPath), a `breakIt` block (change + observe + why, with `why` behind a reveal so the learner commits to a guess before reading the mechanism), and `Step.retrievalPrompt` in the existing flip-card "question || answer" form. Recap is a step field rather than a block specifically so it always renders last; as a block it could drift into the middle of a step and the anatomy would rot quietly.
+
+**The tier spine is now mechanical.** The brief calls `pattern` (T1) -> `requirement` (T2) -> `constraint` (T3) the pedagogical spine and says to extend it and never flatten it. validate.ts now fails the build if a project reaches for another tier's build block. All existing content already passed, which is the good outcome: the check documents an invariant that already held rather than forcing a migration. Also enforced: `verify.labPath` resolves on disk, `verify.command` is non-empty, and `retrievalPrompt` really is "question || answer" (a prompt with no answer renders a card that reveals nothing).
+
+**estimatedTime, decided once (resolves the standing backlog item).** Keep the wall-clock range; label it "to build" at the render site. The backlog complaint was that "2–3 hours" reads to a competent dev as fluff or distrust, and it was right: the number was describing content you could type in twenty minutes. The fix is not to drop the number but to make it honest about what it covers, which is building plus verifying plus deliberately breaking. cli-renamer moves 2–3h -> 5–7h on content that genuinely takes that long. T1 targets 30–40h across its four projects.
+
+**cli-renamer rebuilt first, as the reference.** It went 3 steps -> 7 with the full anatomy, and it went first because the backlog flags it as the highest-bounce-risk page on the site: the median target reader could write the renamer in twenty minutes and needs telling, in the opening paragraph, that the four-layer shape is the lesson. That framing block now exists, closing a second backlog item. Its verify blocks stay honest mid-build by exploiting that the self-check prints per-scenario results, so step 01 can say "the three refusal scenarios match now, the other four will not until you write the transform". Every subsequent project follows this file.
+
+**Known limitation, logged:** the in-app browser could not load the dev server (it forces https on a plain-http localhost), so the three new UI blocks were verified against the served HTML and the RSC payload rather than visually. The components reuse the exact class patterns of the existing blocks, so the risk is low, but nobody has looked at them with human eyes.
+
+**Alternatives considered:** prose-only motivation/verify/break-it via existing `text`/`callout` blocks (zero type churn, but the anatomy becomes unenforceable and rots); `breakIt` as a full Phase 5 style reveal component (Phase 5 builds its own thing for failure labs, this is the small in-step version); dropping wall-clock time entirely (loses the honest planning signal the "~6 weeks of evenings" promise depends on).
+
+**Logged by:** Claude Code (engineer + content, One-Stop brief)
+
+---
+
 ## 2026-07-15 — One-Stop Phase 2: the executable spine (labs/)
 
 **Decision:** Every project now ships a self-contained Go module at `labs/<slug>`, linked from its project page by a new `ProjectLab` field and from each assessment block by `labPath`. Learner code and the reference live in the same package separated by build tags: your files are `//go:build !solution`, the reference is `//go:build solution`, suites are untagged and black-box, and performance gates are `//go:build gate` with `TestGate*` names. So `go test ./...` always grades the learner; `-tags solution` is how CI proves the suite is passable. `labs/check.sh` loops all ten modules (gofmt, build, vet, solution build/vet/test, self-checks, benchmarks, gates) and must be green before any commit touching `labs/`.

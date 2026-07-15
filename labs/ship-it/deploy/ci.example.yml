@@ -1,0 +1,91 @@
+# GitHub Actions for a Go service.
+#
+# Copy this into YOUR repository as .github/workflows/ci.yml. It is named
+# ci.example.yml and parked under deploy/ so that GoPath's own CI can never
+# pick it up: GitHub only reads workflows from .github/workflows/, so nothing
+# here runs by living here.
+#
+# The rule this file encodes: CI runs exactly what you run locally, and
+# nothing you cannot run locally. Every step below is a command you can paste
+# into your terminal right now. A pipeline with a step you cannot reproduce on
+# your machine is a pipeline you debug by pushing commits and waiting.
+
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Cancel the previous run when you push again. The third force-push in a row
+# does not need the first one's results.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          # Caches the module and build caches, keyed on go.sum. On by
+          # default, and the difference between a 30-second job and a
+          # three-minute one.
+          cache: true
+
+      # gofmt is not a style opinion, it is the absence of one. Anything it
+      # rewrites is a diff nobody has to read, review, or argue about in a
+      # pull request.
+      - name: gofmt
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "gofmt needed on:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: vet
+        run: go vet ./...
+
+      # -race needs cgo, which the runner has. This is the one place the race
+      # detector is free: it costs you nothing to find a race here rather than
+      # in production, where it presents as one wrong number a week and no
+      # stack trace.
+      - name: test
+        run: go test -race ./...
+
+      # The gate: the same command the project's lab.command names, run
+      # against your implementation.
+      - name: gate
+        run: go test -tags gate -run '^TestGate' ./...
+
+      - name: build the shipping binary
+        run: |
+          CGO_ENABLED=0 go build -trimpath \
+            -ldflags="-s -w -X main.version=${GITHUB_SHA::7}" \
+            -o ship-it .
+
+      # Prove the claim the Dockerfile depends on. A dynamically linked binary
+      # produces a distroless image that builds fine, pushes fine, and exits
+      # immediately the first time it starts, because there is no loader in
+      # there to go find its libc. That failure is worth catching here, where
+      # it costs 40 seconds.
+      - name: prove the binary is static
+        run: |
+          file ship-it
+          file ship-it | grep -qE 'statically linked|static-pie linked'
+
+      # Building the image on every commit means a broken Dockerfile fails
+      # here rather than during a release. Pushing it is where this sample
+      # stops: that needs a registry, credentials, and a decision about what
+      # you tag, and none of those are Go.
+      - name: build the image
+        run: |
+          docker build -f deploy/Dockerfile \
+            --build-arg VERSION=${GITHUB_SHA::7} \
+            -t ship-it:${GITHUB_SHA::7} .

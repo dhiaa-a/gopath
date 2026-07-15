@@ -30,10 +30,18 @@ func TestGateAtomicFasterThanMutex(t *testing.T) {
 	// The assessment claims both Loads are allocation-free, and the whole
 	// design rests on it: the hot path reads the stored pointer, it never
 	// builds a new Config. AllocsPerOp is total allocations divided by
-	// iteration count, an integer that does not move with the machine: 0 for a
-	// clean pointer read, 1 for a Load that boxes a fresh *Config every call.
-	// The handful of allocations RunParallel makes to start goroutines vanish
+	// iteration count, an integer that does not move with the machine. The
+	// handful of allocations RunParallel makes to start goroutines vanish
 	// against the billions of iterations, so a correct Load reports exactly 0.
+	//
+	// Be clear about what this does not catch. The benchmarks discard the
+	// result, so a Load that copies the Config and returns the copy's address
+	// still reports 0 allocs/op: the method inlines into the loop, nothing
+	// observes the copy, and escape analysis leaves it on the stack. The thing
+	// that actually pins "Load returns the stored pointer" is
+	// TestLoadReturnsInitialConfig, which compares addresses. This check earns
+	// its place against a Load that allocates something the compiler cannot
+	// prove non-escaping, on a path taken once per request.
 	if a := atomicRes.AllocsPerOp(); a != 0 {
 		t.Errorf("gate failed: atomic Load must be allocation-free, got %d allocs/op; Load must return the stored *Config, not allocate a new one on the read path", a)
 	}

@@ -1,0 +1,5 @@
+2024-01-15T09:20:00Z INFO pool open: 10 conns
+2024-01-15T09:21:14Z DEBUG begin tx 7781
+2024-01-15T09:21:15Z ERROR deadlock detected, retrying tx 7781
+2024-01-15T09:22:40Z INFO vacuum complete
+2024-01-15T09:59:59Z WARN slow query 2.1s: SELECT * FROM events

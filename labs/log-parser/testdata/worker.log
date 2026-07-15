@@ -1,0 +1,7 @@
+2024-01-15T09:10:00Z INFO worker pool started with 8 workers
+2024-01-15T09:11:20Z DEBUG job 41 claimed
+2024-01-15T09:11:21Z INFO job  41  finished in 812ms
+2024-01-15T09:12:05Z WARN queue depth 4200
+
+2024-01-15T09:13:47Z ERROR job 42 panicked: index out of range
+2024-01-15T09:13:48Z INFO job 42 requeued

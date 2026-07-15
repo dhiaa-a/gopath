@@ -14,10 +14,11 @@ import (
 
 // WeatherResponse models the JSON the weather API returns.
 //
-// Step 01: add Latitude and Longitude float64 fields and a nested Current
+// Step 02: add Latitude and Longitude float64 fields and a nested Current
 // struct with Temperature (JSON key temperature_2m) and WindSpeed (JSON key
 // wind_speed_10m). The struct tags must match the exact JSON keys, or
-// encoding/json silently leaves the fields at zero.
+// encoding/json silently leaves the fields at zero. testdata/london.json is
+// the exact shape the real API returns; match it character for character.
 type WeatherResponse struct {
 }
 
@@ -30,17 +31,20 @@ var (
 // request URL: *baseURL plus latitude, longitude, and
 // current=temperature_2m,wind_speed_10m as query parameters.
 //
-// Step 03: implement it. An unknown city is an error, not a panic.
+// Step 01: implement it. Use the comma-ok form: an unknown city is an error,
+// not a panic, and not a pair of zeroes that the API will cheerfully answer.
 func buildURL(city string) (string, error) {
 	return "", fmt.Errorf("buildURL: not implemented")
 }
 
 // fetch GETs the URL and decodes the JSON body into a WeatherResponse.
 //
-// Step 02: use an http.Client with a 10-second timeout, defer the body
-// close immediately after checking the Get error, and refuse to decode
-// anything that is not HTTP 200 (put resp.Status in the error).
-// Step 03: decode with json.NewDecoder straight off resp.Body.
+// Step 03: make an http.Client, Get the URL, defer the body close
+// immediately after checking the Get error, and decode with json.NewDecoder
+// straight off resp.Body. No io.ReadAll.
+// Step 05: refuse to decode anything that is not HTTP 200, and put
+// resp.Status in the error.
+// Step 06: give the client a Timeout. Without one it waits forever.
 func fetch(url string) (*WeatherResponse, error) {
 	return nil, fmt.Errorf("fetch: not implemented")
 }
@@ -51,7 +55,7 @@ func fetch(url string) (*WeatherResponse, error) {
 //	Wind speed: 15 km/h
 //
 // Temperature keeps one decimal place, wind speed rounds to the nearest
-// whole number. Step 03.
+// whole number. Step 04.
 func printResult(w *WeatherResponse) {
 }
 
