@@ -275,7 +275,7 @@ export const observability: Project = {
 		{
 			n: "04",
 			heading: { en: "Ask the allocation profile, which has no such tact" },
-			uses: [],
+			uses: ["pprof", "escape-analysis"],
 			blocks: [
 				{
 					type: "text",
@@ -338,7 +338,7 @@ export const observability: Project = {
 		{
 			n: "05",
 			heading: { en: "Record the baseline, and find out how much your machine lies" },
-			uses: [],
+			uses: ["benchmarks"],
 			blocks: [
 				{
 					type: "text",
@@ -458,7 +458,7 @@ export const observability: Project = {
 		{
 			n: "07",
 			heading: { en: "Prove it, with the control group you have had all along" },
-			uses: [],
+			uses: ["benchmarks"],
 			blocks: [
 				{
 					type: "text",
@@ -581,7 +581,7 @@ export const observability: Project = {
 		{
 			n: "09",
 			heading: { en: "Pass the gate, then go back and ask the service" },
-			uses: [],
+			uses: ["pprof"],
 			blocks: [
 				{
 					type: "text",

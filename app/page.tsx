@@ -134,9 +134,9 @@ func main() {
 			<div className="border-y border-border bg-surface">
 				<div className="mx-auto flex max-w-6xl flex-wrap justify-center gap-12 px-6 py-8 md:gap-20">
 					{[
-						{ n: "9", l: "Projects" },
+						{ n: "11", l: "Projects" },
 						{ n: "3", l: "Tiers" },
-						{ n: "15", l: "Go concepts" },
+						{ n: "48", l: "Go concepts" },
 						{ n: "0", l: "Toy examples" },
 					].map((s) => (
 						<div key={s.l} className="text-center">

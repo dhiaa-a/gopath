@@ -530,7 +530,7 @@ func (s *MutexStore) store(c *Config) {
 		{
 			n: "07",
 			heading: { en: "Measure both under parallel load" },
-			uses: [],
+			uses: ["benchmarks"],
 			blocks: [
 				{
 					type: "text",
@@ -633,7 +633,7 @@ func (s *MutexStore) store(c *Config) {
 		{
 			n: "08",
 			heading: { en: "Make the claim survive the machine it runs on" },
-			uses: [],
+			uses: ["benchmarks"],
 			blocks: [
 				{
 					type: "text",

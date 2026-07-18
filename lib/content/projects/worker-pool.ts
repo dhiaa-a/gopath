@@ -419,7 +419,7 @@ export const workerPool: Project = {
 		{
 			n: "07",
 			heading: { en: "Measure what the buffer buys" },
-			uses: [],
+			uses: ["benchmarks", "buffered-channels"],
 			blocks: [
 				{
 					type: "text",

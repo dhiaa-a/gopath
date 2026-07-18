@@ -71,7 +71,7 @@ export const logParser: Project = {
 		{
 			n: "01",
 			heading: { en: "Read the suite that grades you" },
-			uses: [],
+			uses: ["testing", "table-driven-tests"],
 			blocks: [
 				{
 					type: "text",

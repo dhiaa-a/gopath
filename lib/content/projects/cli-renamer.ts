@@ -133,7 +133,7 @@ if !info.IsDir() {
 		{
 			n: "02",
 			heading: { en: "Write a pure name transform" },
-			uses: [],
+			uses: ["strings-bytes-runes"],
 			blocks: [
 				{
 					type: "text",

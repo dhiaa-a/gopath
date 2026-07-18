@@ -7,9 +7,17 @@ import { conceptGroups } from "@/lib/content/concepts/groups"
 // the colour per group is a presentation decision, so only it lives here.
 const groupStyles: Record<string, { color: string; border: string }> = {
 	Fundamentals: { color: "text-go-cyan", border: "border-go-cyan/20" },
+	Data: { color: "text-go-amber", border: "border-go-amber/20" },
 	Concurrency: { color: "text-go-teal", border: "border-go-teal/20" },
-	"Standard library": { color: "text-go-amber", border: "border-go-amber/20" },
+	"Standard library": { color: "text-go-cyan", border: "border-go-cyan/20" },
+	"Testing and tooling": { color: "text-go-amber", border: "border-go-amber/20" },
 }
+
+// A group with no explicit style must not crash the page: fall back rather
+// than read `.color` off undefined. groups.ts is the source of truth for which
+// groups exist, so a new one there renders (in the default colour) instead of
+// breaking the build.
+const fallbackStyle = { color: "text-muted", border: "border-border" }
 
 export default function ConceptsPage() {
 	return (
@@ -27,7 +35,7 @@ export default function ConceptsPage() {
 
 			<div className="flex flex-col gap-10">
 				{conceptGroups.map((group) => {
-					const style = groupStyles[group.label]
+					const style = groupStyles[group.label] ?? fallbackStyle
 					const groupConcepts = group.slugs
 						.map((s) => concepts.find((c) => c.slug === s))
 						.filter(Boolean) as typeof concepts

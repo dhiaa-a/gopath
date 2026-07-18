@@ -428,7 +428,7 @@ if resp.StatusCode != http.StatusOK {
 		{
 			n: "06",
 			heading: { en: "Give the client a deadline" },
-			uses: [],
+			uses: ["http-client", "time"],
 			blocks: [
 				{
 					type: "text",

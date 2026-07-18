@@ -725,7 +725,7 @@ served := make(chan error, 1)`,
 		{
 			n: "10",
 			heading: { en: "Run the whole thing, then read the reference" },
-			uses: [],
+			uses: ["testing"],
 			blocks: [
 				{
 					type: "text",

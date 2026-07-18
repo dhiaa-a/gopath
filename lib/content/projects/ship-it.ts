@@ -501,7 +501,7 @@ export const shipIt: Project = {
 		{
 			n: "08",
 			heading: { en: "CI runs exactly what you run" },
-			uses: [],
+			uses: ["tooling"],
 			blocks: [
 				{
 					type: "text",
@@ -557,7 +557,7 @@ export const shipIt: Project = {
 		{
 			n: "09",
 			heading: { en: "Write the deploy story, then let the gate grade it" },
-			uses: [],
+			uses: ["benchmarks"],
 			blocks: [
 				{
 					type: "text",

@@ -191,7 +191,7 @@ Shutdown() → listener.Close() → Accept returns net.ErrClosed
 		{
 			n: "03",
 			heading: { en: "The delimiter is the protocol" },
-			uses: [],
+			uses: ["bufio"],
 			blocks: [
 				{
 					type: "text",
@@ -377,7 +377,7 @@ for sc.Scan() {                // true = one whole line arrived
 		{
 			n: "06",
 			heading: { en: "Deadlines are absolute, not rolling" },
-			uses: [],
+			uses: ["time"],
 			blocks: [
 				{
 					type: "text",
@@ -533,7 +533,7 @@ func (s *Server) Shutdown() {
 		{
 			n: "08",
 			heading: { en: "What goleak and the race detector cannot see" },
-			uses: [],
+			uses: ["race-detector", "memory-model"],
 			blocks: [
 				{
 					type: "text",
@@ -597,7 +597,7 @@ func (s *Server) Shutdown() {
 		{
 			n: "09",
 			heading: { en: "Green, and the suite that got you there" },
-			uses: [],
+			uses: ["testing"],
 			blocks: [
 				{
 					type: "text",
