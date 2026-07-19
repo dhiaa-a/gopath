@@ -11,7 +11,29 @@ set -u
 cd "$(dirname "$0")"
 
 race_flag=""
-[ "${RACE:-0}" = "1" ] && race_flag="-race"
+if [ "${RACE:-0}" = "1" ]; then
+	race_flag="-race"
+	# -race needs cgo, which needs a C compiler. Turn cgo on for this run and,
+	# if no gcc is on PATH yet, look in the usual Windows toolchain locations
+	# so `RACE=1 ./check.sh` works without editing your global PATH. On Linux
+	# and macOS gcc/clang is already on PATH and the probe is skipped.
+	export CGO_ENABLED=1
+	if ! command -v gcc >/dev/null 2>&1; then
+		for d in /c/msys64/ucrt64/bin /c/msys64/mingw64/bin /c/mingw64/bin /c/TDM-GCC-64/bin; do
+			if [ -x "$d/gcc.exe" ]; then
+				PATH="$d:$PATH"
+				break
+			fi
+		done
+	fi
+	if ! command -v gcc >/dev/null 2>&1; then
+		echo "RACE=1 needs a C compiler (gcc) for cgo, and none was found on PATH"
+		echo "or in the usual locations. On Windows, install MSYS2 (https://www.msys2.org)"
+		echo "and 'pacman -S mingw-w64-ucrt-x86_64-gcc', or add your gcc's bin dir to PATH."
+		echo "Refusing to run: a silent skip would look like a green race sweep that never happened."
+		exit 1
+	fi
+fi
 
 failures=0
 checked=0

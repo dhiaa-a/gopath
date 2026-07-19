@@ -817,6 +817,66 @@ ok      gopath.dev/labs/db-api/postgres   # SQL graded: lifecycle, paging, not-f
 			retrievalPrompt:
 				"go test ./... prints ok for a package whose tests all skipped. Why is that correct behaviour and what does it cost you here? || A skip is not a failure, so the package has no failures and the runner says ok. It costs you the ability to read the summary line: a repository full of stubs and a finished implementation produce identical output when no database is set. Green is a claim with a scope, and here the scope is decided by an environment variable nothing will remind you about.",
 		},
+		{
+			n: "10",
+			heading: { en: "The gate: one round trip, and no more" },
+			uses: [],
+			blocks: [
+				{
+					type: "text",
+					value: {
+						en: "Step 04 made the claim: Create is one round trip, not two, because INSERT ... RETURNING reads the assigned row back in the statement that writes it. A claim like that is worth exactly as much as the test that holds it, and a correctness suite does not hold it: a Create that inserts and then runs a separate SELECT returns the identical task and passes every functional test you have. The cost is invisible to them and visible to production, which is the definition of the thing a Tier 3 gate exists to pin.",
+					},
+				},
+				{
+					type: "constraint",
+					what: {
+						en: "Create issues exactly one database round trip, and a full Create+GetByID+List+Update+Delete issues exactly five. The gate lives in postgres/gate_test.go behind the gate build tag. It needs no Postgres: it runs your repository against a countingQuerier, a querier that executes no SQL and only tallies how many times Exec, Query, and QueryRow are called. Round-trip count is a property of the SQL you wrote, not of the machine or the network, so the gate is an exact count with no threshold.",
+					},
+					rationale: {
+						en: "Latency against a real database is dominated by round trips: each Query, QueryRow, or Exec is one network hop to Postgres and back, and the hops serialize. A hop is a few hundred microseconds inside a datacentre and a few milliseconds across one, so the single most common way a correct repository is still a slow one is doing two hops where one would do. RETURNING is Postgres handing you the tool to not do that, and the gate is what keeps you honest about using it. Counting hops with a fake querier rather than timing a real database is deliberate: a stopwatch measures the machine and the network and flakes on both, while the hop count measures only your code and is identical everywhere, which is the only kind of number a gate can assert exactly.",
+					},
+					hints: [
+						{
+							label: "run the gate against your code",
+							value: "go test -tags gate -run TestGate ./postgres/. It grades your repo.go, needs no TEST_DATABASE_URL, and a guard tells you to make `go test ./...` green first if Create still errors.",
+						},
+						{
+							label: "why a fake querier and not a real Postgres",
+							value: "The querier interface that makes WithTx work (both *pgxpool.Pool and pgx.Tx satisfy it) is the same seam the gate uses: a countingQuerier satisfies it too, so your real method bodies run while every hop is intercepted and counted. No container, no schema, no flake.",
+						},
+						{
+							label: "what two hops looks like",
+							value: "An INSERT via Exec followed by a SELECT of the new id via QueryRow is the habit carried over from databases without RETURNING. The gate sees exec=1, queryRow=1, total 2, and fails: the result is right and the cost is doubled.",
+						},
+					],
+				},
+				{
+					type: "verify",
+					where: "labs/db-api",
+					command:
+						"# prove the gate is passable, against the reference:\ngo test -tags 'solution gate' -run TestGate -v ./postgres/\n\n# then gate your own repository:\ngo test -tags gate -run TestGate ./postgres/",
+					expect: {
+						en: 'PASS, with "round-trip gate: Create = 1 hop (queryRow), via INSERT ... RETURNING" and "full CRUD = 5 hops (exec=2 query=1 queryRow=2)". Create and GetByID read a row back (QueryRow); List reads many (Query); Update and Delete write without reading (Exec). Five operations, five hops.',
+					},
+					labPath: "labs/db-api/postgres/gate_test.go",
+				},
+				{
+					type: "breakIt",
+					change: {
+						en: "Split Create into two hops: an Exec that runs INSERT INTO tasks (title) VALUES ($1) with no RETURNING, then a QueryRow that SELECTs the row back. It stores the task and returns it, so the functional suite stays green. Rerun the gate, then restore it with git checkout.",
+					},
+					observe: {
+						en: 'The integration tests pass and the gate fails twice: "Create issued 2 database hops (exec=1 query=0 queryRow=1), want exactly 1" and the CRUD total reads 6, not 5. The task is correct in the table; the endpoint is twice as slow, and nothing that checks correctness can tell.',
+					},
+					why: {
+						en: "This is the round-trip version of every silent-cost break in the path: the reworded gRPC error, the read that copies instead of aliasing. Each is invisible to a test that only asks whether the answer is right, because the answer is right. Round-trip count is a property of how the repository talks to the database, not of what it returns, so it needs a test that watches the conversation rather than the result. Ship the two-hop Create and it will not fail anything; it will just quietly add a network hop to every write your service ever does, and you will meet it again as a latency graph nobody can source.",
+					},
+				},
+			],
+			retrievalPrompt:
+				"The gate counts database round trips with a fake querier instead of timing queries against a real Postgres. Why is a count the thing to assert, and not a duration? || A duration measures the machine and the network as much as your code, so it flakes and forces a threshold with headroom, which blinds it to small regressions. Round-trip count is a property of the SQL you wrote: it is identical on a laptop and in production, so the gate can assert it exactly, with no database, and catch a one-hop regression a timing gate never could.",
+		},
 	],
 	recap: [
 		{

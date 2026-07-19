@@ -31,7 +31,11 @@ The two earliest labs (`cli-renamer`, `json-fetcher`) have no test suite at all,
 
 ## Race detector
 
-The concurrent suites (tcp-echo, http-server, worker-pool and up) are written to be run with `-race`, and their READMEs say so. The race detector needs cgo: it works out of the box on Linux and macOS, and on Windows it needs a gcc toolchain installed. If `-race` fails with a cgo error on Windows, install a C compiler or run the suite without the flag; the tests still exercise the concurrency, the detector just can't watch them.
+The concurrent suites (tcp-echo, http-server, worker-pool and up) are written to be run with `-race`, and their READMEs say so. The race detector needs cgo, which needs a C compiler: on Linux and macOS gcc/clang is already on PATH, and on Windows you need a gcc toolchain. The one we use and recommend is MSYS2's ucrt64 gcc: install [MSYS2](https://www.msys2.org), then `pacman -S mingw-w64-ucrt-x86_64-gcc`, which lands at `C:\msys64\ucrt64\bin\gcc.exe`.
+
+You do **not** have to put that on your global PATH. `RACE=1 ./check.sh` (below) enables cgo for the run and probes the usual toolchain locations itself, so the whole race sweep works out of the box once the compiler is installed. If you want `go test -race` to work directly in a single lab dir, add `C:\msys64\ucrt64\bin` to PATH for that shell (`export PATH="/c/msys64/ucrt64/bin:$PATH"`) and set `CGO_ENABLED=1`.
+
+The whole spine has been run clean under `-race` on `go1.22.1 windows/amd64` with this toolchain; the detector both fires (verified against a deliberate data race) and finds every module clean.
 
 ## check.sh (maintainers / CI)
 

@@ -713,6 +713,66 @@ tests: bufconn (in-memory listener) → generated stub → your server`,
 			retrievalPrompt:
 				"bufconn replaces the network with an in-memory pipe. Why is that not a mock, and what does it still catch? || A mock replaces the code under test with something that agrees with you. bufconn replaces only the socket: the real grpc.Server, real HTTP/2 framing, real protobuf serialization, real interceptor dispatch and real status translation all still run. It catches everything a direct method call cannot, including the wiring bugs, like an interceptor that is written perfectly and never registered.",
 		},
+		{
+			n: "10",
+			heading: { en: "The gate: the read path allocates nothing" },
+			uses: ["escape-analysis", "benchmarks"],
+			blocks: [
+				{
+					type: "text",
+					value: {
+						en: "The suite proves the service is correct. This is the other bar a Tier 3 project has to clear: correct at a cost you can measure. A user service answers far more reads than writes, so the read is the hot path. GetUser is a map lookup that hands back the *User it already holds, so the honest number of heap allocations for a read is zero. Anything above zero is a per-request tax the garbage collector collects later, under load, as latency. This gate pins the number.",
+					},
+				},
+				{
+					type: "constraint",
+					what: {
+						en: "GetUser allocates zero times per call. The gate lives in server/gate_test.go behind the gate build tag and measures GetUser with testing.AllocsPerRun, requiring 0. It measures CreateUser in the same run as a control and requires that one to allocate: CreateUser mints a &User and formats an id, so if the harness ever reports it at zero the harness has stopped observing the calls and the read assertion means nothing. Run it against your server; keep it at zero.",
+					},
+					rationale: {
+						en: "Throughput gates need a floor with headroom, because throughput is a property of the machine and a CI box with two slow cores must still pass. Allocations per call are the opposite: the same source allocates the same number of times on a Raspberry Pi and a 64-core server, so this gate needs no threshold and no tuning. It asserts zero, exactly, which is why it is the sharper of the two kinds of gate: it cannot be passed by a fast machine, only by code that does not touch the heap on the read path. The control is not decoration. A comparison that cannot fail on the control is not a comparison, so the gate makes CreateUser prove the ruler still works before it trusts the zero.",
+					},
+					hints: [
+						{
+							label: "run the gate against your code",
+							value: "go test -tags gate -run TestGate ./server/. The gate grades your GetUser, not the reference; a suite-first guard tells you to make `go test ./...` green before it will measure anything.",
+						},
+						{
+							label: "never under -race",
+							value: "The detector allocates shadow memory on every access, so the per-call count under -race describes the detector, not your handler. Correctness under -race and allocations without it are two separate runs, and the gate build tag keeps them apart.",
+						},
+						{
+							label: "why a read is zero and a write is not",
+							value: "GetUser returns the stored pointer, so nothing escapes and escape analysis leaves the call allocating nothing. CreateUser builds a message that outlives the call (it goes in the map) and formats a string, both of which the compiler must move to the heap.",
+						},
+					],
+				},
+				{
+					type: "verify",
+					where: "labs/grpc-service",
+					command:
+						"# prove the gate is passable, against the reference:\ngo test -tags 'solution gate' -run TestGate -v ./server/\n\n# then gate your own code:\ngo test -tags gate -run TestGate ./server/",
+					expect: {
+						en: 'PASS, with a line like "alloc gate: GetUser 0 allocs/op (read path, floor 0), CreateUser 2 allocs/op (control, must be > 0)". The zero is the bar; the 2 is the control proving the measurement is live. Your CreateUser number may differ and does not matter, only that it is above zero.',
+					},
+					labPath: "labs/grpc-service/server/gate_test.go",
+				},
+				{
+					type: "breakIt",
+					change: {
+						en: "Make GetUser return a copy instead of the stored pointer: replace return u, nil with cp := *u; return &cp, nil. Every test still passes, because a copy is proto-equal to the original. Rerun the gate, then restore it with git checkout.",
+					},
+					observe: {
+						en: 'The suite is green and the gate fails: "GetUser allocated 1 times per call, want 0". One phrase, cp := *u, moved the read off the stack and onto the heap, and the only test in the project that can see it is the one that counts allocations.',
+					},
+					why: {
+						en: "This is the allocation twin of the reworded-error-message break in step 08: a change invisible to every correctness test that changes the cost of the system. proto.Equal cannot tell a copy from the original, so no assertion about the returned value will ever catch it. Allocation count is not a property of what the function returns, it is a property of how it is written, and that is a different claim needing a different test. A service that copies on every read looks perfect in review and in the suite, then shows up six months later as a GC profile nobody can explain. The gate is the thing that catches it in the pull request instead.",
+					},
+				},
+			],
+			retrievalPrompt:
+				"The throughput gate on the worker pool had a floor of 500,000 with ten times the headroom; this gate asserts exactly zero. Why can an allocation gate be exact when a throughput gate cannot? || Throughput is a property of the machine, so its floor has to survive the slowest box that will ever run it, which costs it the ability to see anything short of a total collapse. Allocations per call are a property of the code: the same source allocates the same number of times everywhere. With nothing machine-dependent in the number, the gate needs no headroom and can assert the real target, zero, so it catches a one-line regression a throughput gate with headroom never would.",
+		},
 	],
 	recap: [
 		{

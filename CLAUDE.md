@@ -19,7 +19,7 @@ Every project has an executable lab at `labs/<slug>` and every step ends by runn
 The site also includes:
 
 - **Orientation** — 6-page on-ramp for total Go newcomers.
-- **Concepts** — 16+ Go concepts with mental models, retrieval prompts, code examples, common mistakes, design rationale, links to projects.
+- **Concepts** — 60 Go concepts with mental models, retrieval prompts, code examples, common mistakes, design rationale, links to projects.
 - **Spaced reuse callouts** — when a step reuses a prior concept, the learner is prompted to recall before reading.
 - **Go Playground integration** — every code example has a "Run in Playground" link; share IDs cached at build.
 - **Validation** — `scripts/validate.ts` runs in `npm run build` and enforces relation integrity.

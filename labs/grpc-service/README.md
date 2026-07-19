@@ -85,6 +85,26 @@ ok  	gopath.dev/labs/grpc-service/server	0.6s
 
 All seven cases pass through a real gRPC round-trip. That, not a hand-tested client script, is what "the service works" means here.
 
+## The performance gate
+
+Correctness is one bar; cost is the other. `server/gate_test.go` (behind the
+`gate` build tag) is the Tier 3 hard gate: it asserts that `GetUser`, the read
+hot path, allocates **zero** times per call, measured with
+`testing.AllocsPerRun`. It measures `CreateUser` in the same run as a control
+and requires *it* to allocate, so the zero can never be a broken ruler.
+
+```
+# gate your own code:
+go test -tags gate -run TestGate ./server/
+# prove it is passable, against the reference:
+go test -tags 'solution gate' -run TestGate -v ./server/
+```
+
+An allocation gate asserts an exact zero rather than a floor-with-headroom
+because allocations per call are a property of the code, identical on any
+machine, unlike throughput. Never run a gate under `-race`: the detector
+allocates on every access and the count stops meaning anything.
+
 ## Regenerating the generated code
 
 Running the lab needs neither buf nor protoc: `userspb/` and `wirepb/` are committed. Regenerate only if you change a file under `proto/`:

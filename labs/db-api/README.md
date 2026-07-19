@@ -105,6 +105,28 @@ and `TestIntegrationWithTxRollback` no longer skipping:
 ok      gopath.dev/labs/db-api/postgres
 ```
 
+## The round-trip gate
+
+Correctness is one bar; cost is the other. `postgres/gate_test.go` (behind the
+`gate` build tag) is the Tier 3 hard gate, and it needs no database: it runs
+your repository against a `countingQuerier` that executes no SQL and only
+tallies hops. It asserts that `Create` is **one** round trip (via
+`INSERT ... RETURNING`, not INSERT-then-SELECT) and that a full
+Create/GetByID/List/Update/Delete is exactly **five**.
+
+```
+# gate your own repository (no TEST_DATABASE_URL needed):
+go test -tags gate -run TestGate ./postgres/
+# prove it is passable, against the reference:
+go test -tags 'solution gate' -run TestGate -v ./postgres/
+```
+
+Round-trip count is a property of the SQL you wrote, identical on a laptop and
+in production, so the gate asserts an exact count instead of a timing
+threshold. It is the test that holds the one-round-trip claim a correctness
+suite cannot: a two-hop `Create` returns the right task and passes every
+functional test while doubling the cost of every write.
+
 ## The solution build tag
 
 Reference implementations live in `config/solution.go`, `api/solution.go`,

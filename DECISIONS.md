@@ -4,6 +4,28 @@ Append-only. Newest at the top.
 
 ---
 
+## 2026-07-19 — Gap-filling pass: -race, the last two T3 gates, and 60 concepts
+
+**Scope:** close the open gaps carried out of Phases 2-4 before starting Phase 5, prompted by Aboturab installing a C compiler and asking to fix the rest. Four things landed: `-race` is now real, rule 3 is complete across T3, the concept library reached 60, and the working tree was cleaned up.
+
+**`-race`: fix the toolchain lookup, do not touch the global PATH.** The MSYS2 ucrt64 gcc (16.1.0) was installed but not on PATH, and `CGO_ENABLED` was pinned to 0 in `go env`; that was the entire blocker. Rather than mutate the user's global PATH or `go env` (a persistent, machine-wide change I would rather not make unilaterally), `check.sh` now, only when `RACE=1`, sets `CGO_ENABLED=1` for the run and probes the usual Windows toolchain locations if no gcc is on PATH. So `RACE=1 ./labs/check.sh` works out of the box here and stays portable to a CI box where gcc is already on PATH. Verified two ways: the detector fires on a deliberate data race, and all 11 modules are race-clean. The detector working AND the suites being clean are separate claims; both are now checked, where before neither was.
+
+**Rule 3 (T3 hard-gated by a measurable metric) was half-unmet; both halves are now implemented, which is compliance, not a rule change.** grpc-service and db-api had no gate. Implementing one satisfies an existing pedagogy rule, so it is within autonomy (changing rule 3 would not be). Metric choices, both code-property gates that assert an exact value with no machine-dependent threshold, mirroring the worker-pool/config-watcher house style:
+- **grpc-service: the read path allocates zero times.** `GetUser` is a map lookup returning the stored pointer, so 0 heap allocations is the honest number; `testing.AllocsPerRun` asserts it, and `CreateUser` is the in-run control that must allocate (a comparison that cannot fail on the control is not a comparison). Chosen over an end-to-end latency gate because latency through bufconn is noisy and a per-request allocation is the real production tax a gRPC read service pays.
+- **db-api: Create is one round trip, full CRUD is five.** Round-trip count is the dominant cost of a DB API and the thing `INSERT ... RETURNING` exists to minimise. A counting fake `querier` (the same interface seam that makes `WithTx` work) counts hops with no live Postgres, so the gate runs in `check.sh` offline. Chosen over the originally-logged `pgx.QueryTracer` idea, which needs a live connection to fire.
+
+Both gates were adversarially verified: the reference was regressed (grpc-service returns a copy; db-api splits Create into INSERT + SELECT) and each gate failed with its intended message before being reverted. Each project also gained a taught step 10 and a README section, which adds a little real T3 content; the T3 hours gap (now ~56-64 vs 60-80) is narrowed, not closed.
+
+**Concepts 48 → 60, with two deliberate substitutions from the brief's list.** Twelve pages at the `server-timeouts` bar, written by a six-way agent fan-out and then independently re-verified by the orchestrator: every example was re-compiled and run here (12/12), not trusted from the agents' reports, and all 12 POSTed to the Playground clean. **Dropped from the brief's named list, and why:** iterators / range-over-func needs Go 1.23 (the toolchain is go1.22.1), so its example cannot compile, let alone run; and a `database/sql` page cannot run an example without a driver, and the db-api project already teaches pgx deeply. **Substituted in** (all stdlib-runnable on 1.22): iota, value-semantics, reflection, scheduler. If the toolchain moves to 1.23+, iterators is the first page to add. One agent died on an API error mid-run; its two files (secrets-config, build-tags) were already on disk, complete, and were read and verified against a real run rather than assumed good, consistent with this project's standing "verify against disk, not notifications" habit. A cross-cutting bug the fan-out surfaced: `retrievalPrompts` render as plain text (not HTML), so two files' prompts had their `<code>` tags stripped.
+
+**Restored the deleted agent files rather than committing the deletion.** `.claude/agents/{engineer,pm,content}.md` showed as deleted in the working tree. CLAUDE.md points at all three as the standing briefs, so committing the deletion would leave the project's own instructions dangling. Nothing recorded an intent to remove them, so the consistent fix was `git checkout`, not `git rm`.
+
+**Alternatives considered:** adding `C:\msys64\ucrt64\bin` to the global PATH / flipping `CGO_ENABLED=1` in `go env` (rejected: persistent machine-wide change, and the `check.sh` probe is portable and scoped); a latency gate for grpc-service and a `QueryTracer` gate for db-api (rejected: both need a noisy or live dependency, and a gate that flakes is worse than none); padding T3 steps to hit 60-80h (rejected: the estimatedTime honesty rule); shipping the agent-written concepts on their self-reports (rejected: the session has caught wrong-but-plausible output five times, so all 12 were re-run).
+
+**Logged by:** Claude Code (engineer + content, One-Stop brief)
+
+---
+
 ## 2026-07-15 — One-Stop Phase 4 (first slice): the five concepts http-server already needed
 
 **Scope:** 15 → 20 concepts, and the four http-server `uses` arrays that Phase 3 left stretched or empty are now wired to real pages. This is the first slice of Phase 4, not the whole phase: the floor is 45.
