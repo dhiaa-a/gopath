@@ -136,7 +136,7 @@ func main() {
 					{[
 						{ n: "11", l: "Projects" },
 						{ n: "3", l: "Tiers" },
-						{ n: "60", l: "Go concepts" },
+						{ n: "61", l: "Go concepts" },
 						{ n: "0", l: "Toy examples" },
 					].map((s) => (
 						<div key={s.l} className="text-center">

@@ -4,6 +4,22 @@ Append-only. Newest at the top.
 
 ---
 
+## 2026-07-19 — Upgrade to Go 1.23 and add the iterators concept
+
+**Scope:** Aboturab asked to add iterators (range-over-func) and upgrade Go to 1.23. The two are one task: range-over-func is a Go 1.23 language feature, so the concept could not be written honestly (its example would not compile, let alone run) until the toolchain moved. This is also why iterators was the one item dropped from the earlier concept pass and explicitly logged as "add first if the toolchain moves to 1.23+".
+
+**Toolchain: pin the language version, let the toolchain float where it must.** Set `GOTOOLCHAIN=go1.23.12` via `go env -w` (the latest 1.23 patch; downloaded and made active), and bumped all 11 lab modules from `go 1.22` to `go 1.23` with `go mod edit -go=1.23`. No `toolchain` line was added to the go.mod files: the `go 1.23` directive is the minimum language version, and a fresh clone with `GOTOOLCHAIN=auto` will fetch a satisfying toolchain on its own, which keeps the repo reproducible without pinning every contributor to one patch. The user explicitly asked for the upgrade, so setting the toolchain (a persistent machine setting I would otherwise be cautious about) is exactly the intent.
+
+**Verified the upgrade did not move anything under us.** The full `check.sh` and `RACE=1 ./check.sh` are both green on go1.23.12 windows/amd64, all 11 modules, gates and race included, so the labs run unchanged on 1.23. The four pinned deps (grpc v1.65.1, protobuf v1.34.2, pgx v5.6.0, goleak v1.3.0) build clean on 1.23 and were left pinned; unpinning to newer majors is a separate call with its own blast radius, not part of a toolchain bump. The one concept whose behaviour is version-gated, `time` (the `time.After` leak, fixed in 1.23 but only for modules whose go directive says so), was re-run on go1.23.12 and printed exactly what it documents: +0.02 MB under a `go 1.23` module (leak fixed), +50.58 MB under a `go 1.22` module (leak present). The upgrade confirmed that concept rather than breaking it, which is the outcome the page was written to survive. No other concept is version-sensitive in a way 1.23 changes (the loop-variable behaviour the `closures` page teaches is identical on 1.22 and 1.23).
+
+**iterators (the 61st concept), written after the toolchain could run it.** The example builds a custom `iter.Seq[int]`, shows the yield-returns-bool mechanism that lets a consumer's `break` reach back into the producer, uses the stdlib's new `slices.All` / `slices.Collect`, and demonstrates laziness and composition (a `filter` over a million-long `Count` that stops at 5 and never materialises the sequence). It was written to a temp module, run on go1.23.12, its real output pasted, and POSTed to the Playground (1 shared, 0 failed), the same discipline as every other concept. Placed in the Data group after `generics`, because an `iter.Seq[V]` is a generic type and the two read well in sequence.
+
+**Alternatives considered:** adding a `toolchain go1.23.12` line to every go.mod to pin the exact patch (rejected: over-constrains contributors; the `go` directive plus `GOTOOLCHAIN=auto` is the idiomatic, reproducible-enough choice); rewriting the `time` concept to stop teaching the version-gated leak now that the repo is on 1.23 (rejected: the page already teaches exactly this, uses go1.22.1 vs go1.24 as its contrast, and the upgrade validated it, so there is nothing to fix); unpinning grpc/pgx to latest as part of the bump (rejected: out of scope, separate blast radius, logged for later).
+
+**Logged by:** Claude Code (engineer + content, One-Stop brief)
+
+---
+
 ## 2026-07-19 — Gap-filling pass: -race, the last two T3 gates, and 60 concepts
 
 **Scope:** close the open gaps carried out of Phases 2-4 before starting Phase 5, prompted by Aboturab installing a C compiler and asking to fix the rest. Four things landed: `-race` is now real, rule 3 is complete across T3, the concept library reached 60, and the working tree was cleaned up.

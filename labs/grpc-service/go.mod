@@ -1,6 +1,6 @@
 module gopath.dev/labs/grpc-service
 
-go 1.22
+go 1.23
 
 require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157

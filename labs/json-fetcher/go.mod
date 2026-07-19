@@ -1,3 +1,3 @@
 module gopath.dev/labs/json-fetcher
 
-go 1.22
+go 1.23

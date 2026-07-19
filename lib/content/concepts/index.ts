@@ -26,6 +26,7 @@ import { maps } from "./maps"
 import { stringsBytesRunes } from "./strings-bytes-runes"
 import { structTags } from "./struct-tags"
 import { generics } from "./generics"
+import { iterators } from "./iterators"
 // Concurrency
 import { goroutines } from "./goroutines"
 import { scheduler } from "./scheduler"
@@ -93,6 +94,7 @@ export const concepts: Concept[] = [
 	stringsBytesRunes,
 	structTags,
 	generics,
+	iterators,
 	// Concurrency
 	goroutines,
 	scheduler,

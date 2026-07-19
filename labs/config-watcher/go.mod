@@ -1,3 +1,3 @@
 module gopath.dev/labs/config-watcher
 
-go 1.22
+go 1.23

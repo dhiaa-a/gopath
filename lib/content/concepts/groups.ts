@@ -45,6 +45,7 @@ export const conceptGroups: ConceptGroup[] = [
 			"strings-bytes-runes",
 			"struct-tags",
 			"generics",
+			"iterators",
 		],
 	},
 	{
