@@ -8,16 +8,18 @@ This is your persistent context. Read it at the start of every session. The peda
 
 ## What GoPath is
 
-A project-based Go learning platform. Learners ship 9 real programs across three tiers and graduate with portfolio-grade Go work. Not a tutorial site, not a video course.
+A project-based Go learning platform. Learners ship 11 real programs across three tiers and graduate with portfolio-grade Go work. Not a tutorial site, not a video course.
 
-- **T1 — Foundations** (4 projects): syntax, std lib, idioms, first real programs. Anchor: **Config Watcher**.
-- **T2 — Systems** (3 projects): concurrency, networking, real systems. Anchor: **TCP Echo Server**.
-- **T3 — Production** (3 projects): production-grade work, hard-gated by benchmarks.
+- **T1 — Foundations** (4 projects, 30–38h): syntax, std lib, idioms, first real programs. Anchor: **Config Watcher**.
+- **T2 — Systems** (3 projects, 40–46h): concurrency, networking, real systems. Anchor: **TCP Echo Server**.
+- **T3 — Production** (4 projects, 54–62h): production-grade work, hard-gated by benchmarks. `ship-it` was added in the One-Stop brief's Phase 3 to close the deployment hole.
+
+Every project has an executable lab at `labs/<slug>` and every step ends by running something real. Hour figures are build time, not reading time, and they are bottom-up per project: do not adjust them to hit a target, adjust the content.
 
 The site also includes:
 
 - **Orientation** — 6-page on-ramp for total Go newcomers.
-- **Concepts** — 16+ Go concepts with mental models, retrieval prompts, code examples, common mistakes, design rationale, links to projects.
+- **Concepts** — 61 Go concepts with mental models, retrieval prompts, code examples, common mistakes, design rationale, links to projects.
 - **Spaced reuse callouts** — when a step reuses a prior concept, the learner is prompted to recall before reading.
 - **Go Playground integration** — every code example has a "Run in Playground" link; share IDs cached at build.
 - **Validation** — `scripts/validate.ts` runs in `npm run build` and enforces relation integrity.
@@ -143,6 +145,8 @@ All agents can and should pull from the public web when relevant. Cite sources i
 ```
 gopath/
 ├── app/
+│   ├── basics/[slug]/      — Tier 0 syntax micro-lesson page
+│   ├── basics/             — Tier 0 index
 │   ├── concepts/[slug]/    — concept detail page
 │   ├── concepts/           — concept index (grouped)
 │   ├── orientation/[slug]/ — orientation page
@@ -153,19 +157,27 @@ gopath/
 ├── components/
 │   ├── ContentRenderer.tsx — renders all block types
 │   ├── GoCode.tsx          — custom Go syntax highlighter, zero deps
+│   ├── LabCard.tsx         — links a project to its executable lab
 │   ├── Nav.tsx, ThemeToggle.tsx
 │   ├── RetrievalPrompts.tsx — flip-card retrieval practice
 │   ├── SpacedReuseCallout.tsx — spaced reuse prompt
 │   └── ProjectSection.tsx
+├── labs/                   — executable spine: one Go module per project
+│   ├── check.sh            — gofmt/vet/build/test/gates across every module
+│   └── <project-slug>/     — self-contained module: starter, suite, reference
 ├── lib/
-│   ├── concepts.ts         — single source of truth for concepts
-│   ├── projects.ts         — single source of truth for projects
+│   ├── content/projects/   — one module per project (source of truth)
+│   ├── content/concepts/   — one module per concept (source of truth)
+│   ├── content/tier0/      — Tier 0 micro-lessons (source of truth)
+│   ├── concepts.ts         — thin shim re-exporting lib/content/concepts
+│   ├── projects.ts         — thin shim re-exporting lib/content/projects
+│   ├── tier0.ts            — thin shim re-exporting lib/content/tier0
 │   ├── orientation.ts      — single source of truth for orientation
-│   ├── content.ts          — block/step/project type definitions
+│   ├── content.ts          — block/step/project/lab type definitions
 │   ├── relations.ts        — concept ↔ project lookups
 │   └── playground.ts       — reads cached share IDs at runtime
 └── scripts/
-    ├── validate.ts         — runs in `npm run build`
+    ├── validate.ts         — runs in `npm run build`; also validates labs links
     └── playground-shares.ts — caches Go Playground share IDs at build
 ```
 

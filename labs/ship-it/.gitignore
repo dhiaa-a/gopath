@@ -1,0 +1,7 @@
+# The binaries this lab exists to produce. They belong on your machine and in
+# your registry, not in the repo.
+ship-it
+ship-it.exe
+/out/
+*.test
+*.test.exe

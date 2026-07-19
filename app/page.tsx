@@ -134,9 +134,9 @@ func main() {
 			<div className="border-y border-border bg-surface">
 				<div className="mx-auto flex max-w-6xl flex-wrap justify-center gap-12 px-6 py-8 md:gap-20">
 					{[
-						{ n: "9", l: "Projects" },
+						{ n: "11", l: "Projects" },
 						{ n: "3", l: "Tiers" },
-						{ n: "15", l: "Go concepts" },
+						{ n: "61", l: "Go concepts" },
 						{ n: "0", l: "Toy examples" },
 					].map((s) => (
 						<div key={s.l} className="text-center">
@@ -157,7 +157,7 @@ func main() {
 					The path
 				</div>
 				<h2 className="mb-3 font-serif text-4xl text-foreground">
-					Three tiers. Nine real projects.
+					Three tiers. Eleven real projects.
 				</h2>
 				<p className="mb-12 max-w-xl text-muted">
 					Each project unlocks the next. You&apos;ll never read ten

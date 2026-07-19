@@ -1,0 +1,8 @@
+# Working files the README workflow generates; they belong on your machine,
+# not in the repo.
+before.txt
+after.txt
+cpu.out
+mem.out
+*.test
+*.test.exe

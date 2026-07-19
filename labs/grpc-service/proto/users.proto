@@ -1,0 +1,38 @@
+// The contract. This file, not the Go code, is the API: field numbers are
+// the wire format, and changing one after a client has shipped is a
+// breaking change no compiler will catch. All fields snake_case, all
+// field numbers in the 1-15 range so they encode in one byte.
+syntax = "proto3";
+
+package users.v1;
+
+option go_package = "gopath.dev/labs/grpc-service/userspb";
+
+// UserService is the service the lab grades. The generated server
+// interface (userspb.UserServiceServer) is what your server package
+// implements; the generated client stub is what the test suite calls.
+service UserService {
+  // GetUser returns the user with the requested id, or NotFound.
+  rpc GetUser(GetUserRequest) returns (User);
+  // ListUsers streams every known user, in the order they were added.
+  rpc ListUsers(ListUsersRequest) returns (stream User);
+  // CreateUser stores a new user. Empty email is InvalidArgument.
+  rpc CreateUser(CreateUserRequest) returns (User);
+}
+
+message User {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+}
+
+message GetUserRequest {
+  string id = 1;
+}
+
+message ListUsersRequest {}
+
+message CreateUserRequest {
+  string name = 1;
+  string email = 2;
+}

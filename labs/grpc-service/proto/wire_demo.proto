@@ -1,0 +1,39 @@
+// Not part of the service contract. These messages exist only so ./wire can
+// decode one User's bytes as three different shapes and show you what the
+// decoder actually matches on. Nothing registers them, nothing serves them.
+//
+// Every message here describes the same three strings. They differ only in
+// which names and which numbers they attach to them, which is precisely the
+// axis the wire format cares about and the axis a reader of the .proto does
+// not notice.
+syntax = "proto3";
+
+package wire.v1;
+
+option go_package = "gopath.dev/labs/grpc-service/wirepb";
+
+// RenamedUser has the same field NUMBERS as users.v1.User and completely
+// different field NAMES. Decoding a User into this works perfectly: the
+// names on the wire are not there, so there is nothing to disagree with.
+message RenamedUser {
+  string user_id = 1;
+  string full_name = 2;
+  string email_address = 3;
+}
+
+// ShuffledUser has the same field NAMES as users.v1.User and rotated field
+// NUMBERS. This is what "someone edited the field numbers" looks like to a
+// client that has not been regenerated. Decoding a User into this succeeds
+// and every value lands in the wrong field.
+message ShuffledUser {
+  string id = 3;
+  string name = 1;
+  string email = 2;
+}
+
+// OnlyID knows about field 1 and has never heard of fields 2 and 3. This is
+// an old client meeting a message from a newer server: the fields it does
+// not know are kept, not dropped and not an error.
+message OnlyID {
+  string id = 1;
+}

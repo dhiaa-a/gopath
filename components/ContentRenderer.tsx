@@ -70,6 +70,22 @@ function AssessmentBlock({
 				{a.description}
 			</p>
 
+			{a.labPath && (
+				<div className="mb-4 font-mono text-xs">
+					<span className="mr-2 text-[10px] uppercase tracking-widest text-muted">
+						the real suite
+					</span>
+					<a
+						href={`https://github.com/dhiaa-a/gopath/tree/main/${a.labPath}`}
+						target="_blank"
+						rel="noopener noreferrer"
+						className={`${accent[a.kind] ?? "text-go-cyan"} hover:underline`}
+					>
+						{a.labPath}
+					</a>
+				</div>
+			)}
+
 			{a.testCases && a.testCases.length > 0 && (
 				<div className="mb-4">
 					<div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-muted">
@@ -137,6 +153,95 @@ function AssessmentBlock({
 			)}
 
 			{a.hints && <HintRow hints={a.hints} />}
+		</div>
+	)
+}
+
+function VerifyBlock({
+	block,
+	lang,
+}: {
+	block: ContentBlock & { type: "verify" }
+	lang: string
+}) {
+	return (
+		<div className="mb-6 rounded-lg border border-go-teal/25 bg-go-teal/5 px-5 py-4">
+			<div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-go-teal">
+				verify
+			</div>
+			{block.where && (
+				<div className="mb-1 font-mono text-[11px] text-faint">
+					from {block.where}
+				</div>
+			)}
+			<pre className="mb-3 overflow-x-auto rounded bg-bg p-3 font-mono text-xs text-foreground">
+				{block.command}
+			</pre>
+			<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-muted">
+				you should see
+			</div>
+			<p className="text-sm leading-relaxed text-muted">
+				{t(block.expect, lang)}
+			</p>
+			{block.note && (
+				<p className="mt-2 text-xs leading-relaxed text-faint">
+					{t(block.note, lang)}
+				</p>
+			)}
+			{block.labPath && (
+				<div className="mt-3 font-mono text-xs">
+					<a
+						href={`https://github.com/dhiaa-a/gopath/tree/main/${block.labPath}`}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="text-go-teal hover:underline"
+					>
+						{block.labPath}
+					</a>
+				</div>
+			)}
+		</div>
+	)
+}
+
+function BreakItBlock({
+	block,
+	lang,
+}: {
+	block: ContentBlock & { type: "breakIt" }
+	lang: string
+}) {
+	const [open, setOpen] = useState(false)
+	return (
+		<div className="mb-6 rounded-lg border border-go-amber/25 bg-go-amber/5 px-5 py-4">
+			<div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-go-amber">
+				break it
+			</div>
+			<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-muted">
+				change
+			</div>
+			<p className="mb-3 text-sm leading-relaxed text-foreground">
+				{t(block.change, lang)}
+			</p>
+			<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-muted">
+				what happens
+			</div>
+			<p className="text-sm leading-relaxed text-muted">
+				{t(block.observe, lang)}
+			</p>
+			<div className="mt-3">
+				<button
+					onClick={() => setOpen((o) => !o)}
+					className="font-mono text-[10px] text-muted transition-colors hover:text-go-amber"
+				>
+					{open ? "▾" : "▸"} why does it do that?
+				</button>
+				{open && (
+					<div className="mt-1.5 rounded border border-go-amber/20 bg-bg px-3 py-2 text-sm leading-relaxed text-muted">
+						{t(block.why, lang)}
+					</div>
+				)}
+			</div>
 		</div>
 	)
 }
@@ -328,6 +433,12 @@ export function ContentRenderer({
 								)}
 							</div>
 						)
+
+					case "verify":
+						return <VerifyBlock key={i} block={block} lang={lang} />
+
+					case "breakIt":
+						return <BreakItBlock key={i} block={block} lang={lang} />
 
 					case "assessment":
 						return <AssessmentBlock key={i} block={block} />

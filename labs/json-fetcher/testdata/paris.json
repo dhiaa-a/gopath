@@ -1,0 +1,21 @@
+{
+  "latitude": 48.85,
+  "longitude": 2.35,
+  "generationtime_ms": 0.027,
+  "utc_offset_seconds": 7200,
+  "timezone": "Europe/Paris",
+  "timezone_abbreviation": "CEST",
+  "elevation": 35.0,
+  "current_units": {
+    "time": "iso8601",
+    "interval": "seconds",
+    "temperature_2m": "°C",
+    "wind_speed_10m": "km/h"
+  },
+  "current": {
+    "time": "2026-07-12T11:00",
+    "interval": 900,
+    "temperature_2m": 21.0,
+    "wind_speed_10m": 8.2
+  }
+}

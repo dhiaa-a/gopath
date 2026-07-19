@@ -96,9 +96,10 @@ export default async function ConceptPage({
 					<div className="mb-2 font-mono text-xs uppercase tracking-widest text-go-cyan">
 						Mental model
 					</div>
-					<p className="leading-relaxed text-muted">
-						{concept.mentalModel}
-					</p>
+					<p
+						className="leading-relaxed text-muted"
+						dangerouslySetInnerHTML={{ __html: concept.mentalModel }}
+					/>
 				</div>
 			</section>
 
