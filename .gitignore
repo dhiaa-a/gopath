@@ -17,6 +17,9 @@
 # playground share cache
 /.cache
 
+# compiled lab binaries (go build in a lab dir drops one, esp. on Windows)
+labs/**/*.exe
+
 # typescript incremental build cache
 tsconfig.tsbuildinfo
 
