@@ -20,6 +20,7 @@ The site also includes:
 
 - **Orientation** — 6-page on-ramp for total Go newcomers.
 - **Concepts** — 61 Go concepts with mental models, retrieval prompts, code examples, common mistakes, design rationale, links to projects.
+- **Failure labs** — 15 broken-on-purpose programs under `labs/failures/` with a SYMPTOM.md each and a site page teaching the diagnostic path; `labs/failures/check.sh` holds broken-must-reproduce and fixed-must-pass both ways.
 - **Spaced reuse callouts** — when a step reuses a prior concept, the learner is prompted to recall before reading.
 - **Go Playground integration** — every code example has a "Run in Playground" link; share IDs cached at build.
 - **Validation** — `scripts/validate.ts` runs in `npm run build` and enforces relation integrity.
@@ -149,6 +150,8 @@ gopath/
 │   ├── basics/             — Tier 0 index
 │   ├── concepts/[slug]/    — concept detail page
 │   ├── concepts/           — concept index (grouped)
+│   ├── failures/[slug]/    — failure-lab diagnostic page
+│   ├── failures/           — failure labs index (grouped)
 │   ├── orientation/[slug]/ — orientation page
 │   ├── orientation/        — orientation index
 │   ├── projects/[slug]/    — project detail page
@@ -160,16 +163,21 @@ gopath/
 │   ├── LabCard.tsx         — links a project to its executable lab
 │   ├── Nav.tsx, ThemeToggle.tsx
 │   ├── RetrievalPrompts.tsx — flip-card retrieval practice
+│   ├── Reveal.tsx          — reveal interaction (failure pages' production war story)
 │   ├── SpacedReuseCallout.tsx — spaced reuse prompt
 │   └── ProjectSection.tsx
 ├── labs/                   — executable spine: one Go module per project
 │   ├── check.sh            — gofmt/vet/build/test/gates across every module
+│   ├── failures/           — 15 broken-on-purpose programs, one module each + SYMPTOM.md
+│   │   └── check.sh        — expected-to-fail harness: broken must reproduce, fixed must pass
 │   └── <project-slug>/     — self-contained module: starter, suite, reference
 ├── lib/
 │   ├── content/projects/   — one module per project (source of truth)
 │   ├── content/concepts/   — one module per concept (source of truth)
+│   ├── content/failures/   — one module per failure lab (source of truth)
 │   ├── content/tier0/      — Tier 0 micro-lessons (source of truth)
 │   ├── concepts.ts         — thin shim re-exporting lib/content/concepts
+│   ├── failures.ts         — thin shim re-exporting lib/content/failures
 │   ├── projects.ts         — thin shim re-exporting lib/content/projects
 │   ├── tier0.ts            — thin shim re-exporting lib/content/tier0
 │   ├── orientation.ts      — single source of truth for orientation

@@ -4,6 +4,7 @@ import { concepts } from "../lib/concepts"
 import { conceptGroups } from "../lib/content/concepts/groups"
 import { projects } from "../lib/projects"
 import { orientationPages, OrientationPage } from "../lib/orientation"
+import { failures, failureCategories } from "../lib/failures"
 import { tier0Lessons } from "../lib/tier0"
 import type { ContentBlock, Tier0Lesson } from "../lib/content"
 
@@ -336,6 +337,72 @@ function tier0ScannableText(lesson: Tier0Lesson): string[] {
 for (const lesson of tier0Lessons) {
 	for (const text of tier0ScannableText(lesson)) {
 		checkLinks(`basics/${lesson.slug}`, text)
+	}
+}
+
+// ─── Failure labs (Phase 5) ────────────────────────────────────────────────
+// Contract: every failure page is backed by a real lab at labs/failures/<slug>
+// holding the broken program (main.go, build tag !fixed), the fixed variant
+// (fixed.go), SYMPTOM.md, and its own go.mod; every lab dir on disk has a
+// page; categories and related concepts resolve. The behavioural half of the
+// contract (broken reproduces, fixed runs clean) lives in
+// labs/failures/check.sh, which labs/check.sh invokes.
+
+{
+	const failureSlugs = new Set(failures.map((f) => f.slug))
+	if (failureSlugs.size !== failures.length) {
+		fail("failures: duplicate slug in lib/content/failures/index.ts")
+	}
+	const knownCategories = new Set<string>(failureCategories)
+
+	for (const f of failures) {
+		if (!knownCategories.has(f.category)) {
+			fail(`failures/${f.slug}: unknown category "${f.category}"`)
+		}
+		const expected = `labs/failures/${f.slug}`
+		if (f.labPath !== expected) {
+			fail(`failures/${f.slug}: labPath is "${f.labPath}", expected "${expected}"`)
+		}
+		for (const required of ["go.mod", "SYMPTOM.md", "main.go", "fixed.go"]) {
+			if (!existsSync(path.join(labsRoot, "failures", f.slug, required))) {
+				fail(`failures/${f.slug}: lab is missing ${expected}/${required}`)
+			}
+		}
+		if (!f.runCommand.trim()) {
+			fail(`failures/${f.slug}: runCommand is empty`)
+		}
+		if (f.tools.length === 0) {
+			fail(`failures/${f.slug}: tools is empty — the page must name what to reach for`)
+		}
+		if (f.diagnosis.length < 2) {
+			fail(`failures/${f.slug}: only ${f.diagnosis.length} diagnosis step(s) — the page must teach the path, not just the answer`)
+		}
+		for (const [i, step] of f.diagnosis.entries()) {
+			if (!step.title.trim() || !step.body.trim()) {
+				fail(`failures/${f.slug}: diagnosis step ${i + 1} has an empty title or body`)
+			}
+		}
+		for (const field of ["tagline", "symptom", "fix", "production", "scar"] as const) {
+			if (!f[field].trim()) {
+				fail(`failures/${f.slug}: ${field} is empty`)
+			}
+		}
+		for (const slug of f.relatedSlugs) {
+			if (!conceptSlugs.has(slug)) {
+				fail(`failures/${f.slug}: relatedSlugs references unknown concept "${slug}"`)
+			}
+		}
+	}
+
+	// Orphan check: every lab dir under labs/failures must have a page.
+	const failuresRoot = path.join(labsRoot, "failures")
+	if (existsSync(failuresRoot)) {
+		for (const entry of readdirSync(failuresRoot, { withFileTypes: true })) {
+			if (!entry.isDirectory()) continue
+			if (!failureSlugs.has(entry.name)) {
+				fail(`labs/failures/${entry.name}: no failure page with this slug — orphaned failure lab`)
+			}
+		}
 	}
 }
 

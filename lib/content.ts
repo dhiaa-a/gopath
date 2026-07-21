@@ -161,6 +161,63 @@ export type Concept = {
 	relatedSlugs: string[]
 }
 
+// ─── Failure labs (Phase 5: scar tissue) ────────────────────────────────────
+//
+// A failure lab is a program under labs/failures/<slug> that compiles and
+// looks plausible but is broken, plus SYMPTOM.md written the way an on-call
+// engineer would report it. The site page's job is the diagnostic PATH, not
+// the answer: symptom, which tool to reach for, what the tool says, and only
+// then the fix. "How this shows up in production" renders behind a reveal.
+
+export type FailureCategory =
+	| "Concurrency"
+	| "Memory and aliasing"
+	| "Language semantics"
+	| "Standard library"
+
+// One beat of the diagnosis: something you run or read, and what it tells
+// you. `command` and `output` are rendered as code, so prose never has to
+// smuggle terminal text.
+export type FailureStep = {
+	title: string
+	// HTML prose (inline <code> allowed), rendered via dangerouslySetInnerHTML.
+	body: string
+	command?: string
+	// Real observed output, pasted from an actual run. Never invented.
+	output?: string
+}
+
+export type Failure = {
+	slug: string
+	name: string
+	category: FailureCategory
+	tagline: string
+	// The report as it arrives: what the user or on-call engineer sees,
+	// before anyone knows the cause. HTML.
+	symptom: string
+	// Always "labs/failures/<slug>". Validated to exist on disk with go.mod,
+	// SYMPTOM.md, main.go (build tag !fixed) and fixed.go (build tag fixed).
+	labPath: string
+	// Copy-pasteable reproduction, run from inside the lab directory.
+	runCommand: string
+	// The tools this failure teaches, in the order you actually reach for
+	// them. Rendered as a "reach for" list before the diagnosis.
+	tools: string[]
+	diagnosis: FailureStep[]
+	// The fix and why it is the fix, ending with how to prove it: the lab's
+	// fixed variant (go run -tags fixed .). HTML.
+	fix: string
+	// How this exact bug looks in production, where it is never this clean.
+	// Rendered behind a reveal interaction. HTML.
+	production: string
+	// The one sentence you keep after the tab is closed.
+	scar: string
+	relatedSlugs: string[]
+	// Suggested tier before which this lab will read as noise. A suggestion
+	// only: failure labs never gate anything (pedagogy rule 4).
+	unlockTier: 1 | 2 | 3
+}
+
 export function t(val: LocalizedString, lang: string) {
 	return val[lang as keyof LocalizedString] ?? val.en
 }

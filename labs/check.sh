@@ -106,6 +106,16 @@ for mod in */go.mod; do
 	check_module "$dir"
 done
 
+# Phase 5: the failure labs are broken on purpose, so they carry their own
+# expected-to-fail harness instead of the checks above. Run it whenever the
+# whole spine is checked (skipped when filtering to a single project lab).
+if [ -z "$only" ] && [ -f failures/check.sh ]; then
+	echo
+	if ! bash failures/check.sh; then
+		failures=$((failures + 1))
+	fi
+fi
+
 echo
 if [ "$checked" = "0" ]; then
 	echo "check.sh: no lab modules found${only:+ matching \"$only\"}"
