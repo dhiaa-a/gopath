@@ -3,6 +3,7 @@ import { SourceWalkthrough } from "../../content"
 import { bytesBuffer } from "./bytes-buffer"
 import { contextPackage } from "./context"
 import { errorsPackage } from "./errors"
+import { httpAcceptLoop } from "./http-accept-loop"
 import { syncWaitgroup } from "./sync-waitgroup"
 
 /**
@@ -31,6 +32,7 @@ export const sourceWalkthroughs: SourceWalkthrough[] = [
 	bytesBuffer,
 	syncWaitgroup,
 	contextPackage,
+	httpAcceptLoop,
 ].sort((a, b) => a.order - b.order)
 
 export function getWalkthrough(slug: string): SourceWalkthrough | undefined {
