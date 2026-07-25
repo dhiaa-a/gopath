@@ -23,7 +23,7 @@ export default function OrientationIndexPage() {
 				The airlock before Tier 1.
 			</h1>
 			<p className="mb-10 max-w-xl text-muted">
-				Six short pages for newcomers. What Go is, what it isn't, where
+				Six short pages for newcomers. What Go is, what it isn&apos;t, where
 				to learn syntax, and a readiness check before you start
 				building. About {totalMinutes} minutes total.
 			</p>
