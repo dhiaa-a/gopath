@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "npx tsx scripts/validate.ts && npx tsx scripts/playground-shares.ts && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint . --max-warnings=0"
   },
   "dependencies": {
     "next": "^16.1.6",

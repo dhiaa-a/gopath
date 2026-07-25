@@ -4,6 +4,28 @@ Append-only. Newest at the top.
 
 ---
 
+## 2026-07-25 — `npm run lint` had been dead; migrated to ESLint flat config and made warnings fail
+
+**Scope:** `package.json` lint script, `.eslintrc.json` deleted, `eslint.config.mjs` added, two real findings fixed.
+
+**The gate had not linted anything.** `package.json` ran `next lint`, but Next 16 removed that subcommand, so the CLI read `lint` as a positional project directory and died with "Invalid project directory provided, no such directory: .../lint". The exit code was non-zero, so nothing silently *passed* — but the session rhythm's `npm run lint && npm run build` would have short-circuited before `build` every time, which means the pairing as written has not been run to completion in a while, and the linting half has produced no signal at all. The repo was already on `eslint@9` and `eslint-config-next@16`, which is the version pair where `.eslintrc.json` also stops being read (ESLint 9 defaults to flat config), so the config file was dead twice over.
+
+**Lowest-friction path was a straight drop-in, not Biome.** `eslint-config-next@16.1.7` exports native flat-config arrays (`Linter.Config[]`) from `./core-web-vitals`, so `eslint.config.mjs` is three lines and reproduces the old `extends: next/core-web-vitals` rule set exactly — no `FlatCompat` shim, no new dependency, no re-litigating the rule set. Deliberately did NOT also pull in `eslint-config-next/typescript`: the repo never had it, and adding a few hundred new findings while fixing a broken gate would conflate two changes. Rejected Biome for the same reason — it is a defensible tool but it is a rule-set migration, not a gate repair, and nothing here was blocked on ESLint's speed.
+
+**`--max-warnings=0`, because a gate that shrugs is the bug being fixed.** `next/core-web-vitals` sets much of jsx-a11y and `import/no-anonymous-default-export` to `warn`, and plain `eslint .` exits 0 on warnings. Given the failure mode this entry exists to correct, a lint gate that can go green with warnings outstanding is the same class of problem. The standing brief already says fix warnings, not just errors, so the flag encodes what the brief asks for. Cost: a future `warn`-level rule addition breaks the build until it is cleaned, which is the intended trade.
+
+**Verified the linter actually sees the codebase, rather than trusting a green run.** A zero-finding pass and a zero-file pass look identical from the exit code, and this whole entry is about a lint step that reported nothing. `eslint . --format json` processes 146 files, which reconciles exactly with the 146 tracked JS/TS files (`next-env.d.ts` correctly ignored by the shipped config, `eslint.config.mjs` newly added). `labs/` is untouched — it is Go, and no stray JS lives there.
+
+**Both real findings were genuine, and one was a live React defect.** (1) `react/no-unescaped-entities` on an apostrophe in `app/orientation/page.tsx` — an entity escape that renders byte-identically. (2) `react-hooks/set-state-in-effect` on `ThemeToggle`, which is the interesting one: the component held `useState(true)` and corrected it from the DOM in a mount effect, so it kept a private copy of state whose real owner is the `dark` class on `<html>` (set pre-hydration by the inline script in `app/layout.tsx`). Two writers, one truth. Rewritten onto `useSyncExternalStore` with a `MutationObserver` on the class attribute — the documented primitive for exactly this shape — so the DOM is the single source of truth and `toggle()` now only mutates the DOM and localStorage. Verified in the browser, including the case that motivates the server snapshot: a light-mode returning visitor, where SSR renders dark and the inline script has already set light. Correct label after hydration, zero console errors, no hydration mismatch, and an external class mutation propagates to the button.
+
+**Alternatives considered:** keeping `.eslintrc.json` and setting `ESLINT_USE_FLAT_CONFIG=false` (rejected: pins the repo to a compatibility path ESLint 10 drops, for no gain over a three-line flat config); `next lint` via a pinned older Next (rejected outright, the point is to move forward); silencing `set-state-in-effect` with a disable comment (rejected: the rule was describing a real dual-source-of-truth bug, and suppressing it would leave the button able to disagree with the document); leaving warnings non-fatal (see above).
+
+**Pedagogy rules:** untouched. No curriculum content changed — the one content-adjacent edit is an HTML entity escape with identical rendered output, and `lib/content/**` and `lib/orientation.ts` were not touched at all.
+
+**Logged by:** Claude Code (engineer)
+
+---
+
 ## 2026-07-25 — One-Stop Phase 6: the idiom track, and what a linter can and cannot be asked to prove
 
 **Scope:** the brief's Phase 6, complete. 10 exercises under `labs/idioms/<slug>`, each a self-contained module holding working-but-unidiomatic code (`//go:build !solution`), a reference (`solution`), an UNTAGGED shared suite, a README and a REVIEW; one shared strict `.golangci.yml`; `labs/idioms/check.sh` as the both-ways gate; an `/idioms` index page and `IdiomExercise` content type with a validate.ts contract. All eight accents the brief names are covered; Python and C each got two exercises because each had two genuinely different shapes.
