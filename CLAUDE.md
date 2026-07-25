@@ -21,6 +21,7 @@ The site also includes:
 - **Orientation** — 6-page on-ramp for total Go newcomers.
 - **Concepts** — 61 Go concepts with mental models, retrieval prompts, code examples, common mistakes, design rationale, links to projects.
 - **Failure labs** — 15 broken-on-purpose programs under `labs/failures/` with a SYMPTOM.md each and a site page teaching the diagnostic path; `labs/failures/check.sh` holds broken-must-reproduce and fixed-must-pass both ways.
+- **Source reading** — 5 guided walkthroughs of real stdlib files at `/source` (errors, bytes.Buffer, sync.WaitGroup, context, the net/http accept loop), each with annotated verbatim excerpts and one find-it exercise. Excerpts are quoted from the reader's own GOROOT and proven to be: `labs/source/check.sh` requires every one to appear byte-for-byte, exactly once, at the line the page prints. Pinned to `go1.23.12`; the harness refuses to run against another toolchain rather than report drift it cannot distinguish from a mistake.
 - **Spaced reuse callouts** — when a step reuses a prior concept, the learner is prompted to recall before reading.
 - **Go Playground integration** — every code example has a "Run in Playground" link; share IDs cached at build.
 - **Validation** — `scripts/validate.ts` runs in `npm run build` and enforces relation integrity.
@@ -157,6 +158,8 @@ gopath/
 │   ├── orientation/        — orientation index
 │   ├── projects/[slug]/    — project detail page
 │   ├── projects/           — all projects list
+│   ├── source/[slug]/      — stdlib source-reading walkthrough
+│   ├── source/             — source-reading index + BSD-3-Clause attribution
 │   └── page.tsx            — homepage
 ├── components/
 │   ├── ContentRenderer.tsx — renders all block types
@@ -174,17 +177,21 @@ gopath/
 │   ├── idioms/             — idiom track: unidiomatic starters + green suites + REVIEW.md each
 │   │   ├── .golangci.yml   — shared strict lint config (golangci-lint v2, pinned in README)
 │   │   └── check.sh        — both-ways harness: starter lint-red on its accents, reference clean
+│   ├── source/
+│   │   └── check.sh        — verbatim-quote harness: every excerpt held against your own GOROOT
 │   └── <project-slug>/     — self-contained module: starter, suite, reference
 ├── lib/
 │   ├── content/projects/   — one module per project (source of truth)
 │   ├── content/concepts/   — one module per concept (source of truth)
 │   ├── content/failures/   — one module per failure lab (source of truth)
 │   ├── content/idioms.ts   — idiom exercise entries (source of truth)
+│   ├── content/source/     — one module per stdlib walkthrough (source of truth)
 │   ├── content/tier0/      — Tier 0 micro-lessons (source of truth)
 │   ├── concepts.ts         — thin shim re-exporting lib/content/concepts
 │   ├── failures.ts         — thin shim re-exporting lib/content/failures
 │   ├── idioms.ts           — thin shim re-exporting lib/content/idioms
 │   ├── projects.ts         — thin shim re-exporting lib/content/projects
+│   ├── source.ts           — thin shim re-exporting lib/content/source
 │   ├── tier0.ts            — thin shim re-exporting lib/content/tier0
 │   ├── orientation.ts      — single source of truth for orientation
 │   ├── content.ts          — block/step/project/lab type definitions
@@ -192,6 +199,8 @@ gopath/
 │   └── playground.ts       — reads cached share IDs at runtime
 └── scripts/
     ├── validate.ts         — runs in `npm run build`; also validates labs links
+    ├── source-check.ts     — holds every walkthrough excerpt against GOROOT (needs Go, so not in the build)
+    ├── source-excerpt.ts   — authoring tool: extracts a line range so excerpts are never hand typed
     └── playground-shares.ts — caches Go Playground share IDs at build
 ```
 

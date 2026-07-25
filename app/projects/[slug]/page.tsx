@@ -2,6 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { getProject, projects } from "@/lib/projects"
 import { priorConceptOccurrence } from "@/lib/relations"
+import { walkthroughsForProject } from "@/lib/source"
 import { ContentRenderer } from "@/components/ContentRenderer"
 import { LabCard } from "@/components/LabCard"
 import { ProjectSection } from "@/components/ProjectSection"
@@ -57,6 +58,7 @@ export default async function ProjectPage({
 	if (!project) notFound()
 
 	const c = tierColors[project.tier]
+	const sourceReads = walkthroughsForProject(project.slug)
 	const currentIdx = projects.findIndex((p) => p.slug === project.slug)
 	const prevProject = currentIdx > 0 ? projects[currentIdx - 1] : null
 	const nextProject =
@@ -192,6 +194,38 @@ export default async function ProjectPage({
 
 			{/* Recap */}
 			<ProjectSection title={{ en: "Recap" }} blocks={project.recap} />
+
+			{/* Read the source */}
+			{sourceReads.length > 0 && (
+				<section className="mb-10">
+					<div className="mb-3 font-mono text-xs uppercase tracking-widest text-muted">
+						Read the source
+					</div>
+					<p className="mb-4 text-sm text-muted">
+						This project leans on standard library code you never had
+						to open. These walkthroughs open it and read it line by
+						line.
+					</p>
+					<div className="flex flex-col gap-2">
+						{sourceReads.map((w) => (
+							<Link
+								key={w.slug}
+								href={`/source/${w.slug}`}
+								className="group rounded-lg border border-border bg-surface px-4 py-3 transition-colors hover:border-go-cyan/40"
+							>
+								<div className="flex items-baseline justify-between gap-3">
+									<span className="text-sm font-semibold text-foreground group-hover:text-go-cyan">
+										{w.name}
+									</span>
+									<code className="shrink-0 font-mono text-[11px] text-muted">
+										{w.entryFile}
+									</code>
+								</div>
+							</Link>
+						))}
+					</div>
+				</section>
+			)}
 
 			{/* Navigation */}
 			<div className="mt-14 flex items-center justify-between border-t border-border pt-8">

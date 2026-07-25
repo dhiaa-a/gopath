@@ -16,6 +16,7 @@ export default function Nav() {
 		{ href: "/concepts", label: "Concepts" },
 		{ href: "/failures", label: "Failures" },
 		{ href: "/idioms", label: "Idioms" },
+		{ href: "/source", label: "Source" },
 	]
 
 	return (
