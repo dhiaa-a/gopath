@@ -6,6 +6,7 @@ import { projects } from "../lib/projects"
 import { orientationPages, OrientationPage } from "../lib/orientation"
 import { failures, failureCategories } from "../lib/failures"
 import { idioms, idiomAccents } from "../lib/idioms"
+import { sourceWalkthroughs } from "../lib/content/source"
 import { tier0Lessons } from "../lib/tier0"
 import type { ContentBlock, Tier0Lesson } from "../lib/content"
 
@@ -97,7 +98,7 @@ for (const project of projects) {
 // Orphan check: every module directly under labs/ must belong to a project.
 // Future tracks from the One-Stop brief are allowlisted before they exist.
 {
-	const futureTracks = new Set(["failures", "idioms", "capstone"])
+	const futureTracks = new Set(["failures", "idioms", "source", "capstone"])
 	const projectSlugs = new Set(projects.map((p) => p.slug))
 	if (existsSync(labsRoot)) {
 		for (const entry of readdirSync(labsRoot, { withFileTypes: true })) {
@@ -491,6 +492,118 @@ for (const lesson of tier0Lessons) {
 			if (!idiomSlugs.has(entry.name)) {
 				fail(`labs/idioms/${entry.name}: no idiom entry with this slug — orphaned exercise`)
 			}
+		}
+	}
+}
+
+// ─── Source reading ────────────────────────────────────────────────────────
+
+// Contract: every walkthrough on /source points at real stdlib files, links
+// only to content that exists, and carries excerpts for the harness to hold
+// against GOROOT. What this cannot check is whether the quotes are accurate:
+// that needs a Go toolchain, which the deploy does not have, so it lives in
+// labs/source/check.sh. The two are complementary and both are required.
+{
+	const walkthroughSlugs = new Set(sourceWalkthroughs.map((w) => w.slug))
+	if (walkthroughSlugs.size !== sourceWalkthroughs.length) {
+		fail("source: duplicate slug in lib/content/source")
+	}
+
+	const projectSlugs = new Set(projects.map((p) => p.slug))
+	const failureSlugs = new Set(failures.map((f) => f.slug))
+	const orders = new Set<number>()
+
+	if (!existsSync(path.join(labsRoot, "source", "check.sh"))) {
+		fail("labs/source/check.sh is missing — the walkthroughs would be unverified")
+	}
+
+	for (const w of sourceWalkthroughs) {
+		if (orders.has(w.order)) {
+			fail(`source/${w.slug}: duplicate order ${w.order}`)
+		}
+		orders.add(w.order)
+
+		// An excerpt-free walkthrough is prose about code rather than a reading
+		// of it, and nothing in it is held to the real source.
+		if (w.excerpts.length === 0) {
+			fail(`source/${w.slug}: no excerpts — nothing is held to the real source`)
+		}
+
+		// GOROOT-relative, so the harness can resolve it and the reader can too.
+		if (!w.entryFile.startsWith("src/")) {
+			fail(`source/${w.slug}: entryFile "${w.entryFile}" must be GOROOT-relative (src/...)`)
+		}
+		if (w.excerpts.length > 0 && !w.excerpts.some((ex) => ex.file === w.entryFile)) {
+			fail(
+				`source/${w.slug}: entryFile "${w.entryFile}" is never excerpted — ` +
+					`the file the reader is told to open should be one they are shown`,
+			)
+		}
+
+		for (const [i, ex] of w.excerpts.entries()) {
+			const where = `source/${w.slug}[${i}]`
+			if (!ex.file.startsWith("src/")) {
+				fail(`${where}: file "${ex.file}" must be GOROOT-relative (src/...)`)
+			}
+			if (!Number.isInteger(ex.startLine) || ex.startLine < 1) {
+				fail(`${where}: startLine must be a positive integer, got ${ex.startLine}`)
+			}
+			if (ex.code.trim() === "") {
+				fail(`${where}: empty excerpt`)
+			}
+			// scripts/source-excerpt.ts emits TODO placeholders for the prose.
+			// Shipping one means an excerpt was pasted and never annotated, which
+			// is the failure mode this whole track exists to avoid.
+			for (const [field, value] of [
+				["title", ex.title],
+				["notice", ex.notice],
+			] as const) {
+				if (value.trim() === "" || value.includes("TODO")) {
+					fail(`${where}: ${field} is empty or still a TODO placeholder`)
+				}
+			}
+		}
+
+		const { exercise } = w
+		for (const [field, value] of [
+			["question", exercise.question],
+			["command", exercise.command],
+			["answer", exercise.answer],
+			["answerAnchor.needle", exercise.answerAnchor.needle],
+		] as const) {
+			if (value.trim() === "" || value.includes("TODO")) {
+				fail(`source/${w.slug}: exercise.${field} is empty or still a TODO placeholder`)
+			}
+		}
+		if (!exercise.answerAnchor.file.startsWith("src/")) {
+			fail(
+				`source/${w.slug}: exercise.answerAnchor.file "${exercise.answerAnchor.file}" ` +
+					`must be GOROOT-relative (src/...)`,
+			)
+		}
+
+		// Relations: the brief's done-when requires these pages be reachable
+		// from the concepts and projects they explain, so the links must resolve.
+		for (const slug of w.relatedConcepts) {
+			if (!conceptSlugs.has(slug)) {
+				fail(`source/${w.slug}: relatedConcepts references unknown concept "${slug}"`)
+			}
+		}
+		for (const slug of w.relatedProjects) {
+			if (!projectSlugs.has(slug)) {
+				fail(`source/${w.slug}: relatedProjects references unknown project "${slug}"`)
+			}
+		}
+		for (const slug of w.relatedFailures ?? []) {
+			if (!failureSlugs.has(slug)) {
+				fail(`source/${w.slug}: relatedFailures references unknown failure lab "${slug}"`)
+			}
+		}
+		if (w.relatedConcepts.length === 0 && w.relatedProjects.length === 0) {
+			fail(
+				`source/${w.slug}: links to no concept and no project — ` +
+					`the brief requires walkthroughs be reachable from the curriculum`,
+			)
 		}
 	}
 }

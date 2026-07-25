@@ -249,6 +249,86 @@ export type IdiomExercise = {
 	suggestedAfter: string
 }
 
+// ─── Source reading (Phase 7: reading the standard library) ─────────────────
+//
+// Professionals read code; almost nothing teaches it. A walkthrough takes one
+// real stdlib file and reads it the way an experienced Go programmer would:
+// where to enter, what to skip, what to notice, and what the code is defending
+// against. The excerpts are quoted verbatim from the reader's OWN toolchain,
+// and labs/source/check.sh proves it: every excerpt must be found byte-for-byte,
+// exactly once, at the line this content claims. Line numbers here are measured,
+// never asserted from memory, and the harness reports drift when Go moves on.
+
+// One beat of the read: a real excerpt plus what an experienced reader sees in
+// it. The pair is the unit; an excerpt with no commentary is just a paste.
+export type SourceExcerpt = {
+	// GOROOT-relative path, e.g. "src/sync/waitgroup.go".
+	file: string
+	// A short heading for this beat, e.g. "The state word".
+	title: string
+	// Verbatim from GOROOT at the pinned Go version. Never retyped, never
+	// reflowed, never elided mid-block: the harness searches for this exact
+	// string, so a single changed character or a tab turned into spaces is a
+	// failure. That strictness is the point, it is what makes the quote
+	// trustworthy.
+	code: string
+	// 1-indexed start line, as MEASURED by scripts/source-check.ts rather than
+	// claimed. Stored so the site can render line numbers without needing a Go
+	// toolchain at build time (the deploy has none).
+	startLine: number
+	// What to notice, and why it is there. HTML prose (inline <code> allowed).
+	notice: string
+}
+
+// The brief's requirement: one exercise per walkthrough, answerable only by
+// opening the source. "Find the exact line where http.Server decides to spawn a
+// goroutine per connection" is the shape.
+export type SourceExercise = {
+	question: string
+	// A real command that starts the search on the reader's own machine.
+	command: string
+	// The answer, rendered behind a reveal so the reader searches first. HTML.
+	answer: string
+	// The identifier the answer turns on, asserted to exist in `file` by the
+	// harness. Without this an answer can quietly rot into a lie when the
+	// stdlib is refactored.
+	answerAnchor: { file: string; needle: string }
+}
+
+export type SourceWalkthrough = {
+	slug: string
+	// The thing being read, as a Go programmer would name it: "sync.WaitGroup".
+	name: string
+	// Import path of the package, e.g. "sync" or "net/http".
+	pkg: string
+	tagline: string
+	// Why this file repays reading, and which reading skill it trains. HTML.
+	why: string
+	// The file to open first, GOROOT-relative.
+	entryFile: string
+	// How to open it on the reader's own machine. A real, copy-pasteable
+	// command, not a description of one.
+	openCommand: string
+	// How the file is laid out, before any excerpt: what to skip, where the
+	// real work is. Orientation is most of what a senior reader has and a
+	// junior one does not. HTML.
+	orientation: string
+	excerpts: SourceExcerpt[]
+	exercise: SourceExercise
+	// The one sentence you keep after the tab is closed.
+	takeaway: string
+	relatedConcepts: string[]
+	relatedProjects: string[]
+	// Failure labs that this file explains, e.g. reading WaitGroup's counter
+	// after meeting wg-add-after-wait.
+	relatedFailures?: string[]
+	// Suggested point on the path before which this read is noise. A
+	// suggestion only: source reading never gates anything (pedagogy rule 4).
+	unlockTier: 1 | 2 | 3
+	// Reading order on the index page, ascending.
+	order: number
+}
+
 export function t(val: LocalizedString, lang: string) {
 	return val[lang as keyof LocalizedString] ?? val.en
 }
