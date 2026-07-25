@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { getConcept, concepts } from "@/lib/concepts"
 import { projects } from "@/lib/projects"
 import { conceptToProjects } from "@/lib/relations"
+import { walkthroughsForConcept } from "@/lib/source"
 import { GoCode } from "@/components/GoCode"
 import { RetrievalPrompts } from "@/components/RetrievalPrompts"
 import { playgroundUrl } from "@/lib/playground"
@@ -37,6 +38,8 @@ export default async function ConceptPage({
 	const relatedConcepts = concept.relatedSlugs
 		.map((s) => concepts.find((c) => c.slug === s))
 		.filter(Boolean) as typeof concepts
+
+	const sourceReads = walkthroughsForConcept(concept.slug)
 
 	const practiceLinks = conceptToProjects(concept.slug)
 		.slice(0, 3)
@@ -207,6 +210,35 @@ export default async function ConceptPage({
 								</div>
 								<div className="mt-0.5 text-xs text-muted">
 									{c.tagline}
+								</div>
+							</Link>
+						))}
+					</div>
+				</section>
+			)}
+
+			{/* Read the source */}
+			{sourceReads.length > 0 && (
+				<section className="mb-10">
+					<h2 className="mb-2 font-serif text-xl text-foreground">
+						Read the source
+					</h2>
+					<p className="mb-4 text-sm text-muted">
+						The standard library implements this. These walkthroughs
+						read the real file with you, line by line.
+					</p>
+					<div className="flex flex-wrap gap-2">
+						{sourceReads.map((w) => (
+							<Link
+								key={w.slug}
+								href={`/source/${w.slug}`}
+								className="rounded-lg border border-border bg-surface px-4 py-2.5 transition-colors hover:border-go-cyan/40"
+							>
+								<div className="font-semibold text-foreground">
+									{w.name}
+								</div>
+								<div className="mt-0.5 font-mono text-xs text-muted">
+									{w.entryFile}
 								</div>
 							</Link>
 						))}

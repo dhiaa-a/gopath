@@ -153,6 +153,24 @@ function tokenize(code: string): Token[] {
 	return tokens
 }
 
+// Regroup a flat token stream into one array per source line. Tokens can carry
+// newlines inside them (block comments, backtick strings) and the tokenizer
+// also emits bare "\n" as punctuation, so splitting on the value is the only
+// way to keep highlighting intact across a line break.
+function splitLines(tokens: Token[]): Token[][] {
+	const lines: Token[][] = [[]]
+	for (const tok of tokens) {
+		const parts = tok.value.split("\n")
+		parts.forEach((part, i) => {
+			if (i > 0) lines.push([])
+			if (part) lines[lines.length - 1].push({ type: tok.type, value: part })
+		})
+	}
+	// A trailing newline terminates the last line, it does not add an empty one.
+	if (lines.length > 1 && lines[lines.length - 1].length === 0) lines.pop()
+	return lines
+}
+
 const COLOR: Record<string, string> = {
 	keyword: "var(--sx-keyword)",
 	type: "var(--sx-type)",
@@ -167,16 +185,55 @@ const COLOR: Record<string, string> = {
 export function GoCode({
 	code,
 	className,
+	startLine,
 }: {
 	code: string
 	className?: string
+	// 1-indexed line number of the first line, for excerpts quoted out of a
+	// larger file. Set it and the block grows a line-number gutter; leave it
+	// unset and the block renders exactly as it always has. The source-reading
+	// walkthroughs need the real numbers, because the promise of that track is
+	// that you can open the same file and land on the same lines.
+	startLine?: number
 }) {
 	const tokens = tokenize(code)
+
+	if (startLine === undefined) {
+		return (
+			<code className={className}>
+				{tokens.map((tok, i) => (
+					<span key={i} style={{ color: COLOR[tok.type] ?? COLOR.ident }}>
+						{tok.value}
+					</span>
+				))}
+			</code>
+		)
+	}
+
+	const lines = splitLines(tokens)
+	// Width from the widest number so the gutter is exact in a monospace face
+	// and every excerpt does not pay for the longest one on the page.
+	const gutter = `${String(startLine + lines.length - 1).length}ch`
+
 	return (
 		<code className={className}>
-			{tokens.map((tok, i) => (
-				<span key={i} style={{ color: COLOR[tok.type] ?? COLOR.ident }}>
-					{tok.value}
+			{lines.map((lineTokens, i) => (
+				<span key={i} className="block">
+					<span
+						aria-hidden="true"
+						className="mr-4 inline-block select-none text-right text-muted"
+						style={{ width: gutter }}
+					>
+						{startLine + i}
+					</span>
+					{lineTokens.map((tok, j) => (
+						<span
+							key={j}
+							style={{ color: COLOR[tok.type] ?? COLOR.ident }}
+						>
+							{tok.value}
+						</span>
+					))}
 				</span>
 			))}
 		</code>

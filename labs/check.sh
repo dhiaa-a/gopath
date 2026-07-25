@@ -126,6 +126,16 @@ if [ -z "$only" ] && [ -f idioms/check.sh ]; then
 	fi
 fi
 
+# Phase 7: the source-reading walkthroughs quote the standard library, so what
+# needs checking is not our code but our quotes. Its harness holds every
+# excerpt against this machine's GOROOT.
+if [ -z "$only" ] && [ -f source/check.sh ]; then
+	echo
+	if ! bash source/check.sh; then
+		failures=$((failures + 1))
+	fi
+fi
+
 echo
 if [ "$checked" = "0" ]; then
 	echo "check.sh: no lab modules found${only:+ matching \"$only\"}"
