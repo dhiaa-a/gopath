@@ -4,7 +4,7 @@ export const syncWaitgroup: SourceWalkthrough = {
 	slug: "sync-waitgroup",
 	name: "sync.WaitGroup",
 	pkg: "sync",
-	order: 1,
+	order: 3,
 	unlockTier: 2,
 	tagline:
 		"129 lines, three fields, three methods. The smallest complete concurrency primitive in the standard library, and the best place to learn which lines are not for you.",

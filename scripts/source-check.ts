@@ -46,9 +46,21 @@ function ok(msg: string) {
 	console.log(`  ${GREEN}ok${RESET}: ${msg}`)
 }
 
-/** Normalizes to LF so a CRLF checkout cannot produce a phantom mismatch. */
+/**
+ * Normalizes to LF so a CRLF checkout cannot produce a phantom mismatch.
+ *
+ * Both sides need this, not just the file. The repo has core.autocrlf on and
+ * no root .gitattributes, so a fresh Windows clone hands these excerpts back
+ * with CRLF inside the template literals while GOROOT stays LF. Normalizing
+ * only the file would make every excerpt red on a clean checkout, which is a
+ * spectacular way to teach a new reader that the harness cannot be trusted.
+ */
+function lf(text: string): string {
+	return text.replace(/\r\n/g, "\n")
+}
+
 function readGo(file: string): string {
-	return readFileSync(file, "utf8").replace(/\r\n/g, "\n")
+	return lf(readFileSync(file, "utf8"))
 }
 
 type Located =
@@ -163,9 +175,9 @@ function main() {
 			if (text === null) continue
 			excerptCount++
 
-			const found = locate(text, ex.code)
+			const found = locate(text, lf(ex.code))
 			if (found.kind === "missing") {
-				const culprit = firstMissingLine(text, ex.code)
+				const culprit = firstMissingLine(text, lf(ex.code))
 				fail(
 					`${label}: excerpt not found verbatim in ${ex.file}` +
 						(culprit ? `\n        first line not in the file: ${culprit.trim()}` : ""),
@@ -192,7 +204,7 @@ function main() {
 		// The exercise answer names something real.
 		const anchor = w.exercise.answerAnchor
 		const anchorText = load(anchor.file)
-		if (anchorText !== null && !anchorText.includes(anchor.needle)) {
+		if (anchorText !== null && !anchorText.includes(lf(anchor.needle))) {
 			fail(
 				`${w.slug}: exercise answer anchor not found in ${anchor.file}: ` +
 					`"${anchor.needle}"`,
@@ -207,10 +219,10 @@ function main() {
 		const probeSource = w.excerpts[0]
 		const probeText = files.get(probeSource.file)
 		if (probeText) {
-			const probe = probeSource.code.replace(/[A-Za-z]/, (c) =>
+			const probe = lf(probeSource.code).replace(/[A-Za-z]/, (c) =>
 				c === "z" ? "q" : String.fromCharCode(c.charCodeAt(0) + 1),
 			)
-			if (probe !== probeSource.code && locate(probeText, probe).kind !== "missing") {
+			if (probe !== lf(probeSource.code) && locate(probeText, probe).kind !== "missing") {
 				fail(
 					`${w.slug}: PROBE — a corrupted excerpt still matched. The verifier is ` +
 						`not verifying; every ok above is meaningless.`,
