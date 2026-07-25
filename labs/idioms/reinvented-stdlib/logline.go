@@ -1,0 +1,143 @@
+//go:build !solution
+
+// Package logline normalizes raw log lines from a fleet of agents before
+// they reach the status screen: shipper prefixes come off, secrets get
+// masked, repeated lines collapse, and columns get sized.
+package logline
+
+import (
+	"fmt"
+	"strings"
+)
+
+// agentPrefix is stamped on every line by the fleet's log shipper.
+const agentPrefix = "gopath-agent: "
+
+// severities lists the levels the fleet's loggers emit.
+var severities = []string{"TRACE", "DEBUG", "INFO", "WARN", "ERROR"}
+
+// TrimAgent removes one leading shipper prefix from a line, if present.
+func TrimAgent(line string) string {
+	if strings.HasPrefix(line, agentPrefix) {
+		line = line[len(agentPrefix):]
+	}
+	return line
+}
+
+// KnownSeverity reports whether sev is a level the fleet's loggers emit.
+// Matching is exact: severities are upper-case on the wire.
+func KnownSeverity(sev string) bool {
+	for _, known := range severities {
+		if known == sev {
+			return true
+		}
+	}
+	return false
+}
+
+// HasMarker reports whether a deploy marker occurs anywhere in the line.
+// Every line contains the empty marker.
+func HasMarker(line, marker string) bool {
+	if marker == "" {
+		return true
+	}
+	if len(marker) > len(line) {
+		return false
+	}
+	for i := range len(line) - len(marker) + 1 {
+		if line[i:i+len(marker)] == marker {
+			return true
+		}
+	}
+	return false
+}
+
+// Redact replaces every occurrence of each secret with a mask of the same
+// length, so line widths survive redaction. Empty secrets are ignored.
+func Redact(line string, secrets []string) string {
+	for _, secret := range secrets {
+		if secret == "" {
+			continue
+		}
+		mask := ""
+		for range len(secret) {
+			mask += "*"
+		}
+		line = strings.ReplaceAll(line, secret, mask)
+	}
+	return line
+}
+
+// Dedupe collapses each run of identical lines into one entry, syslog
+// style: a run of n > 1 identical lines becomes the line followed by
+// " (xN)".
+func Dedupe(lines []string) []string {
+	if len(lines) == 0 {
+		return nil
+	}
+	var out []string
+	current := lines[0]
+	count := 1
+	for _, line := range lines[1:] {
+		if line == current {
+			count++
+			continue
+		}
+		out = append(out, entry(current, count))
+		current = line
+		count = 1
+	}
+	return append(out, entry(current, count))
+}
+
+// entry renders one deduplicated line with its repeat count.
+func entry(line string, count int) string {
+	if count == 1 {
+		return line
+	}
+	return line + " (x" + fmt.Sprintf("%d", count) + ")"
+}
+
+// Widest reports the length of the longest line, for column layout.
+func Widest(lines []string) int {
+	widest := 0
+	for _, line := range lines {
+		if len(line) > widest {
+			widest = len(line)
+		}
+	}
+	return widest
+}
+
+// Fit truncates line to at most width bytes, for column layout. The
+// fleet logs ASCII, so bytes are columns. A width of zero or less leaves
+// nothing.
+func Fit(line string, width int) string {
+	if width <= 0 {
+		return ""
+	}
+	n := len(line)
+	if n > width {
+		n = width
+	}
+	return line[:n]
+}
+
+// Tail returns the last keep lines as an independent slice: the result
+// shares no memory with lines, so holding it does not pin the caller's
+// buffer. A keep of zero or less returns nil; a keep past the start
+// returns a copy of everything.
+func Tail(lines []string, keep int) []string {
+	if keep <= 0 {
+		return nil
+	}
+	tail := lines
+	if keep < len(lines) {
+		tail = lines[len(lines)-keep:]
+	}
+	out := make([]string, len(tail))
+	for i, line := range tail {
+		out[i] = line
+	}
+	return out
+}

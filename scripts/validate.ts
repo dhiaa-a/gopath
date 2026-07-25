@@ -1,10 +1,11 @@
-import { existsSync, readdirSync } from "node:fs"
+import { existsSync, readdirSync, readFileSync } from "node:fs"
 import path from "node:path"
 import { concepts } from "../lib/concepts"
 import { conceptGroups } from "../lib/content/concepts/groups"
 import { projects } from "../lib/projects"
 import { orientationPages, OrientationPage } from "../lib/orientation"
 import { failures, failureCategories } from "../lib/failures"
+import { idioms, idiomAccents } from "../lib/idioms"
 import { tier0Lessons } from "../lib/tier0"
 import type { ContentBlock, Tier0Lesson } from "../lib/content"
 
@@ -401,6 +402,94 @@ for (const lesson of tier0Lessons) {
 			if (!entry.isDirectory()) continue
 			if (!failureSlugs.has(entry.name)) {
 				fail(`labs/failures/${entry.name}: no failure page with this slug — orphaned failure lab`)
+			}
+		}
+	}
+}
+
+// ─── Idiom exercises (Phase 6) ─────────────────────────────────────────────
+// Contract: every idiom entry on /idioms is backed by a real exercise at
+// labs/idioms/<slug> (go.mod, README.md, REVIEW.md, solution.go, a test
+// file); every exercise dir on disk has an entry; accents are known; and the
+// linters the site claims will fire are exactly the ones the harness
+// registers and asserts (labs/idioms/check.sh), so the page can never drift
+// from what the starter actually teaches. The behavioural half (starter red
+// on those linters, reference clean, suite green both ways) lives in the
+// harness, which labs/check.sh invokes.
+
+{
+	const idiomSlugs = new Set(idioms.map((i) => i.slug))
+	if (idiomSlugs.size !== idioms.length) {
+		fail("idioms: duplicate slug in lib/content/idioms.ts")
+	}
+	const knownAccents = new Set<string>(idiomAccents)
+	const idiomsRoot = path.join(labsRoot, "idioms")
+
+	for (const shared of [".golangci.yml", "check.sh", "README.md"]) {
+		if (!existsSync(path.join(idiomsRoot, shared))) {
+			fail(`labs/idioms/${shared} is missing — the track's shared ${shared === ".golangci.yml" ? "lint config" : shared === "check.sh" ? "harness" : "README"} must exist`)
+		}
+	}
+
+	const harnessPath = path.join(idiomsRoot, "check.sh")
+	const harness = existsSync(harnessPath)
+		? readFileSync(harnessPath, "utf8")
+		: ""
+
+	for (const ex of idioms) {
+		if (!knownAccents.has(ex.accent)) {
+			fail(`idioms/${ex.slug}: unknown accent "${ex.accent}"`)
+		}
+		const expected = `labs/idioms/${ex.slug}`
+		if (ex.labPath !== expected) {
+			fail(`idioms/${ex.slug}: labPath is "${ex.labPath}", expected "${expected}"`)
+		}
+		for (const required of ["go.mod", "README.md", "REVIEW.md", "solution.go"]) {
+			if (!existsSync(path.join(idiomsRoot, ex.slug, required))) {
+				fail(`idioms/${ex.slug}: exercise is missing ${expected}/${required}`)
+			}
+		}
+		const dir = path.join(idiomsRoot, ex.slug)
+		if (
+			existsSync(dir) &&
+			!readdirSync(dir).some((f) => f.endsWith("_test.go"))
+		) {
+			fail(`idioms/${ex.slug}: no _test.go — the suite is half the contract`)
+		}
+		if (!ex.tagline.trim()) {
+			fail(`idioms/${ex.slug}: tagline is empty`)
+		}
+		if (ex.mistakes.length < 3) {
+			fail(`idioms/${ex.slug}: only ${ex.mistakes.length} named mistake(s) — the exercise must name what it trains against`)
+		}
+		if (ex.linters.length === 0) {
+			fail(`idioms/${ex.slug}: linters is empty — the page must say what fires`)
+		}
+		if (!/^T[123] P\d$/.test(ex.suggestedAfter)) {
+			fail(`idioms/${ex.slug}: suggestedAfter "${ex.suggestedAfter}" is not of the form "T2 P1"`)
+		}
+
+		// The harness registration is the source of truth for what fires.
+		const caseBlock = harness.match(
+			new RegExp(`\\n\\t${ex.slug}\\)([\\s\\S]*?);;`),
+		)
+		if (!caseBlock) {
+			fail(`idioms/${ex.slug}: not registered in labs/idioms/check.sh — an exercise the harness never asserts is unverified`)
+		} else {
+			for (const linter of ex.linters) {
+				if (!new RegExp(`lint_red[^\\n]*\\b${linter}\\b`).test(caseBlock[1])) {
+					fail(`idioms/${ex.slug}: site claims "${linter}" fires but labs/idioms/check.sh does not assert it`)
+				}
+			}
+		}
+	}
+
+	// Orphan check: every module dir under labs/idioms must have an entry.
+	if (existsSync(idiomsRoot)) {
+		for (const entry of readdirSync(idiomsRoot, { withFileTypes: true })) {
+			if (!entry.isDirectory()) continue
+			if (!idiomSlugs.has(entry.name)) {
+				fail(`labs/idioms/${entry.name}: no idiom entry with this slug — orphaned exercise`)
 			}
 		}
 	}

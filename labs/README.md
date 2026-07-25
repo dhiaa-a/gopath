@@ -23,7 +23,7 @@ The two earliest labs (`cli-renamer`, `json-fetcher`) have no test suite at all,
 
 ## Conventions
 
-- Module path: `gopath.dev/labs/<slug>`, Go 1.22.
+- Module path: `gopath.dev/labs/<slug>`, Go 1.23.
 - Starter code always compiles. Stubs return zero values; failing tests, not broken builds, tell you what is left.
 - Suites are black-box: they test the binary or the exported API, never your internals. How you structure the inside is your call.
 - Performance gates (Tier 3 and the worker pool) live in `gate_test.go` behind the `gate` build tag, with functions named `TestGate...`. Run them explicitly: `go test -tags gate -run TestGate ./...`. Gates prefer relative comparisons (your optimized version against the shipped baseline, measured in the same process) so they hold on any reasonable machine.
@@ -35,7 +35,7 @@ The concurrent suites (tcp-echo, http-server, worker-pool and up) are written to
 
 You do **not** have to put that on your global PATH. `RACE=1 ./check.sh` (below) enables cgo for the run and probes the usual toolchain locations itself, so the whole race sweep works out of the box once the compiler is installed. If you want `go test -race` to work directly in a single lab dir, add `C:\msys64\ucrt64\bin` to PATH for that shell (`export PATH="/c/msys64/ucrt64/bin:$PATH"`) and set `CGO_ENABLED=1`.
 
-The whole spine has been run clean under `-race` on `go1.22.1 windows/amd64` with this toolchain; the detector both fires (verified against a deliberate data race) and finds every module clean.
+The whole spine has been run clean under `-race` on `go1.23.12 windows/amd64` with this toolchain; the detector both fires (verified against a deliberate data race) and finds every module clean.
 
 ## check.sh (maintainers / CI)
 
@@ -50,3 +50,20 @@ The whole spine has been run clean under `-race` on `go1.22.1 windows/amd64` wit
 7. Gate tests (`-tags "solution gate" -run '^TestGate'`), skippable with `SKIP_GATES=1`
 
 `RACE=1 ./check.sh` adds `-race` to the test step on platforms that support it. Nothing in `labs/` may be committed while `check.sh` is red.
+
+## Beyond the project labs
+
+Two tracks live here with their own contracts and their own harnesses, both
+invoked by `./check.sh` on every full run:
+
+- [`failures/`](failures/) — programs broken on purpose, each with a
+  SYMPTOM.md written the way an on-call engineer would report it. Their
+  harness runs expected-to-fail: the broken variant must keep reproducing
+  its symptom, the fixed variant (`-tags fixed`) must keep running clean.
+  The diagnostic walkthroughs live on the site at `/failures`.
+- [`idioms/`](idioms/) — working-but-unidiomatic code with green tests and
+  a shared strict lint config. Refactor until the tests stay green and
+  `golangci-lint run` reaches zero; each exercise's REVIEW.md is the senior
+  reviewer's walkthrough. Needs golangci-lint v2; see
+  [idioms/README.md](idioms/README.md) for the pinned install. The track
+  index lives on the site at `/idioms`.

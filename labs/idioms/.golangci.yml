@@ -1,0 +1,100 @@
+# Shared lint config for every idiom exercise (One-Stop brief, Phase 6).
+#
+# This is the mechanical half of the track: the test suite pins behavior,
+# this file pins idiom. An exercise is done when BOTH are green from the
+# exercise directory:
+#
+#   go test ./...        tests stay green while you refactor
+#   golangci-lint run    the accent is gone
+#
+# Written for golangci-lint v2 (tested with v2.12.2). Install is pinned in
+# ../README.md. Every linter below is here because it catches a specific
+# habit imported from another language; nothing is enabled for decoration.
+# The config is deliberately exception-free: no per-path carve-outs, no
+# nolint escape hatches. Steal it for your team.
+
+version: "2"
+
+linters:
+  default: none
+  enable:
+    # ── errors ──────────────────────────────────────────────────────────
+    - errcheck # ignored error returns, including `go f()` and `defer f()`
+    - errorlint # err == sentinel and %v where a wrap (%w, errors.Is) belongs
+    - wrapcheck # errors returned across a boundary without added context
+    - nilerr # returns nil right after checking err != nil
+
+    # ── structure and API shape ─────────────────────────────────────────
+    - iface # interface-per-struct: identical, unused, or single-impl interfaces
+    - interfacebloat # interfaces past 5 methods; split at the consumer
+    - recvcheck # a type mixing pointer and value receivers
+    - revive # naming, receivers called this/self, doc comments, stutter; rules below
+    - predeclared # locals that shadow len, cap, min, max, new
+    - gochecknoinits # init() magic; prefer explicit construction
+
+    # ── ceremony and dead weight ────────────────────────────────────────
+    - unused # unexported code nothing calls (leftover accessors, dead types)
+    - unparam # parameters every caller passes identically
+    - unconvert # conversions the type system already performs
+    - ineffassign # assignments overwritten before anyone reads them
+
+    # ── loops, buffers, and the standard library ────────────────────────
+    - intrange # C-style `for i := 0; i < n; i++` that is `for i := range n`
+    - copyloopvar # per-iteration copies Go 1.22 made redundant
+    - modernize # hand-rolled max/contains/etc. the stdlib now provides
+    - staticcheck # bug patterns plus S-checks: manual loops that are copy(), TrimPrefix, ...
+    - gocritic # style and correctness checks curated by the Go community
+    - perfsprint # fmt.Sprintf where strconv already does the job
+    - usestdlibvars # magic literals with stdlib names (http.StatusOK, ...)
+    - goconst # the same raw string repeated where a constant belongs
+
+    # ── control flow ────────────────────────────────────────────────────
+    - forbidigo # panic as error handling, time.Sleep as synchronization; below
+    - forcetypeassert # v.(T) without the comma-ok: a panic you did not write
+
+    # ── plumbing correctness ────────────────────────────────────────────
+    - bodyclose # HTTP response bodies left open
+    - noctx # HTTP requests sent without a context
+    - durationcheck # multiplying two time.Durations
+
+  settings:
+    forbidigo:
+      forbid:
+        - pattern: ^panic$
+          msg: panic is not an error strategy; return a wrapped error instead
+        - pattern: ^time\.Sleep$
+          msg: sleeping is not synchronization; wait on the thing itself (WaitGroup, channel, context)
+    goconst:
+      min-len: 3
+      min-occurrences: 3
+    iface:
+      enable:
+        - identical # two interfaces with the same method set
+        - unused # interface no code consumes
+        - opaque # function returns an interface that has exactly one implementation
+    interfacebloat:
+      max: 5
+    revive:
+      rules:
+        - name: exported # exported names carry doc comments and do not stutter
+        - name: var-naming # Id -> ID, Url -> URL, no snake_case
+        - name: receiver-naming # receivers are short type echoes, never this or self
+        - name: unexported-return # exported funcs do not return unexported types
+        - name: error-strings # error text: lower-case, no trailing punctuation
+        - name: error-naming # sentinel errors are ErrXxx
+        - name: errorf # errors.New(fmt.Sprintf(...)) is fmt.Errorf(...)
+        - name: increment-decrement # i++ over i += 1
+        - name: indent-error-flow # no else after a return; keep the happy path flat
+        - name: superfluous-else
+        - name: early-return
+        - name: use-any # interface{} spelled any since Go 1.18
+        - name: range # for i := 0; ... over a slice is for i := range
+        - name: time-naming # timeoutSecs int -> timeout time.Duration
+        - name: context-as-argument # ctx context.Context comes first
+    staticcheck:
+      checks: ["all"]
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
