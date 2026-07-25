@@ -26,7 +26,7 @@ export default function ProjectsPage() {
 				All projects
 			</div>
 			<h1 className="mb-3 font-serif text-4xl text-foreground">
-				Nine projects. One path.
+				Eleven projects. One path.
 			</h1>
 			<p className="mb-2 text-muted">
 				Work through them in order. Each one builds on the last.

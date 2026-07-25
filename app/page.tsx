@@ -87,7 +87,7 @@ export default function Home() {
 
 					{/* Code window */}
 					<div className="overflow-hidden rounded-lg border border-border bg-surface font-mono text-sm">
-						<div className="flex items-center gap-2 border-b border-border bg-surface2 px-4 py-3">
+						<div className="flex items-center gap-2 border-b border-border bg-surface2 px-4 py-1">
 							<span className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
 							<span className="h-2.5 w-2.5 rounded-full bg-yellow-500/70" />
 							<span className="h-2.5 w-2.5 rounded-full bg-green-500/70" />
@@ -138,6 +138,7 @@ func main() {
 						{ n: "3", l: "Tiers" },
 						{ n: "61", l: "Go concepts" },
 						{ n: "15", l: "Failure labs" },
+						{ n: "10", l: "Idiom exercises" },
 						{ n: "0", l: "Toy examples" },
 					].map((s) => (
 						<div key={s.l} className="text-center">

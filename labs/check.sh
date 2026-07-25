@@ -116,6 +116,16 @@ if [ -z "$only" ] && [ -f failures/check.sh ]; then
 	fi
 fi
 
+# Phase 6: the idiom exercises are lint-gated both ways (starter red on its
+# accents, reference clean), which needs golangci-lint, so they too carry
+# their own harness.
+if [ -z "$only" ] && [ -f idioms/check.sh ]; then
+	echo
+	if ! bash idioms/check.sh; then
+		failures=$((failures + 1))
+	fi
+fi
+
 echo
 if [ "$checked" = "0" ]; then
 	echo "check.sh: no lab modules found${only:+ matching \"$only\"}"

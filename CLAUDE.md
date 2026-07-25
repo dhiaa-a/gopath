@@ -152,6 +152,7 @@ gopath/
 │   ├── concepts/           — concept index (grouped)
 │   ├── failures/[slug]/    — failure-lab diagnostic page
 │   ├── failures/           — failure labs index (grouped)
+│   ├── idioms/             — idiom track index (accent removal)
 │   ├── orientation/[slug]/ — orientation page
 │   ├── orientation/        — orientation index
 │   ├── projects/[slug]/    — project detail page
@@ -170,14 +171,19 @@ gopath/
 │   ├── check.sh            — gofmt/vet/build/test/gates across every module
 │   ├── failures/           — 15 broken-on-purpose programs, one module each + SYMPTOM.md
 │   │   └── check.sh        — expected-to-fail harness: broken must reproduce, fixed must pass
+│   ├── idioms/             — idiom track: unidiomatic starters + green suites + REVIEW.md each
+│   │   ├── .golangci.yml   — shared strict lint config (golangci-lint v2, pinned in README)
+│   │   └── check.sh        — both-ways harness: starter lint-red on its accents, reference clean
 │   └── <project-slug>/     — self-contained module: starter, suite, reference
 ├── lib/
 │   ├── content/projects/   — one module per project (source of truth)
 │   ├── content/concepts/   — one module per concept (source of truth)
 │   ├── content/failures/   — one module per failure lab (source of truth)
+│   ├── content/idioms.ts   — idiom exercise entries (source of truth)
 │   ├── content/tier0/      — Tier 0 micro-lessons (source of truth)
 │   ├── concepts.ts         — thin shim re-exporting lib/content/concepts
 │   ├── failures.ts         — thin shim re-exporting lib/content/failures
+│   ├── idioms.ts           — thin shim re-exporting lib/content/idioms
 │   ├── projects.ts         — thin shim re-exporting lib/content/projects
 │   ├── tier0.ts            — thin shim re-exporting lib/content/tier0
 │   ├── orientation.ts      — single source of truth for orientation

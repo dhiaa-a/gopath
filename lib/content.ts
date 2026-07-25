@@ -218,6 +218,37 @@ export type Failure = {
 	unlockTier: 1 | 2 | 3
 }
 
+// ─── Idiom exercises (Phase 6: accent removal) ──────────────────────────────
+//
+// An idiom exercise is working-but-unidiomatic code under labs/idioms/<slug>
+// with a green test suite. The learner refactors until the tests stay green
+// AND the shared strict linter (labs/idioms/.golangci.yml) comes up clean.
+// The teaching artifact is in-repo: REVIEW.md walks each smell to its idiom
+// the way a senior reviewer would. The site's job is discovery: name the
+// accent, name the exact mistakes, point at the directory.
+
+export type IdiomAccent = "Java" | "Python" | "C" | "Any language"
+
+export type IdiomExercise = {
+	slug: string
+	name: string
+	accent: IdiomAccent
+	// One sentence: what the starter is and why it is foreign.
+	tagline: string
+	// The exact mistakes the exercise trains against (the brief's done-when
+	// requires naming them). Rendered as the card's list.
+	mistakes: string[]
+	// The linters that fire on the starter, as registered in
+	// labs/idioms/check.sh. Kept in sync by validate.ts.
+	linters: string[]
+	// Always "labs/idioms/<slug>". Validated to exist on disk with go.mod,
+	// README.md, REVIEW.md, solution.go and a test file.
+	labPath: string
+	// Suggested earliest point on the path, e.g. "T1 P3". A suggestion
+	// only: idiom exercises never gate anything (pedagogy rule 4).
+	suggestedAfter: string
+}
+
 export function t(val: LocalizedString, lang: string) {
 	return val[lang as keyof LocalizedString] ?? val.en
 }
