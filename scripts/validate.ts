@@ -504,6 +504,13 @@ for (const lesson of tier0Lessons) {
 // that needs a Go toolchain, which the deploy does not have, so it lives in
 // labs/source/check.sh. The two are complementary and both are required.
 {
+	// Catches the placeholder scripts/source-excerpt.ts emits without catching
+	// prose that merely mentions one. Reading stdlib source means running into
+	// real TODO comments, and a walkthrough must be able to say so: an earlier
+	// `value.includes("TODO")` made "the TODO above this branch" unshippable
+	// and pushed an author into circumlocution to satisfy the linter.
+	const isPlaceholder = (value: string) => /^TODO\b/.test(value.trim())
+
 	const walkthroughSlugs = new Set(sourceWalkthroughs.map((w) => w.slug))
 	if (walkthroughSlugs.size !== sourceWalkthroughs.length) {
 		fail("source: duplicate slug in lib/content/source")
@@ -558,7 +565,7 @@ for (const lesson of tier0Lessons) {
 				["title", ex.title],
 				["notice", ex.notice],
 			] as const) {
-				if (value.trim() === "" || value.includes("TODO")) {
+				if (value.trim() === "" || isPlaceholder(value)) {
 					fail(`${where}: ${field} is empty or still a TODO placeholder`)
 				}
 			}
@@ -571,7 +578,7 @@ for (const lesson of tier0Lessons) {
 			["answer", exercise.answer],
 			["answerAnchor.needle", exercise.answerAnchor.needle],
 		] as const) {
-			if (value.trim() === "" || value.includes("TODO")) {
+			if (value.trim() === "" || isPlaceholder(value)) {
 				fail(`source/${w.slug}: exercise.${field} is empty or still a TODO placeholder`)
 			}
 		}

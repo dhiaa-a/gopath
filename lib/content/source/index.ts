@@ -1,5 +1,6 @@
 import { SourceWalkthrough } from "../../content"
 
+import { bytesBuffer } from "./bytes-buffer"
 import { errorsPackage } from "./errors"
 import { syncWaitgroup } from "./sync-waitgroup"
 
@@ -24,9 +25,11 @@ export const goSourceLicense = {
 	url: "https://go.dev/LICENSE",
 }
 
-export const sourceWalkthroughs: SourceWalkthrough[] = [errorsPackage, syncWaitgroup].sort(
-	(a, b) => a.order - b.order,
-)
+export const sourceWalkthroughs: SourceWalkthrough[] = [
+	errorsPackage,
+	bytesBuffer,
+	syncWaitgroup,
+].sort((a, b) => a.order - b.order)
 
 export function getWalkthrough(slug: string): SourceWalkthrough | undefined {
 	return sourceWalkthroughs.find((w) => w.slug === slug)
