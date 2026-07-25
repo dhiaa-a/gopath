@@ -1,5 +1,6 @@
 import { SourceWalkthrough } from "../../content"
 
+import { errorsPackage } from "./errors"
 import { syncWaitgroup } from "./sync-waitgroup"
 
 /**
@@ -23,7 +24,7 @@ export const goSourceLicense = {
 	url: "https://go.dev/LICENSE",
 }
 
-export const sourceWalkthroughs: SourceWalkthrough[] = [syncWaitgroup].sort(
+export const sourceWalkthroughs: SourceWalkthrough[] = [errorsPackage, syncWaitgroup].sort(
 	(a, b) => a.order - b.order,
 )
 
