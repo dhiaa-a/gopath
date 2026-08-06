@@ -31,6 +31,7 @@ fi
 
 # The race-capable toolchain probe, same locations as ../check.sh.
 have_cc=0
+cc_reason="no C compiler"
 if command -v gcc >/dev/null 2>&1 || command -v cc >/dev/null 2>&1; then
 	have_cc=1
 else
@@ -41,6 +42,27 @@ else
 			break
 		fi
 	done
+fi
+
+# A compiler on PATH is not the same as a compiler that can build a race
+# binary, so prove it by building one rather than by looking for gcc. Go
+# compiles runtime/cgo with -Werror, and a new enough GCC (MSYS2 shipped 16.x)
+# emits warnings that Go 1.23's sources predate, so every -race build dies with
+# "cgo.exe: exit status 2" on a box that otherwise has a perfectly good gcc.
+#
+# That has to be a loud skip and not a failure. These two assertions are the
+# only ones here that need a C toolchain, and reporting them red would say the
+# data-race lab has stopped reproducing when what actually happened is that
+# this machine cannot compile the detector at all.
+if [ "$have_cc" = "1" ]; then
+	probe=$(mktemp -d)
+	printf 'package main\n\nfunc main() {}\n' >"$probe/main.go"
+	printf 'module raceprobe\n\ngo 1.23\n' >"$probe/go.mod"
+	if ! (cd "$probe" && CGO_ENABLED=1 go build -race -o probe.bin . >/dev/null 2>&1); then
+		have_cc=0
+		cc_reason="a C compiler is present but cannot build a -race binary (check gcc vs Go version)"
+	fi
+	rm -rf "$probe"
 fi
 
 fail() {
@@ -183,7 +205,7 @@ check_lab() {
 			expect "$dir" race-broken fail "WARNING: DATA RACE"
 			expect "$dir" race-fixed ok "lost: 0"
 		else
-			echo "  SKIP: -race reproduction (no C compiler; see labs/README.md)"
+			echo "  SKIP: -race reproduction ($cc_reason; see labs/README.md)"
 		fi
 		;;
 	mutex-by-value)

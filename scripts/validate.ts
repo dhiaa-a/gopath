@@ -7,6 +7,7 @@ import { orientationPages, OrientationPage } from "../lib/orientation"
 import { failures, failureCategories } from "../lib/failures"
 import { idioms, idiomAccents } from "../lib/idioms"
 import { sourceWalkthroughs } from "../lib/content/source"
+import { capstone } from "../lib/capstone"
 import { tier0Lessons } from "../lib/tier0"
 import type { ContentBlock, Tier0Lesson } from "../lib/content"
 
@@ -611,6 +612,96 @@ for (const lesson of tier0Lessons) {
 				`source/${w.slug}: links to no concept and no project — ` +
 					`the brief requires walkthroughs be reachable from the curriculum`,
 			)
+		}
+	}
+}
+
+// ─── Capstone ──────────────────────────────────────────────────────────────
+//
+// Contract: the capstone page describes a lab that exists, every failure class
+// it names resolves to a real failure lab, and the seeds and blind spots
+// between them account for every failure class exactly once.
+//
+// That last one is the check worth having. The page's claim is not just "these
+// bugs are caught" but "these are the ones that are not, and here is why". A
+// class that quietly appears in neither list would turn an honest accounting
+// into a partial one, which is worse than not making the claim at all.
+{
+	const c = capstone
+	const repoRoot = process.cwd()
+	const projectSlugs = new Set(projects.map((p) => p.slug))
+	const failureSlugs = new Set(failures.map((f) => f.slug))
+
+	if (!existsSync(path.resolve(repoRoot, c.labPath, "check.sh"))) {
+		fail(`capstone: ${c.labPath}/check.sh is missing — the suite would be unproven`)
+	}
+	for (const file of ["SPEC.md", "go.mod", "reference", "suite", "slo", "seed"]) {
+		if (!existsSync(path.resolve(repoRoot, c.labPath, file))) {
+			fail(`capstone: ${c.labPath}/${file} is missing`)
+		}
+	}
+	if (!existsSync(path.resolve(repoRoot, c.specPath))) {
+		fail(`capstone: specPath "${c.specPath}" does not exist`)
+	}
+
+	if (c.seeds.length === 0) {
+		fail("capstone: no seeded bugs — the suite would rest on never having been tested")
+	}
+	if (c.objectives.length === 0) {
+		fail("capstone: no objectives — pedagogy rule 3 requires a measurable gate")
+	}
+	for (const o of c.objectives) {
+		if (!o.measured.trim()) {
+			fail(`capstone: objective "${o.name}" has no measured value from the reference`)
+		}
+	}
+
+	const seenSeeds = new Set<string>()
+	for (const s of c.seeds) {
+		if (seenSeeds.has(s.name)) fail(`capstone: duplicate seed "${s.name}"`)
+		seenSeeds.add(s.name)
+
+		if (s.caughtBy.length === 0) {
+			fail(`capstone: seed "${s.name}" names no check that catches it`)
+		}
+		if (s.failureSlug !== null && !failureSlugs.has(s.failureSlug)) {
+			fail(`capstone: seed "${s.name}" references unknown failure lab "${s.failureSlug}"`)
+		}
+	}
+
+	const covered = new Set<string>()
+	for (const s of c.seeds) {
+		if (s.failureSlug) covered.add(s.failureSlug)
+	}
+	for (const b of c.blindSpots) {
+		if (!failureSlugs.has(b.failureSlug)) {
+			fail(`capstone: blind spot references unknown failure lab "${b.failureSlug}"`)
+		}
+		if (covered.has(b.failureSlug)) {
+			fail(
+				`capstone: "${b.failureSlug}" is listed as both seeded and unseeable — ` +
+					`it cannot be caught and uncatchable at the same time`,
+			)
+		}
+		covered.add(b.failureSlug)
+	}
+	for (const slug of failureSlugs) {
+		if (!covered.has(slug)) {
+			fail(
+				`capstone: failure class "${slug}" appears in neither the seeds nor the ` +
+					`blind spots — the page claims to account for all of them`,
+			)
+		}
+	}
+
+	for (const slug of c.relatedConcepts) {
+		if (!conceptSlugs.has(slug)) {
+			fail(`capstone: relatedConcepts references unknown concept "${slug}"`)
+		}
+	}
+	for (const slug of c.relatedProjects) {
+		if (!projectSlugs.has(slug)) {
+			fail(`capstone: relatedProjects references unknown project "${slug}"`)
 		}
 	}
 }

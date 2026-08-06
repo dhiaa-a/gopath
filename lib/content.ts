@@ -329,6 +329,63 @@ export type SourceWalkthrough = {
 	order: number
 }
 
+export type CapstoneRoute = {
+	method: string
+	path: string
+	// Whether the route needs a bearer token. Public routes are the ones an
+	// unauthenticated visitor hits, which is most of a link shortener's traffic.
+	auth: boolean
+	summary: string
+}
+
+// One deliberate bug planted in the reference implementation, and the checks
+// that have to notice it. This is the evidence that the suite can fail.
+export type CapstoneSeed = {
+	name: string
+	// Failure lab slug it comes from, or null when it is specific to this spec.
+	failureSlug: string | null
+	why: string
+	caughtBy: string[]
+}
+
+// A failure class with no seed, and the honest reason there is none. These
+// carry as much weight as the seeds: they are where black-box testing stops.
+export type CapstoneBlindSpot = {
+	failureSlug: string
+	// Why the suite cannot see it from outside the process. HTML.
+	reason: string
+}
+
+export type CapstoneObjective = {
+	name: string
+	threshold: string
+	// What the reference actually measured, so the bar is visibly clearable
+	// rather than aspirational. Measured, never estimated.
+	measured: string
+}
+
+export type Capstone = {
+	slug: string
+	name: string
+	tagline: string
+	// Why this exists and what passing it claims. HTML.
+	why: string
+	labPath: string
+	specPath: string
+	commands: { label: string; command: string }[]
+	routes: CapstoneRoute[]
+	// The parts of the spec worth stating on the page, in the spec's order.
+	// Body is HTML.
+	requirements: { title: string; body: string }[]
+	seeds: CapstoneSeed[]
+	blindSpots: CapstoneBlindSpot[]
+	objectives: CapstoneObjective[]
+	// How many conformance checks the suite runs, kept in step with the lab.
+	checkCount: number
+	relatedConcepts: string[]
+	relatedProjects: string[]
+}
+
 export function t(val: LocalizedString, lang: string) {
 	return val[lang as keyof LocalizedString] ?? val.en
 }

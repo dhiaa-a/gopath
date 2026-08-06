@@ -17,6 +17,7 @@ export default function Nav() {
 		{ href: "/failures", label: "Failures" },
 		{ href: "/idioms", label: "Idioms" },
 		{ href: "/source", label: "Source" },
+		{ href: "/capstone", label: "Capstone" },
 	]
 
 	return (

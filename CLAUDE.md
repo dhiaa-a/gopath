@@ -8,7 +8,7 @@ This is your persistent context. Read it at the start of every session. The peda
 
 ## What GoPath is
 
-A project-based Go learning platform. Learners ship 11 real programs across three tiers and graduate with portfolio-grade Go work. Not a tutorial site, not a video course.
+A project-based Go learning platform. Learners ship 11 real programs across three tiers, then prove it on a twelfth with no guidance at all, and graduate with portfolio-grade Go work. Not a tutorial site, not a video course.
 
 - **T1 — Foundations** (4 projects, 30–38h): syntax, std lib, idioms, first real programs. Anchor: **Config Watcher**.
 - **T2 — Systems** (3 projects, 40–46h): concurrency, networking, real systems. Anchor: **TCP Echo Server**.
@@ -22,6 +22,7 @@ The site also includes:
 - **Concepts** — 61 Go concepts with mental models, retrieval prompts, code examples, common mistakes, design rationale, links to projects.
 - **Failure labs** — 15 broken-on-purpose programs under `labs/failures/` with a SYMPTOM.md each and a site page teaching the diagnostic path; `labs/failures/check.sh` holds broken-must-reproduce and fixed-must-pass both ways.
 - **Source reading** — 5 guided walkthroughs of real stdlib files at `/source` (errors, bytes.Buffer, sync.WaitGroup, context, the net/http accept loop), each with annotated verbatim excerpts and one find-it exercise. Excerpts are quoted from the reader's own GOROOT and proven to be: `labs/source/check.sh` requires every one to appear byte-for-byte, exactly once, at the line the page prints. Pinned to `go1.23.12`; the harness refuses to run against another toolchain rather than report drift it cannot distinguish from a mistake.
+- **Capstone** — one page at `/capstone` and `labs/capstone`: a link shortener spec (`linkd`) with auth, rate limiting, durable storage and metrics, graded by a black-box suite of 34 checks plus four SLOs, and **zero guidance**. The suite never reads the submission's source; it builds the package, runs the binary, and speaks HTTP. `labs/capstone/check.sh` runs three stages: the reference passes, 11 seeded bugs are each caught by the checks they name, and the reference meets its own objectives. Nine seeds come from the failure classes; the other six classes are listed as blind spots with the reason, and validate.ts enforces that every class appears in exactly one of the two lists.
 - **Spaced reuse callouts** — when a step reuses a prior concept, the learner is prompted to recall before reading.
 - **Go Playground integration** — every code example has a "Run in Playground" link; share IDs cached at build.
 - **Validation** — `scripts/validate.ts` runs in `npm run build` and enforces relation integrity.
@@ -149,6 +150,7 @@ gopath/
 ├── app/
 │   ├── basics/[slug]/      — Tier 0 syntax micro-lesson page
 │   ├── basics/             — Tier 0 index
+│   ├── capstone/           — the capstone: spec surface, objectives, seeded bugs, blind spots
 │   ├── concepts/[slug]/    — concept detail page
 │   ├── concepts/           — concept index (grouped)
 │   ├── failures/[slug]/    — failure-lab diagnostic page
@@ -172,6 +174,15 @@ gopath/
 │   └── ProjectSection.tsx
 ├── labs/                   — executable spine: one Go module per project
 │   ├── check.sh            — gofmt/vet/build/test/gates across every module
+│   ├── capstone/           — the capstone: SPEC.md, reference, and the harnesses that grade it
+│   │   ├── SPEC.md         — the whole brief; everything in it is checked
+│   │   ├── starter/        — deliberately empty, so -target ./starter fails honestly
+│   │   ├── reference/      — one correct implementation, used to check the checker
+│   │   ├── suite/          — black-box conformance: builds a target, runs it, speaks HTTP
+│   │   ├── slo/            — load harness: error rate, p99, throughput, goroutine growth
+│   │   ├── seed/           — seeded-bug prover: stale / broken / missed are kept apart
+│   │   ├── internal/       — harness (process + HTTP) and conform (the checks)
+│   │   └── check.sh        — three stages: reference passes, seeds caught, objectives met
 │   ├── failures/           — 15 broken-on-purpose programs, one module each + SYMPTOM.md
 │   │   └── check.sh        — expected-to-fail harness: broken must reproduce, fixed must pass
 │   ├── idioms/             — idiom track: unidiomatic starters + green suites + REVIEW.md each
@@ -181,12 +192,14 @@ gopath/
 │   │   └── check.sh        — verbatim-quote harness: every excerpt held against your own GOROOT
 │   └── <project-slug>/     — self-contained module: starter, suite, reference
 ├── lib/
+│   ├── content/capstone.ts — the capstone entry (source of truth)
 │   ├── content/projects/   — one module per project (source of truth)
 │   ├── content/concepts/   — one module per concept (source of truth)
 │   ├── content/failures/   — one module per failure lab (source of truth)
 │   ├── content/idioms.ts   — idiom exercise entries (source of truth)
 │   ├── content/source/     — one module per stdlib walkthrough (source of truth)
 │   ├── content/tier0/      — Tier 0 micro-lessons (source of truth)
+│   ├── capstone.ts         — thin shim re-exporting lib/content/capstone
 │   ├── concepts.ts         — thin shim re-exporting lib/content/concepts
 │   ├── failures.ts         — thin shim re-exporting lib/content/failures
 │   ├── idioms.ts           — thin shim re-exporting lib/content/idioms
