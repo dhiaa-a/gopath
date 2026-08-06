@@ -12,8 +12,11 @@ package main
 // Class names match the failure labs at labs/failures, so a learner whose
 // submission trips one of these has somewhere to go and read about it.
 type seed struct {
-	Name  string
-	Class string // failure-lab slug, or "" for bugs specific to this spec
+	Name string
+	// Failure-lab slug at labs/failures, or "" for bugs specific to this spec.
+	// It matches Name for most seeds, and is kept separate because the ones
+	// that are not from a failure lab still need a name.
+	Class string
 	Why   string
 	Edits []edit
 	// Catches names the checks that must fail. Every one of them, not any of

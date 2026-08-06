@@ -201,26 +201,18 @@ func checkNamesExist() error {
 }
 
 func listSeeds() {
-	byClass := map[string][]seed{}
-	for _, s := range seeds() {
-		class := s.Class
-		if class == "" {
-			class = "(specific to this spec)"
-		}
-		byClass[class] = append(byClass[class], s)
-	}
-	classes := make([]string, 0, len(byClass))
-	for c := range byClass {
-		classes = append(classes, c)
-	}
-	sort.Strings(classes)
+	all := seeds()
+	fmt.Printf("%d seeded bug(s). Each must be caught by every check it names.\n", len(all))
 
-	for _, c := range classes {
-		fmt.Printf("%s\n", c)
-		for _, s := range byClass[c] {
-			fmt.Printf("  %-20s %s\n", s.Name, s.Why)
-			fmt.Printf("  %-20s caught by: %s\n", "", strings.Join(s.Catches, ", "))
+	for _, s := range all {
+		where := "labs/failures/" + s.Class
+		if s.Class == "" {
+			where = "specific to this spec, not a failure lab"
 		}
+		fmt.Printf("\n%s\n", s.Name)
+		fmt.Printf("  breaks     %s\n", s.Why)
+		fmt.Printf("  read more  %s\n", where)
+		fmt.Printf("  caught by  %s\n", strings.Join(s.Catches, ", "))
 	}
 }
 
