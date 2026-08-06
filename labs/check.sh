@@ -136,6 +136,14 @@ if [ -z "$only" ] && [ -f source/check.sh ]; then
 	fi
 fi
 
+# Phase 8: the capstone is graded by a black-box suite rather than by unit
+# tests, and the suite itself is checked by breaking the reference on purpose,
+# so it carries its own harness too.
+if [ -z "$only" ] && [ -f capstone/check.sh ]; then
+	echo
+	if ! bash capstone/check.sh; then failures=$((failures + 1)); fi
+fi
+
 echo
 if [ "$checked" = "0" ]; then
 	echo "check.sh: no lab modules found${only:+ matching \"$only\"}"
