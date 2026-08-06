@@ -37,6 +37,8 @@ You do **not** have to put that on your global PATH. `RACE=1 ./check.sh` (below)
 
 The whole spine has been run clean under `-race` on `go1.23.12 windows/amd64` with this toolchain; the detector both fires (verified against a deliberate data race) and finds every module clean.
 
+**The gcc and Go versions have to agree, and a mismatch does not look like a version problem.** Go compiles `runtime/cgo` with `-Werror`, so a compiler newer than the Go release emits warnings the Go sources predate and every `-race` build dies with `runtime/cgo: cgo.exe: exit status 2`, on a box whose gcc is otherwise fine. MSYS2 rolls forward, so `pacman -S` today can leave you with GCC 16 against Go 1.23. If you hit that, either pin an older gcc or move the toolchain forward together. `labs/failures/check.sh` probes this by actually building a `-race` binary rather than by looking for gcc on PATH, and announces a loud SKIP when it cannot, because reporting it red would claim the data-race lab has stopped reproducing when the truth is that this machine cannot compile the detector.
+
 ## check.sh (maintainers / CI)
 
 `./check.sh` loops every lab module and runs, per module:
