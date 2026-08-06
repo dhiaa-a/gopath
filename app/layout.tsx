@@ -5,10 +5,11 @@ import Nav from "@/components/Nav"
 export const metadata: Metadata = {
 	title: "GoPath — Learn Go by Building Real Things",
 	description:
-		"No toy examples. No tutorial hell. Learn Go through curated real-world projects built for developers coming from other languages.",
+		"Learn Go in one place: syntax, twelve programs you build and run, fifteen bugs you diagnose yourself, and a final spec graded by a suite that never reads your code. For developers coming from other languages.",
 	openGraph: {
 		title: "GoPath — Learn Go by Building Real Things",
-		description: "9 real projects. 3 tiers. Zero toy examples.",
+		description:
+			"Syntax to production, in one place. 12 programs, 61 concepts, 15 failure labs, and a graded capstone.",
 		type: "website",
 	},
 }

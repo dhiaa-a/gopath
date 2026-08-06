@@ -23,23 +23,52 @@ const tierColors = {
 	},
 }
 
+// Names match each project page's own tierLabel (FOUNDATIONS / SYSTEMS /
+// PRODUCTION) so the homepage and the pages it links to agree.
 const tierMeta = {
 	1: {
 		num: "Tier 01",
-		name: "Get Comfortable",
+		name: "Foundations",
 		desc: "Syntax, types, error handling, and the standard library",
 	},
 	2: {
 		num: "Tier 02",
-		name: "Go Idioms",
-		desc: "Write code that feels native to Go, not translated from another language",
+		name: "Systems",
+		desc: "Concurrency, networking, and programs that hold up under load",
 	},
 	3: {
 		num: "Tier 03",
-		name: "Production Grade",
-		desc: "Real-world architecture, databases, and performance tooling",
+		name: "Production",
+		desc: "Real architecture, databases, and a measured gate on every project",
 	},
 }
+
+const tracks = [
+	{
+		href: "/failures",
+		n: "15",
+		label: "Failure labs",
+		body: "Programs broken on purpose. You get the symptom the way an on-call engineer would report it and work back to the cause. The harness holds every lab to reproducing, so one that stops failing is as red as a test that stops passing.",
+	},
+	{
+		href: "/idioms",
+		n: "10",
+		label: "Idiom exercises",
+		body: "Working Go with an accent: Java getters, Python exceptions, C index-juggling. Refactor until the tests stay green and a strict linter goes quiet. Idiom you clear, not idiom you read about.",
+	},
+	{
+		href: "/concepts",
+		n: "61",
+		label: "Go concepts",
+		body: "Not what compiles, but why Go is shaped this way: no exceptions, no inheritance, channels over locks. Each one links to the project that teaches it best rather than to a docs page.",
+	},
+	{
+		href: "/source",
+		n: "5",
+		label: "Source walkthroughs",
+		body: "Annotated reads of errors, bytes.Buffer, sync.WaitGroup, context, and the net/http accept loop. Every excerpt is checked against the copy of Go on your own machine, so nothing here can drift.",
+	},
+]
 
 export default function Home() {
 	return (
@@ -53,15 +82,17 @@ export default function Home() {
 							For developers from other languages
 						</div>
 						<h1 className="mb-5 font-serif text-5xl leading-tight text-foreground">
-							Learn Go by{" "}
+							Learn Go here, and{" "}
 							<em className="italic text-go-cyan">
-								building real things
+								nowhere else
 							</em>
+							.
 						</h1>
 						<p className="mb-8 max-w-lg text-lg leading-relaxed text-muted">
-							No toy examples. No tutorial hell. Each project
-							teaches you how Go actually thinks through code
-							you&apos;d write at a real job.
+							Syntax to production, in one place. Twelve programs
+							you actually build, fifteen bugs you diagnose
+							yourself, and a final spec graded by a suite that
+							never reads your code.
 						</p>
 						<div className="flex flex-wrap items-center gap-4">
 							<Link
@@ -134,12 +165,12 @@ func main() {
 			<div className="border-y border-border bg-surface">
 				<div className="mx-auto flex max-w-6xl flex-wrap justify-center gap-12 px-6 py-8 md:gap-20">
 					{[
-						{ n: "11", l: "Projects" },
-						{ n: "3", l: "Tiers" },
+						{ n: "14", l: "Basics lessons" },
+						{ n: "12", l: "Programs you ship" },
 						{ n: "61", l: "Go concepts" },
 						{ n: "15", l: "Failure labs" },
 						{ n: "10", l: "Idiom exercises" },
-						{ n: "0", l: "Toy examples" },
+						{ n: "5", l: "Source walkthroughs" },
 					].map((s) => (
 						<div key={s.l} className="text-center">
 							<div className="font-mono text-3xl font-semibold text-foreground">
@@ -159,14 +190,50 @@ func main() {
 					The path
 				</div>
 				<h2 className="mb-3 font-serif text-4xl text-foreground">
-					Three tiers. Eleven real projects.
+					Start at <code className="font-mono">package main</code>.
+					Finish at a graded spec.
 				</h2>
 				<p className="mb-12 max-w-xl text-muted">
-					Each project unlocks the next. You&apos;ll never read ten
-					pages of theory before writing a line of code.
+					Tier 0 teaches the syntax here instead of linking you out
+					for it. Eleven projects then build on each other in order.
+					The twelfth hands you a specification and no help at all.
 				</p>
 
 				<div className="flex flex-col gap-6">
+					{/* Tier 0: the on-ramp */}
+					<Link
+						href="/basics"
+						className="group grid grid-cols-1 overflow-hidden rounded-lg border border-border bg-surface transition-colors hover:border-border2 lg:grid-cols-[220px_1fr]"
+					>
+						<div className="border-b border-border bg-surface2 p-6 lg:border-b-0 lg:border-r">
+							<div className="mb-2 font-mono text-xs uppercase tracking-widest text-muted">
+								Tier 00
+							</div>
+							<div className="mb-1 font-semibold text-foreground">
+								Basics
+							</div>
+							<div className="text-xs leading-relaxed text-muted">
+								The syntax, taught in-house
+							</div>
+						</div>
+						<div className="flex items-center gap-4 p-6">
+							<div className="min-w-0">
+								<div className="mb-1 font-semibold text-foreground">
+									14 micro-lessons, about 3 hours
+								</div>
+								<div className="text-sm leading-relaxed text-muted">
+									Every lesson is one program under 30 lines
+									that you type out and run. Skip it if you
+									can already read Go. Start here if this is
+									your first compiled language.
+								</div>
+							</div>
+							<div className="ml-auto shrink-0 font-mono text-xs text-muted transition-transform group-hover:translate-x-1">
+								→
+							</div>
+						</div>
+					</Link>
+
 					{([1, 2, 3] as const).map((tier) => {
 						const c = tierColors[tier]
 						const m = tierMeta[tier]
@@ -220,7 +287,7 @@ func main() {
 														))}
 													</div>
 												</div>
-												<div className="ml-auto shrink-0 font-mono text-[10px] text-faint">
+												<div className="ml-auto shrink-0 font-mono text-[10px] text-muted">
 													{p.estimatedTime}
 												</div>
 											</Link>
@@ -230,45 +297,125 @@ func main() {
 							</div>
 						)
 					})}
+
+					{/* The capstone: the end of the path */}
+					<Link
+						href="/capstone"
+						className="group grid grid-cols-1 overflow-hidden rounded-lg border border-go-amber/30 bg-surface transition-colors hover:border-go-amber/60 lg:grid-cols-[220px_1fr]"
+					>
+						<div className="border-b border-border bg-surface2 p-6 lg:border-b-0 lg:border-r">
+							<div className="mb-2 font-mono text-xs uppercase tracking-widest text-go-amber">
+								Capstone
+							</div>
+							<div className="mb-1 font-semibold text-foreground">
+								linkd
+							</div>
+							<div className="text-xs leading-relaxed text-muted">
+								Zero guidance
+							</div>
+						</div>
+						<div className="flex items-center gap-4 p-6">
+							<div className="min-w-0">
+								<div className="mb-1 font-semibold text-foreground">
+									A link shortener, specified and graded
+								</div>
+								<div className="text-sm leading-relaxed text-muted">
+									Auth, rate limiting, durable storage and
+									metrics. No steps, no starter functions, no
+									hints: a spec, 34 black-box checks that
+									never read your source, and four objectives
+									measured under load.
+								</div>
+							</div>
+							<div className="ml-auto shrink-0 font-mono text-xs text-go-amber transition-transform group-hover:translate-x-1">
+								→
+							</div>
+						</div>
+					</Link>
+				</div>
+			</section>
+
+			{/* TRACKS */}
+			<section className="border-t border-border bg-surface">
+				<div className="mx-auto max-w-6xl px-6 py-24">
+					<div className="mb-2 font-mono text-xs uppercase tracking-widest text-go-cyan">
+						Beyond the path
+					</div>
+					<h2 className="mb-3 font-serif text-4xl text-foreground">
+						The parts you would have gone looking for elsewhere.
+					</h2>
+					<p className="mb-12 max-w-2xl text-muted">
+						Debugging, idiom, and reading real source are what
+						separate someone who knows Go from someone who works in
+						it. None of them fit at the end of a chapter, so each
+						one is its own track.
+					</p>
+					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+						{tracks.map((t) => (
+							<Link
+								key={t.href}
+								href={t.href}
+								className="group rounded-lg border border-border bg-bg p-6 transition-colors hover:border-border2"
+							>
+								<div className="mb-3 flex items-baseline gap-3">
+									<span className="font-mono text-2xl font-semibold text-foreground">
+										{t.n}
+									</span>
+									<span className="text-xs uppercase tracking-widest text-muted">
+										{t.label}
+									</span>
+									<span className="ml-auto font-mono text-xs text-muted transition-transform group-hover:translate-x-1">
+										→
+									</span>
+								</div>
+								<p className="text-sm leading-relaxed text-muted">
+									{t.body}
+								</p>
+							</Link>
+						))}
+					</div>
 				</div>
 			</section>
 
 			{/* WHY */}
-			<section className="border-t border-border bg-surface" id="why">
+			<section className="border-t border-border" id="why">
 				<div className="mx-auto max-w-6xl px-6 py-24">
 					<div className="mb-2 font-mono text-xs uppercase tracking-widest text-go-cyan">
 						Why GoPath
 					</div>
 					<h2 className="mb-3 font-serif text-4xl text-foreground">
-						Built for people who already code.
+						One resource, because assembling five was the actual
+						problem.
 					</h2>
-					<p className="mb-12 max-w-xl text-muted">
-						Tour of Go teaches syntax. Go by Example shows snippets.
-						GoPath teaches you how to <em>think</em> in Go by
-						forcing you to build things.
+					<p className="mb-12 max-w-2xl text-muted">
+						The usual route is a tour for the syntax, a book for the
+						idiom, a conference talk for the concurrency bugs, and a
+						job for everything after that. Nothing here sends you
+						away to finish a lesson, and every claim on this site is
+						one you can run yourself.
 					</p>
 					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 						{[
 							{
-								h: "Structured progression",
-								b: "Every project requires what the last one taught. No dead ends, no backtracking. The order is intentional.",
+								h: "Everything here runs",
+								b: "Every project ships an executable lab: a real Go module you build and run, not a snippet on a page. One script formats, vets, builds, tests and gates every one of them together, so nothing here can quietly rot into a claim that stopped being true.",
 							},
 							{
-								h: "Concepts link to projects",
-								b: "Every concept links to the project that teaches it best, not a docs page. Real code you can run.",
+								h: "You learn to debug, not just to build",
+								b: "Fifteen labs hand you a broken program and a symptom instead of a lesson. Working back from a stack trace under pressure is a skill, and it is the one tutorials never train because their code always works.",
 							},
 							{
-								h: "Concepts explain the why",
-								b: "Tour of Go shows what compiles. GoPath explains why Go is shaped this way: no exceptions, no inheritance, channels over locks. The reasoning, not just the rules.",
+								h: "Idiom is enforced, not described",
+								b: "The idiom track is graded by a strict linter, so writing it the Go way stops being advice you nod at and becomes a gate you clear. The tests must stay green while you refactor.",
 							},
 							{
-								h: "No fluff, no filler",
-								b: "You write code in the first 5 minutes. Every page respects your time. Zero 'what is a variable' intros.",
+								h: "It ends with proof",
+								b: "The capstone gives you a specification and nothing else: 34 black-box checks and four measured objectives. It never reads your source, so any design that meets the spec passes and no design that misses it does.",
 							},
 						].map((d) => (
 							<div
 								key={d.h}
-								className="rounded-lg border border-border bg-bg p-6"
+								className="rounded-lg border border-border bg-surface p-6"
 							>
 								<h3 className="mb-2 font-semibold text-foreground">
 									{d.h}
@@ -288,18 +435,27 @@ func main() {
 					Ready to write real Go?
 				</h2>
 				<p className="mb-8 text-muted">
-					Start with the File Renamer CLI. You&apos;ll be writing
-					idiomatic Go within the first half hour.
+					If you can already read a loop in another language, start
+					with the File Renamer CLI. If Go is your first compiled
+					language, spend three hours in Basics first.
 				</p>
-				<Link
-					href="/projects/cli-renamer"
-					className="inline-block rounded bg-go-cyan px-8 py-3 font-mono text-sm font-semibold text-black transition-all hover:-translate-y-px hover:bg-sky-400"
-				>
-					Start: File renamer CLI →
-				</Link>
+				<div className="flex flex-wrap items-center justify-center gap-4">
+					<Link
+						href="/projects/cli-renamer"
+						className="inline-block rounded bg-go-cyan px-8 py-3 font-mono text-sm font-semibold text-black transition-all hover:-translate-y-px hover:bg-sky-400"
+					>
+						Start: File renamer CLI →
+					</Link>
+					<Link
+						href="/basics"
+						className="inline-block rounded border border-border px-8 py-3 font-mono text-sm text-muted transition-colors hover:border-border2 hover:text-foreground"
+					>
+						Start with Basics →
+					</Link>
+				</div>
 			</section>
 
-			<footer className="border-t border-border py-8 text-center font-mono text-xs text-faint">
+			<footer className="border-t border-border py-8 text-center font-mono text-xs text-muted">
 				gopath.dev · learn go by building real things
 			</footer>
 		</main>
