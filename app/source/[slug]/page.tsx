@@ -6,6 +6,8 @@ import { projects } from "@/lib/projects"
 import { failures } from "@/lib/failures"
 import { GoCode } from "@/components/GoCode"
 import { Reveal } from "@/components/Reveal"
+import { PageNav, type PageNavItem } from "@/components/PageNav"
+import { Appear } from "@/components/Motion"
 
 export function generateStaticParams() {
 	return sourceWalkthroughs.map((w) => ({ slug: w.slug }))
@@ -94,8 +96,17 @@ export default async function SourceWalkthroughPage({
 		.filter((f) => f !== undefined)
 		.map((f) => ({ href: `/failures/${f.slug}`, name: f.name }))
 
+	// One entry per excerpt: the read is the page, and jumping between excerpts
+	// is the whole reason a twelve-screen walkthrough needs a rail.
+	const navItems: PageNavItem[] = walkthrough.excerpts.map((e, i) => ({
+		id: `excerpt-${i + 1}`,
+		label: e.title,
+		n: String(i + 1),
+	}))
+
 	return (
-		<main className="mx-auto max-w-3xl px-6 py-16">
+		<div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-[56px] px-6 py-16 xl:grid-cols-[minmax(0,760px)_220px] xl:justify-center">
+		<main className="min-w-0 xl:col-start-1">
 			<div className="mb-2 flex items-center gap-3 font-mono text-xs uppercase tracking-widest">
 				<Link
 					href="/source"
@@ -168,8 +179,11 @@ export default async function SourceWalkthroughPage({
 							excerpt.startLine,
 						)
 						return (
-							<div key={i}>
-								<div className="mb-3 flex items-baseline gap-3">
+							<Appear key={i} className="scroll-mt-[110px]">
+								<div
+									id={`excerpt-${i + 1}`}
+									className="mb-3 flex scroll-mt-[110px] items-baseline gap-3"
+								>
 									<span className="font-mono text-xs text-go-cyan">
 										{String(i + 1).padStart(2, "0")}
 									</span>
@@ -201,7 +215,7 @@ export default async function SourceWalkthroughPage({
 										__html: excerpt.notice,
 									}}
 								/>
-							</div>
+							</Appear>
 						)
 					})}
 				</div>
@@ -270,5 +284,10 @@ export default async function SourceWalkthroughPage({
 				.
 			</p>
 		</main>
+
+			<aside className="xl:col-start-2 xl:row-start-1">
+				<PageNav items={navItems} />
+			</aside>
+		</div>
 	)
 }

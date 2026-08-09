@@ -4,6 +4,30 @@ Append-only. Newest at the top.
 
 ---
 
+## 2026-08-09 — Redesign, third pass: migrating the whole site through the token layer, and making a 15,000px page navigable
+
+**Scope:** `app/globals.css`, `tailwind.config.ts`, `app/projects/[slug]`, `app/source/[slug]`, `components/{ProjectSection,GoCode,PageNav,ReadingProgress}`, `app/{basics,concepts}/[slug]`. No content modules, no copy, no validate contract.
+
+**The migration was done at the token layer, not by editing pages.** A count first: roughly a thousand utility uses across twenty-odd files — `go-cyan` ×100, `text-muted` ×164, `text-foreground` ×112, `border-border` ×80, `rounded*` ×109, `font-serif` ×29. Rewriting those by hand is a large diff with a large chance of missing some. Instead the original semantic tokens now *alias* the Modernist ones, and two Tailwind scales were repointed: `sans` and `serif` both resolve to Archivo (so the 29 serif headings convert untouched, and the critique's "three families read as three different sites" is fixed everywhere rather than only on the homepage), and the whole `borderRadius` scale is 0 (the system's "do not round a corner anywhere"). Verified on a project page afterwards: only Archivo and JetBrains Mono in use, zero rounded elements, modernist ground and accent throughout.
+
+**The three Go brand colours collapse to one role**, which is what a mono scheme means. They resolve to **accent-700, not the raw accent**, because 48 of their ~210 uses are `text-go-cyan` on small labels where the raw accent measures 3.76:1 and fails AA. Tier differentiation is no loss: the labels already say "Tier 01/02/03", and the redesigned homepage had already put all three tiers in one colour.
+
+**Syntax highlighting was retuned, not stripped.** The obvious reading of a mono system is that code goes ink-and-one-accent, which is what the homepage hero does. That is wrong for the rest of the site: the handoff itself keeps a monospace face because code is "functional, not decorative", and by exactly that reasoning the colour separating a string from a comment on a site that teaches Go is carrying information. Kept eight distinct token colours drawn from the accent ramp and neutrals, separated by value where they cannot be separated by hue. All eight measured against the code surface in both themes.
+
+**One real contrast miss, found by measuring rather than assuming:** `--sx-comment` at `#6f6c6c` came in at **4.29:1** against the code block's own surface (`#eae9e9`, darker than the page ground it was chosen against). On the source-reading walkthroughs the comments are the standard library's own and are the thing being taught — content, not chrome — so it moved to `#686565`, 4.76:1, still a step lighter than `--sx-punct` so the two stay apart.
+
+**Contrast sweeps needed two corrections before they meant anything.** The first pass reported failures at 2.02:1 that were not real: `bg-go-cyan/5` is a 5% *tint*, and treating the nearest painted layer as opaque ignores everything behind it, so the sweep now composites the full background stack. The second pass reported failures at ~1.00:1 — foreground equal to background — which is the signature of a colour pinned mid-transition, because toggling `.dark` in a pane that composites no frames leaves `getComputedStyle` returning the old value. Settling animations first fixed it. With both corrected: **zero failures across the homepage, project, concept, capstone, failure and source pages in both themes.**
+
+**A project page is ~15,000px — about seventeen screens.** That was the actual complaint, and it is a navigation problem, not a prose problem. Three things:
+
+- **`PageNav`**, a sticky contents rail at `xl` and up, built from what the page actually renders (a project with no constraints section gets no orphan entry). It tracks the section you are *in* rather than the one you last clicked, so it doubles as a position indicator. Active section is "the last one whose top has passed a reading line", not "topmost visible" — the latter flickers backwards whenever a tall block scrolls through, and "most visible" sits on a long step while its successor fills the screen. Added to project pages and to source walkthroughs (~10,700px, twelve screens).
+- **`ReadingProgress`**, drawn into the nav's existing 2px bottom rule rather than added as a new bar. The divider already spans the viewport; filling it with the accent answers "how much is left" without introducing an element the system would have to justify.
+- **A single spine behind the step markers**, so ten steps read as one run of work rather than ten unrelated blocks, plus scroll entrances per step.
+
+**Verified:** tsc, lint (`--max-warnings=0`), validate and build clean at 124 pages; every rail anchor resolves to a real element on both page types; no horizontal overflow; all thirteen page types return 200.
+
+---
+
 ## 2026-08-09 — Redesign, second pass: the mega menu's dead strip, and giving a flat system somewhere to move
 
 **Scope:** `app/page.tsx`, `app/globals.css`, `app/layout.tsx`, `components/Nav.tsx`, `components/Motion.tsx` (new). No content changes, no copy changes, no other page.

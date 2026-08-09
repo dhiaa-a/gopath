@@ -95,9 +95,7 @@ export default async function BasicsLessonPage({
 			</div>
 			<div className="mb-8 overflow-hidden rounded-lg border border-border bg-[var(--color-code-bg)] text-sm">
 				<div className="flex items-center gap-2 border-b border-border bg-surface2 px-4 py-2">
-					<span className="h-2 w-2 rounded-full bg-red-500/60" />
-					<span className="h-2 w-2 rounded-full bg-yellow-500/60" />
-					<span className="h-2 w-2 rounded-full bg-green-500/60" />
+					<span aria-hidden="true" className="h-[7px] w-[7px] bg-m-accent" />
 					<span className="ml-1 font-mono text-xs text-muted">
 						main.go
 					</span>

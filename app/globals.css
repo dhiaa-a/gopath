@@ -9,68 +9,86 @@
    Go brand colors use space-separated RGB channels so Tailwind's opacity
    modifiers (bg-go-cyan/10 etc.) work in both themes.
    ─────────────────────────────────────────────────────────────────────────── */
+/* The original semantic tokens now alias the Modernist ones below, so every
+   page written against `bg-surface` / `text-muted` / `border-border` adopts the
+   new system without its markup being touched. Roughly a thousand utility uses
+   across twenty files migrate here rather than by hand.
+
+   The three Go brand colors collapse onto one role, which is the point of a
+   mono scheme — and they resolve to accent-700 rather than the raw accent
+   because 48 of their uses are `text-go-cyan` on small labels, where the raw
+   accent measures 3.76:1 and fails AA. */
 :root {
 	/* Layout */
-	--bg: 255 255 255;
-	--color-surface: #f6f8fa;
-	--color-surface2: #eaeef2;
-	--color-border: #d0d7de;
-	--color-border2: #b6bfc8;
+	--bg: 243 242 242;
+	--color-surface: #eae9e9;
+	--color-surface2: #dedcdc;
+	--color-border: color-mix(in srgb, #201e1d 40%, transparent);
+	--color-border2: color-mix(in srgb, #201e1d 62%, transparent);
 
 	/* Text */
-	--color-fg: #1f2328;
-	--color-muted: #57606a;
-	--color-faint: #8c959f;
+	--color-fg: #201e1d;
+	--color-muted: color-mix(in srgb, #201e1d 72%, transparent);
+	--color-faint: color-mix(in srgb, #201e1d 63%, transparent);
 
 	/* Code block background */
-	--color-code-bg: #f6f8fa;
+	--color-code-bg: #eae9e9;
 
-	/* Go brand — darker variants readable on white */
-	--go-cyan: 0 120 160;
-	--go-teal: 13 148 136;
-	--go-amber: 180 83 9;
+	/* One accent role, three legacy names */
+	--go-cyan: 174 24 0;
+	--go-teal: 174 24 0;
+	--go-amber: 174 24 0;
 
-	/* Syntax highlighting */
-	--sx-keyword: #cf222e;
-	--sx-type: #8250df;
-	--sx-fn: #0550ae;
-	--sx-string: #0a3069;
-	--sx-number: #953800;
-	--sx-comment: #6e7781;
-	--sx-ident: #1f2328;
-	--sx-punct: #57606a;
+	/* Syntax highlighting. Retuned onto the Modernist ground rather than
+	   stripped to grey: the handoff keeps a monospace face because code is
+	   functional and not decorative, and by the same reasoning the colour that
+	   separates a string from a comment on a site that teaches Go is carrying
+	   information, not ornament. Kept mono — the accent ramp plus neutrals,
+	   separated by value where it cannot be separated by hue. */
+	--sx-keyword: #ae1800;
+	--sx-type: #7c1405;
+	--sx-fn: #2d2b2b;
+	--sx-string: #56534f;
+	--sx-number: #7c1405;
+	/* Measured against the code surface (#eae9e9), not the page ground: on the
+	   source-reading walkthroughs the comments are the stdlib's own and are the
+	   thing being taught, so they are content and have to clear AA. 4.76:1,
+	   and still a step lighter than --sx-punct so the two stay apart. */
+	--sx-comment: #686565;
+	--sx-ident: #201e1d;
+	--sx-punct: #605d5d;
 }
 
 .dark {
 	/* Layout */
-	--bg: 13 17 23;
-	--color-surface: #161b22;
-	--color-surface2: #1c2128;
-	--color-border: #30363d;
-	--color-border2: #3d444d;
+	--bg: 26 25 24;
+	--color-surface: #242220;
+	--color-surface2: #2d2b2b;
+	--color-border: color-mix(in srgb, #f3f2f2 28%, transparent);
+	--color-border2: color-mix(in srgb, #f3f2f2 46%, transparent);
 
 	/* Text */
-	--color-fg: #e6edf3;
-	--color-muted: #8b949e;
-	--color-faint: #484f58;
+	--color-fg: #f3f2f2;
+	--color-muted: color-mix(in srgb, #f3f2f2 70%, transparent);
+	--color-faint: color-mix(in srgb, #f3f2f2 52%, transparent);
 
 	/* Code block background */
-	--color-code-bg: #0d1117;
+	--color-code-bg: #242220;
 
-	/* Go brand — official palette works well on dark */
-	--go-cyan: 0 173 216;
-	--go-teal: 22 199 154;
-	--go-amber: 251 191 36;
+	/* One accent role, three legacy names — lifted a ramp step for ink ground */
+	--go-cyan: 255 151 131;
+	--go-teal: 255 151 131;
+	--go-amber: 255 151 131;
 
 	/* Syntax highlighting */
-	--sx-keyword: #ff79c6;
-	--sx-type: #bd93f9;
-	--sx-fn: #00add8;
-	--sx-string: #16c79a;
-	--sx-number: #fbbf24;
-	--sx-comment: #6e7781;
-	--sx-ident: #e6edf3;
-	--sx-punct: #8b949e;
+	--sx-keyword: #ff9783;
+	--sx-type: #ffc4b8;
+	--sx-fn: #eae7e7;
+	--sx-string: #c4c0c0;
+	--sx-number: #ffc4b8;
+	--sx-comment: #9b9797;
+	--sx-ident: #f3f2f2;
+	--sx-punct: #bab6b6;
 }
 
 /* ─── Modernist tokens ──────────────────────────────────────────────────────
@@ -364,16 +382,24 @@
 	body {
 		background-color: rgb(var(--bg));
 		color: var(--color-muted);
-		font-family: "Outfit", sans-serif;
+		font-family: "Archivo", system-ui, sans-serif;
 		line-height: 1.75;
 		-webkit-font-smoothing: antialiased;
 	}
 
+	/* Modernist sets the whole system in one family at two weights, so headings
+	   that used to be a 400-weight serif are now Archivo at 800. Without this
+	   they would inherit the body weight and stop reading as headings at all. */
 	h1,
 	h2,
 	h3,
-	h4 {
-		line-height: 1.2;
+	h4,
+	h5,
+	h6 {
+		font-family: "Archivo", system-ui, sans-serif;
+		font-weight: 800;
+		line-height: 1.15;
+		letter-spacing: -0.02em;
 		color: var(--color-fg);
 	}
 
@@ -384,7 +410,7 @@
 	}
 
 	::selection {
-		background: rgb(var(--go-cyan) / 0.2);
+		background: color-mix(in srgb, var(--m-accent) 30%, transparent);
 	}
 
 	::-webkit-scrollbar {
@@ -401,14 +427,17 @@
 		background: var(--color-muted);
 	}
 
+	/* Inline code was a cyan chip on a cyan tint. In a mono system it reads as
+	   quiet ink on the surface instead, so it marks a term without competing
+	   with the accent, which is reserved for actions. */
 	code {
 		font-family: "JetBrains Mono", monospace;
 		font-size: 0.82em;
-		background: rgb(var(--go-cyan) / 0.08);
-		border: 1px solid rgb(var(--go-cyan) / 0.2);
+		background: var(--color-surface2);
+		border: 1px solid var(--color-border);
 		padding: 0.15em 0.4em;
-		border-radius: 4px;
-		color: rgb(var(--go-cyan));
+		border-radius: 0;
+		color: var(--color-fg);
 		letter-spacing: -0.01em;
 	}
 

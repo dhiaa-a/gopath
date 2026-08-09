@@ -8,6 +8,8 @@ import { LabCard } from "@/components/LabCard"
 import { ProjectSection } from "@/components/ProjectSection"
 import { SpacedReuseCallout } from "@/components/SpacedReuseCallout"
 import { StepRecap } from "@/components/StepRecap"
+import { PageNav, type PageNavItem } from "@/components/PageNav"
+import { Appear } from "@/components/Motion"
 
 export function generateStaticParams() {
 	return projects.map((p) => ({ slug: p.slug }))
@@ -64,8 +66,29 @@ export default async function ProjectPage({
 	const nextProject =
 		currentIdx < projects.length - 1 ? projects[currentIdx + 1] : null
 
+	// Built from what the page actually renders, so a project without an
+	// architecture section does not get a rail entry pointing at nothing.
+	const navItems: PageNavItem[] = [
+		...(project.systemOverview
+			? [{ id: "overview", label: "System overview" }]
+			: []),
+		...(project.architecture
+			? [{ id: "architecture", label: "Architecture" }]
+			: []),
+		...(project.constraints
+			? [{ id: "constraints", label: "Constraints" }]
+			: []),
+		...project.steps.map((s) => ({
+			id: `step-${s.n}`,
+			label: s.heading.en,
+			n: s.n,
+		})),
+		...(project.recap ? [{ id: "recap", label: "Recap" }] : []),
+	]
+
 	return (
-		<main className="mx-auto max-w-3xl px-6 py-16">
+		<div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-[56px] px-6 py-16 xl:grid-cols-[minmax(0,760px)_220px] xl:justify-center">
+			<main className="min-w-0 xl:col-start-1">
 			{/* Breadcrumb */}
 			<div className="mb-8 flex items-center gap-2 font-mono text-xs text-muted">
 				<Link href="/" className="transition-colors hover:text-foreground">
@@ -136,27 +159,42 @@ export default async function ProjectPage({
 
 			{/* System Sections */}
 			<ProjectSection
+				id="overview"
 				title={{ en: "System Overview" }}
 				blocks={project.systemOverview}
 			/>
 			<ProjectSection
+				id="architecture"
 				title={{ en: "Architecture" }}
 				blocks={project.architecture}
 			/>
 			<ProjectSection
+				id="constraints"
 				title={{ en: "Constraints" }}
 				blocks={project.constraints}
 			/>
 
 			{/* Steps */}
-			<div className="mb-6 flex items-baseline justify-between">
-				<h2 className="font-serif text-3xl text-foreground">Steps</h2>
-				<span className="font-mono text-sm text-faint">
+			<div className="mb-6 flex items-baseline justify-between border-b-2 border-border pb-3">
+				<h2 className="text-3xl text-foreground">
+					Steps{" "}
+					<span className="font-mono text-base font-normal text-m-faint">
+						({project.steps.length})
+					</span>
+				</h2>
+				<span className="font-mono text-sm text-m-faint">
 					{stepCue[project.tier]}
 				</span>
 			</div>
 
-			<div className="flex flex-col gap-10">
+			{/* A single spine behind the markers rather than a rule per step:
+			    it makes the sequence read as one run of work instead of ten
+			    unrelated blocks, which is most of why this page felt endless. */}
+			<div className="relative flex flex-col gap-12">
+				<span
+					aria-hidden="true"
+					className="absolute bottom-6 left-[19px] top-6 w-[2px] bg-border"
+				/>
 				{project.steps.map((step) => {
 					const prior = priorConceptOccurrence(project.slug, step.uses)
 					const priorProject = prior
@@ -164,10 +202,16 @@ export default async function ProjectPage({
 						: null
 
 					return (
-						<div key={step.n} className="relative">
-							<div className="mb-4 flex items-center gap-4">
+						<Appear
+							key={step.n}
+							className="relative scroll-mt-[110px]"
+						>
+							<div
+								id={`step-${step.n}`}
+								className="mb-4 flex items-center gap-4 scroll-mt-[110px]"
+							>
 								<div
-									className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface font-mono text-sm font-semibold ${c.accent}`}
+									className={`relative flex h-10 w-10 shrink-0 items-center justify-center border-2 border-border bg-surface font-mono text-sm font-semibold ${c.accent}`}
 								>
 									{step.n}
 								</div>
@@ -187,13 +231,19 @@ export default async function ProjectPage({
 									<StepRecap prompt={step.retrievalPrompt} />
 								)}
 							</div>
-						</div>
+						</Appear>
 					)
 				})}
 			</div>
 
 			{/* Recap */}
-			<ProjectSection title={{ en: "Recap" }} blocks={project.recap} />
+			<div className="mt-12">
+				<ProjectSection
+					id="recap"
+					title={{ en: "Recap" }}
+					blocks={project.recap}
+				/>
+			</div>
 
 			{/* Read the source */}
 			{sourceReads.length > 0 && (
@@ -243,13 +293,18 @@ export default async function ProjectPage({
 				{nextProject && (
 					<Link
 						href={`/projects/${nextProject.slug}`}
-						className={`flex items-center gap-2 font-mono text-sm font-semibold transition-opacity hover:opacity-75 ${c.accent}`}
+						className={`group flex items-center gap-2 font-mono text-sm font-semibold transition-opacity hover:opacity-75 ${c.accent}`}
 					>
 						<span>{nextProject.name}</span>
-						<span>→</span>
+						<span className="m-arrow">→</span>
 					</Link>
 				)}
 			</div>
-		</main>
+			</main>
+
+			<aside className="xl:col-start-2 xl:row-start-1">
+				<PageNav items={navItems} />
+			</aside>
+		</div>
 	)
 }

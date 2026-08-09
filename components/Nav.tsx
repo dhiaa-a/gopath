@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { GoPathMark } from "@/components/GoPathMark"
+import { ReadingProgress } from "@/components/ReadingProgress"
 import type { NavMenu } from "@/lib/nav"
 
 export default function Nav({ menu }: { menu: NavMenu }) {
@@ -85,6 +86,7 @@ export default function Nav({ menu }: { menu: NavMenu }) {
 
 	return (
 		<nav className="m-scope sticky top-0 z-50 border-b-2 border-m-divider bg-m-bg font-display">
+			<ReadingProgress />
 			<div className="mx-auto flex max-w-[1160px] items-center gap-[36px] px-[24px] py-[16px] lg:px-[40px]">
 				<Link
 					href="/"

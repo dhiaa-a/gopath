@@ -44,12 +44,32 @@ const config: Config = {
 				"m-tag-neutral-bg": "var(--m-tag-neutral-bg)",
 				"m-tag-neutral-fg": "var(--m-tag-neutral-fg)",
 			},
+			// Modernist sets the whole system in one family at two weights, so
+			// `sans` and `serif` both resolve to Archivo: the ~29 `font-serif`
+			// headings across the site convert without being edited, and the
+			// three-family look the redesign's critique called out ("together
+			// they read as three different sites") goes away everywhere rather
+			// than only on the homepage. `mono` stays real — code is functional.
 			fontFamily: {
-				sans: ["Outfit", "sans-serif"],
-				serif: ["DM Serif Display", "serif"],
-				mono: ["JetBrains Mono", "monospace"],
-				// Modernist sets the whole system in one family at two weights.
+				sans: ["Archivo", "system-ui", "sans-serif"],
+				serif: ["Archivo", "system-ui", "sans-serif"],
 				display: ["Archivo", "system-ui", "sans-serif"],
+				mono: ["JetBrains Mono", "monospace"],
+			},
+			// "Do not round a corner anywhere — --radius-md is 0 on purpose."
+			// Zeroing the scale converts all 109 `rounded*` uses at once. The
+			// only `rounded-full` cases are step-number circles and fake macOS
+			// traffic lights, both of which the system rejects anyway.
+			borderRadius: {
+				none: "0",
+				sm: "0",
+				DEFAULT: "0",
+				md: "0",
+				lg: "0",
+				xl: "0",
+				"2xl": "0",
+				"3xl": "0",
+				full: "0",
 			},
 			fontSize: {
 				xs: ["0.75rem", { lineHeight: "1.5" }],
