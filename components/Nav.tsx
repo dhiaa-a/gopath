@@ -1,16 +1,10 @@
 "use client"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { GoPathMark } from "@/components/GoPathMark"
 import type { NavMenu } from "@/lib/nav"
-
-const TOP_LINKS = [
-	{ href: "/orientation", label: "Orientation" },
-	{ href: "/#path", label: "Path" },
-	{ href: "/concepts", label: "Concepts" },
-]
 
 export default function Nav({ menu }: { menu: NavMenu }) {
 	const pathname = usePathname()
@@ -18,6 +12,28 @@ export default function Nav({ menu }: { menu: NavMenu }) {
 	const [megaOpen, setMegaOpen] = useState(false)
 	const megaRef = useRef<HTMLDivElement>(null)
 	const megaTriggerRef = useRef<HTMLAnchorElement>(null)
+	const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+	// The panel sits below the whole nav bar, but the trigger's hover box ends
+	// with the text — leaving ~20px of nav padding that belongs to neither. A
+	// pointer travelling from "Projects" down into the panel crosses that dead
+	// strip, which fires mouseleave and closes the menu before it is reachable.
+	// Two things fix it together: the trigger's hit area is padded down to the
+	// nav's bottom edge (see `-my-` below), and closing is deferred so a brief
+	// excursion or a diagonal approach does not count as leaving.
+	const openMega = useCallback(() => {
+		if (closeTimer.current) clearTimeout(closeTimer.current)
+		setMegaOpen(true)
+	}, [])
+
+	const closeMega = useCallback((delay = 220) => {
+		if (closeTimer.current) clearTimeout(closeTimer.current)
+		closeTimer.current = setTimeout(() => setMegaOpen(false), delay)
+	}, [])
+
+	useEffect(() => () => {
+		if (closeTimer.current) clearTimeout(closeTimer.current)
+	}, [])
 
 	// Navigating is the one close the user never asks for explicitly. Both
 	// panels are derived from "where we were when they opened it", so this is a
@@ -51,132 +67,139 @@ export default function Nav({ menu }: { menu: NavMenu }) {
 		}
 	}, [megaOpen])
 
-	const linkClass = (href: string) =>
-		`font-display text-[14px] transition-colors hover:text-m-accent ${
-			pathname === href ? "text-m-accent" : "text-m-ink"
-		}`
+	const navLink = (href: string, label: string) => {
+		const active = pathname === href
+		return (
+			<Link
+				href={href}
+				data-active={active}
+				aria-current={active ? "page" : undefined}
+				className="m-navlink font-display text-[14px] text-m-ink transition-colors hover:text-m-accent"
+			>
+				{label}
+			</Link>
+		)
+	}
+
+	const projectsActive = pathname.startsWith("/projects") || megaOpen
 
 	return (
 		<nav className="m-scope sticky top-0 z-50 border-b-2 border-m-divider bg-m-bg font-display">
-			<div className="mx-auto flex max-w-[1160px] items-center gap-[32px] px-[24px] py-[12px] lg:px-[32px]">
+			<div className="mx-auto flex max-w-[1160px] items-center gap-[36px] px-[24px] py-[16px] lg:px-[40px]">
 				<Link
 					href="/"
-					className="mr-auto flex items-center gap-[9px] text-[18px] font-extrabold text-m-ink"
+					className="group mr-auto flex items-center gap-[10px] text-[18px] font-extrabold text-m-ink"
 				>
-					<GoPathMark size={20} strokeWidth={5} className="text-m-accent" />
+					<GoPathMark
+						size={20}
+						strokeWidth={5}
+						className="text-m-accent transition-transform duration-300 group-hover:-translate-y-px"
+					/>
 					GoPath
 				</Link>
 
 				{/* Desktop links */}
-				<div className="hidden items-center gap-[32px] lg:flex">
-					<Link
-						href="/orientation"
-						className={linkClass("/orientation")}
-						aria-current={pathname === "/orientation" ? "page" : undefined}
-					>
-						Orientation
-					</Link>
-					<Link href="/#path" className={linkClass("/#path")}>
-						Path
-					</Link>
+				<div className="hidden items-center gap-[36px] lg:flex">
+					{navLink("/orientation", "Orientation")}
+					{navLink("/#path", "Path")}
 
-					{/* Projects opens the mega menu: the redesign cuts the bar to four
-					    links, and everything it drops lives in here rather than
-					    nowhere.
-
-					    It stays a real link rather than becoming a toggle button.
-					    A trigger that opens on hover and toggles on click fights
-					    itself — the pointer opens the panel on the way to the
-					    click, so the click reads as "close" — and a toggle leaves
-					    touch users, who never hover, tapping a control that only
-					    ever opens a menu. As a link, every input lands somewhere:
-					    hover and keyboard focus reveal the panel, a tap or a click
-					    goes to /projects. */}
+					{/* Projects reveals the mega menu. It stays a real link rather
+					    than a toggle button: a trigger that opens on hover and
+					    toggles on click fights itself, since the pointer opens the
+					    panel on the way to the click and the click then reads as
+					    "close". As a link every input lands somewhere — hover and
+					    keyboard focus reveal the panel, a tap or click goes to
+					    /projects, which matters most for touch, where nothing
+					    hovers at all. */}
 					<div
 						ref={megaRef}
-						onMouseEnter={() => setMegaOpen(true)}
-						onMouseLeave={() => setMegaOpen(false)}
-						onFocus={() => setMegaOpen(true)}
+						className="-my-[16px] py-[16px]"
+						onMouseEnter={openMega}
+						onMouseLeave={() => closeMega()}
+						onFocus={openMega}
 						onBlur={(e) => {
 							if (!e.currentTarget.contains(e.relatedTarget))
-								setMegaOpen(false)
+								closeMega(0)
 						}}
 					>
 						<Link
 							ref={megaTriggerRef}
 							href="/projects"
+							data-active={projectsActive}
 							aria-expanded={megaOpen}
 							aria-controls="nav-mega"
-							className={`flex items-center gap-[6px] font-display text-[14px] transition-colors hover:text-m-accent ${
-								pathname.startsWith("/projects") || megaOpen
-									? "text-m-accent"
-									: "text-m-ink"
+							className={`m-navlink flex items-center gap-[7px] font-display text-[14px] transition-colors hover:text-m-accent ${
+								projectsActive ? "text-m-accent" : "text-m-ink"
 							}`}
 						>
 							Projects
 							<span
 								aria-hidden="true"
-								className={`text-[10px] transition-transform ${megaOpen ? "rotate-180" : ""}`}
+								className={`text-[9px] transition-transform duration-300 ${megaOpen ? "rotate-180" : ""}`}
 							>
-								▾
+								▼
 							</span>
 						</Link>
 
-						{megaOpen && <MegaMenu menu={menu} />}
+						<MegaMenu menu={menu} open={megaOpen} />
 					</div>
 
-					<Link
-						href="/concepts"
-						className={linkClass("/concepts")}
-						aria-current={pathname === "/concepts" ? "page" : undefined}
-					>
-						Concepts
-					</Link>
+					{navLink("/concepts", "Concepts")}
 				</div>
 
-				<div className="flex items-center gap-[12px]">
+				<div className="flex items-center gap-[14px]">
 					<ThemeToggle />
 					<Link
 						href="/projects/cli-renamer"
-						className="hidden bg-m-accent px-[18px] py-[9px] text-[13px] font-extrabold text-m-on-accent transition-colors hover:bg-m-accent-hover lg:block"
+						className="group hidden items-center gap-[8px] bg-m-accent px-[20px] py-[11px] text-[13px] font-extrabold text-m-on-accent transition-colors duration-300 hover:bg-m-accent-hover lg:flex"
 					>
-						Start the path →
+						Start the path
+						<span aria-hidden="true" className="m-arrow">
+							→
+						</span>
 					</Link>
 
 					{/* Mobile menu button */}
 					<button
-						className="flex flex-col gap-1.5 p-1 lg:hidden"
+						className="flex flex-col gap-[5px] p-1 lg:hidden"
 						onClick={() => setMobileOpen((o) => !o)}
 						aria-expanded={mobileOpen}
 						aria-label="Toggle menu"
 					>
 						<span
-							className={`block h-0.5 w-5 bg-m-ink transition-all ${mobileOpen ? "translate-y-2 rotate-45" : ""}`}
+							className={`block h-0.5 w-5 bg-m-ink transition-all duration-300 ${mobileOpen ? "translate-y-[7px] rotate-45" : ""}`}
 						/>
 						<span
-							className={`block h-0.5 w-5 bg-m-ink transition-all ${mobileOpen ? "opacity-0" : ""}`}
+							className={`block h-0.5 w-5 bg-m-ink transition-all duration-300 ${mobileOpen ? "opacity-0" : ""}`}
 						/>
 						<span
-							className={`block h-0.5 w-5 bg-m-ink transition-all ${mobileOpen ? "-translate-y-2 -rotate-45" : ""}`}
+							className={`block h-0.5 w-5 bg-m-ink transition-all duration-300 ${mobileOpen ? "-translate-y-[7px] -rotate-45" : ""}`}
 						/>
 					</button>
 				</div>
 			</div>
 
-			{/* Mobile drawer — no hover affordance to hang a mega menu on, so the
-			    same destinations flatten into labelled groups. */}
+			{/* Mobile drawer — nothing hovers on touch, so the same destinations
+			    flatten into labelled groups. */}
 			{mobileOpen && (
-				<div className="border-t-2 border-m-divider bg-m-bg px-[24px] py-[24px] lg:hidden">
-					<div className="flex flex-col gap-[20px]">
+				<div className="border-t-2 border-m-divider bg-m-bg px-[24px] py-[28px] lg:hidden">
+					<div className="flex flex-col gap-[26px]">
 						<MobileGroup
 							heading="Start here"
-							links={TOP_LINKS.map((l) => ({ ...l, note: "" }))}
+							links={[
+								{ href: "/orientation", label: "Orientation" },
+								{ href: "/#path", label: "Path" },
+								{ href: "/concepts", label: "Concepts" },
+							]}
 						/>
 						<MobileGroup heading="The path" links={menu.path} />
-						<MobileGroup heading="Beyond the path" links={menu.tracks} />
+						<MobileGroup
+							heading="Beyond the path"
+							links={menu.tracks}
+						/>
 						<Link
 							href="/projects/cli-renamer"
-							className="mt-1 inline-block self-start bg-m-accent px-[18px] py-[9px] text-[13px] font-extrabold text-m-on-accent"
+							className="inline-block self-start bg-m-accent px-[20px] py-[12px] text-[13px] font-extrabold text-m-on-accent"
 						>
 							Start the path →
 						</Link>
@@ -187,41 +210,43 @@ export default function Nav({ menu }: { menu: NavMenu }) {
 	)
 }
 
-function MegaMenu({ menu }: { menu: NavMenu }) {
+function MegaMenu({ menu, open }: { menu: NavMenu; open: boolean }) {
 	return (
 		<div
 			id="nav-mega"
-			className="absolute left-0 right-0 top-full border-b-2 border-m-divider bg-m-bg"
+			data-open={open}
+			className="m-mega absolute left-0 right-0 top-full border-b-2 border-m-divider bg-m-bg shadow-[0_18px_40px_-24px_rgba(0,0,0,0.35)]"
 		>
-			<div className="mx-auto max-w-[1160px] px-[24px] lg:px-[32px]">
-				<div className="grid grid-cols-[1fr_1fr_1.15fr] gap-[2px] bg-m-divider">
-					<MegaColumn heading="The path" links={menu.path} />
-					<MegaColumn heading="Beyond the path" links={menu.tracks} />
+			<div className="mx-auto grid max-w-[1160px] grid-cols-[1fr_1fr_1fr] gap-[48px] px-[40px] py-[40px]">
+				<MegaColumn heading="The path" links={menu.path} />
+				<MegaColumn heading="Beyond the path" links={menu.tracks} />
 
-					<div className="bg-m-bg py-[28px] pl-[28px]">
-						<div className="mb-[16px] text-[11px] uppercase tracking-[0.08em] text-m-accent-ink">
-							The eleven builds
-						</div>
-						<div className="flex flex-col gap-[16px]">
-							{menu.tiers.map((t) => (
-								<div key={t.num}>
-									<div className="mb-[6px] font-mono text-[10px] uppercase tracking-[0.08em] text-m-faint">
-										{t.num} · {t.name}
-									</div>
-									<div className="flex flex-col gap-[2px]">
-										{t.projects.map((p) => (
-											<Link
-												key={p.href}
-												href={p.href}
-												className="text-[13px] text-m-muted transition-colors hover:text-m-accent"
-											>
-												{p.label}
-											</Link>
-										))}
-									</div>
-								</div>
-							))}
-						</div>
+				{/* Tier-level entries, not all eleven projects. The full list is
+				    one click away at /projects — which is where the trigger
+				    itself goes — and eleven more links here was the single
+				    biggest source of clutter in the panel. */}
+				<div>
+					<div className="mb-[20px] text-[11px] uppercase tracking-[0.08em] text-m-accent-ink">
+						By tier
+					</div>
+					<div className="flex flex-col gap-[2px]">
+						{menu.tiers.map((t) => (
+							<Link
+								key={t.num}
+								href={t.projects[0].href}
+								className="group -mx-[12px] flex items-baseline gap-[10px] px-[12px] py-[10px] transition-colors hover:bg-m-surface"
+							>
+								<span className="font-mono text-[10px] uppercase tracking-[0.08em] text-m-faint">
+									{t.num.replace("Tier ", "")}
+								</span>
+								<span className="text-[14px] font-extrabold text-m-ink transition-colors group-hover:text-m-accent">
+									{t.name}
+								</span>
+								<span className="ml-auto text-[12px] text-m-faint">
+									{t.projects.length}
+								</span>
+							</Link>
+						))}
 					</div>
 				</div>
 			</div>
@@ -237,17 +262,21 @@ function MegaColumn({
 	links: { href: string; label: string; note: string }[]
 }) {
 	return (
-		<div className="bg-m-bg py-[28px] pr-[28px]">
-			<div className="mb-[16px] text-[11px] uppercase tracking-[0.08em] text-m-accent-ink">
+		<div>
+			<div className="mb-[20px] text-[11px] uppercase tracking-[0.08em] text-m-accent-ink">
 				{heading}
 			</div>
-			<div className="flex flex-col gap-[16px]">
+			<div className="flex flex-col gap-[2px]">
 				{links.map((l) => (
-					<Link key={l.href} href={l.href} className="group block">
+					<Link
+						key={l.href}
+						href={l.href}
+						className="group -mx-[12px] block px-[12px] py-[10px] transition-colors hover:bg-m-surface"
+					>
 						<div className="text-[14px] font-extrabold text-m-ink transition-colors group-hover:text-m-accent">
 							{l.label}
 						</div>
-						<div className="text-[12px] leading-[1.5] text-m-faint">
+						<div className="mt-[2px] text-[12px] leading-[1.5] text-m-faint">
 							{l.note}
 						</div>
 					</Link>
@@ -262,19 +291,19 @@ function MobileGroup({
 	links,
 }: {
 	heading: string
-	links: { href: string; label: string; note: string }[]
+	links: { href: string; label: string }[]
 }) {
 	return (
 		<div>
-			<div className="mb-[8px] text-[11px] uppercase tracking-[0.08em] text-m-accent-ink">
+			<div className="mb-[12px] text-[11px] uppercase tracking-[0.08em] text-m-accent-ink">
 				{heading}
 			</div>
-			<div className="flex flex-col gap-[8px]">
+			<div className="flex flex-col gap-[12px]">
 				{links.map((l) => (
 					<Link
 						key={l.href}
 						href={l.href}
-						className="text-[14px] text-m-ink hover:text-m-accent"
+						className="text-[15px] text-m-ink transition-colors hover:text-m-accent"
 					>
 						{l.label}
 					</Link>

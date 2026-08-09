@@ -4,6 +4,30 @@ Append-only. Newest at the top.
 
 ---
 
+## 2026-08-09 — Redesign, second pass: the mega menu's dead strip, and giving a flat system somewhere to move
+
+**Scope:** `app/page.tsx`, `app/globals.css`, `app/layout.tsx`, `components/Nav.tsx`, `components/Motion.tsx` (new). No content changes, no copy changes, no other page.
+
+**Why.** Aboturab's read of the first pass: cramped, static, and the mega menu unusable — "it disappears" when you try to move into it. All three are fair, and the first is a real bug rather than taste.
+
+**The mega menu had a dead strip.** The panel hangs below the whole nav bar, but the trigger's hover box ends with the word "Projects" — measured on the running page, the trigger's box ended at y=45 and the panel began at y=66. Those 21px of nav padding belong to neither element, so a pointer travelling straight down from the trigger into the panel left the wrapper, fired `mouseleave`, and unmounted the panel before it could be reached. Fixed by two things together, because either alone is fragile: the trigger's hit area is padded down to the nav's bottom edge (`-my-[16px] py-[16px]`, so the box grows without moving the layout) which takes the gap to a measured **0px**, and closing is now deferred 220ms so a diagonal approach or a brief excursion does not count as leaving. Re-entering cancels the pending close.
+
+**The panel also stopped unmounting.** It now stays in the DOM and hides with `visibility: hidden`, which keeps its links out of the tab order exactly as unmounting did while letting it fade in *and* out. Unmounting could only ever animate one direction.
+
+**And it was too dense.** 18 links in three columns, every one with a second line of explanatory text. The third column listed all eleven projects individually — the single biggest contributor — and is now three tier-level rows with a project count each. 18 links down to 10, column padding up to 40px, gutters to 48px. The full project list is one click away at `/projects`, which is where the trigger itself goes.
+
+**Motion, because a flat system has nothing else.** Modernist is deliberately undecorated — no radius, no shadows, no gradients — so there is no gloss to make it feel alive; the life has to be movement. Added one easing curve (`--m-ease`) and: scroll entrances with per-child stagger, a count-up on the stats, an accent bar that grows from the left edge of each path row on hover, arrows that slide, nav links that draw their own underline, a caret blinking in the code window. Every one collapses to nothing under `prefers-reduced-motion`.
+
+**The entrance needed a fail-safe, and finding out why was the useful part.** Scroll entrance means content starts at `opacity: 0` and is revealed by an IntersectionObserver — so an observer that never delivers leaves the homepage permanently blank. Verifying in the browser, *nothing* revealed; the cause turned out to be that the preview pane is not displayed, so `document.visibilityState` is `hidden`, no animation frames run, and an observer cannot deliver callbacks. An artifact rather than a page bug — but it is the exact shape of the real failure, and a background tab reproduces it. IntersectionObserver always delivers an initial callback per observed element, so "nothing has arrived at all" is a reliable signal it is not working: if no callback of any kind lands within 1500ms, the content reveals anyway. Healthy observers are untouched, so scroll entrances still behave. There is also a `<noscript>` override for readers without JavaScript at all. A statically generated site being readable is not something to stake on one browser API.
+
+**`--m-faint` moved from 55% to 63% ink.** Previously flagged as accepted-as-designed; with the page being reworked anyway it was cheap to fix. The system's own `.text-muted` is 55%, which measures 3.65:1 and fails AA for the 11px meta labels it carries. 63% is the lowest step clearing 4.5:1 (measured 4.65:1 light, 5.09:1 dark) and stays clearly lighter than `--m-muted` at 6.2:1, so the two roles remain distinguishable. The primary button's label on the accent fill is still 3.76:1 and still Aboturab's call, since it changes the loudest element on the page.
+
+**Spacing.** Sections 64px → 112px, hero 88/104 with an 80px gutter, path rows 32px, track cells 32px, nav 79px tall. H1 to 58px at xl with tighter tracking. The stats strip stopped being one flat 18px line and became accent numerals at 30px against muted labels.
+
+**Verified:** tsc, lint (`--max-warnings=0`) and build clean at 124 pages; mega gap measured at 0px and real trusted hover confirmed opening it; the fail-safe proven by the pane that cannot deliver callbacks (9/9 revealed); no horizontal overflow at 375px; contrast re-measured in both themes.
+
+---
+
 ## 2026-08-09 — Homepage redesign: implementing the Modernist proof, and the three places I did not follow it
 
 **Scope:** `app/page.tsx`, `app/globals.css`, `app/layout.tsx`, `app/icon.svg` (new), `components/Nav.tsx`, `components/GoPathMark.tsx` (new), `components/ThemeToggle.tsx`, `lib/nav.ts` (new), `tailwind.config.ts`. No content modules, no labs, no validate contract, no other page.

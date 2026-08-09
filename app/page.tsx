@@ -1,9 +1,10 @@
 import Link from "next/link"
 import { getProjectsByTier } from "@/lib/projects"
 import { GoCode } from "@/components/GoCode"
+import { Appear, CountUp } from "@/components/Motion"
 
-// Short enough to sit in the 200px label cell. The longer forms the project
-// pages use stay on the project pages.
+// Short enough to sit in the label cell. The longer forms the project pages use
+// stay on the project pages.
 const tierMeta = {
 	1: {
 		num: "Tier 01",
@@ -21,6 +22,12 @@ const tierMeta = {
 		desc: "Real architecture, databases, a measured gate",
 	},
 } as const
+
+const stats = [
+	{ n: 12, label: "programs shipped" },
+	{ n: 61, label: "concepts explained" },
+	{ n: 15, label: "failure labs" },
+]
 
 const tracks = [
 	{
@@ -100,110 +107,124 @@ func main() {
 
 // Spacing is written in explicit px rather than on Tailwind's rem scale. The
 // site sets html { font-size: 17px }, so every rem utility lands 6.25% off the
-// values this design specifies, and it specifies them as final.
-const SHELL = "mx-auto max-w-[1160px] px-[24px] lg:px-[32px]"
-// accent-700, not the raw accent the proof draws. The system's own readme is
-// explicit that the accent-to-ground pair only reaches 3:1 — "enough for icons,
-// large text and interface chrome, not for body copy" — and names this ramp
-// step as the fix for accent text at paragraph size. An 11px label is not large
-// text: in the raw accent it measures 3.76:1 and fails AA, and at -700 it
-// measures 6.4:1 while still reading as the accent.
-const KICKER = "mb-[12px] text-[11px] uppercase tracking-[0.08em] text-m-accent-ink"
+// value intended, and this layout is built on a 4/8/12/16/24/32 rhythm.
+const SHELL = "mx-auto max-w-[1160px] px-[24px] lg:px-[40px]"
+const SECTION = "py-[80px] lg:py-[112px]"
+const KICKER =
+	"mb-[16px] text-[11px] uppercase tracking-[0.08em] text-m-accent-ink"
 const H2 =
-	"mb-[12px] text-[26px] font-extrabold leading-[1.12] tracking-[-0.015em] text-m-ink lg:text-[32px]"
-const LEAD = "mb-[32px] text-[15px] leading-[1.65] text-m-muted"
+	"mb-[16px] text-[28px] font-extrabold leading-[1.1] tracking-[-0.02em] text-m-ink lg:text-[36px]"
+const LEAD = "mb-[48px] text-[16px] leading-[1.7] text-m-muted"
 
 export default function Home() {
 	return (
 		<main className="m-scope bg-m-bg font-display text-m-ink">
 			{/* HERO */}
 			<div
-				className={`${SHELL} grid grid-cols-1 gap-[40px] pb-[40px] pt-[40px] lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-[64px] lg:pt-[56px]`}
+				className={`${SHELL} grid grid-cols-1 items-center gap-[48px] pb-[80px] pt-[56px] lg:grid-cols-[1.05fr_1fr] lg:gap-[80px] lg:pb-[104px] lg:pt-[88px]`}
 			>
-				<div>
-					<span className="mb-[22px] inline-flex bg-m-tag-bg px-[10px] py-[3px] text-[11px] tracking-[0.02em] text-m-tag-fg">
-						For developers from other languages
-					</span>
-					<h1 className="mb-[20px] max-w-[13ch] text-[34px] font-extrabold leading-[1.08] tracking-[-0.015em] text-m-ink sm:text-[42px] lg:text-[52px]">
+				<Appear stagger>
+					<div>
+						<span className="inline-flex bg-m-tag-bg px-[12px] py-[5px] text-[11px] tracking-[0.02em] text-m-tag-fg">
+							For developers from other languages
+						</span>
+					</div>
+					<h1 className="mt-[26px] max-w-[13ch] text-[38px] font-extrabold leading-[1.05] tracking-[-0.03em] text-m-ink sm:text-[46px] lg:text-[54px] xl:text-[58px]">
 						Learn Go here, and{" "}
 						<span className="text-m-accent-ink">nowhere else.</span>
 					</h1>
-					<p className="mb-[28px] max-w-[44ch] text-[16px] leading-[1.65] text-m-muted">
+					<p className="mt-[24px] max-w-[46ch] text-[17px] leading-[1.7] text-m-muted">
 						Syntax to production, in one place. Twelve programs you
 						actually build, fifteen bugs you diagnose yourself, and a
 						final spec graded by a suite that never reads your code.
 					</p>
-					<div className="flex flex-wrap items-center gap-[24px]">
+					<div className="mt-[36px] flex flex-wrap items-center gap-[28px]">
 						<Link
 							href="/projects/cli-renamer"
-							className="bg-m-accent px-[26px] py-[13px] text-[14px] font-extrabold text-m-on-accent transition-colors hover:bg-m-accent-hover"
+							className="group flex items-center gap-[10px] bg-m-accent px-[28px] py-[15px] text-[15px] font-extrabold text-m-on-accent transition-colors duration-300 hover:bg-m-accent-hover"
 						>
-							Start the path →
+							Start the path
+							<span aria-hidden="true" className="m-arrow">
+								→
+							</span>
 						</Link>
 						<Link
 							href="/basics"
-							className="border-b border-m-divider pb-px text-[13px] text-m-ink transition-colors hover:border-m-accent hover:text-m-accent"
+							className="group flex items-center gap-[8px] border-b-2 border-m-divider pb-[3px] text-[14px] text-m-ink transition-colors duration-300 hover:border-m-accent hover:text-m-accent"
 						>
-							New to Go? Start with Basics →
+							New to Go? Start with Basics
+							<span aria-hidden="true" className="m-arrow">
+								→
+							</span>
 						</Link>
 					</div>
-				</div>
+				</Appear>
 
 				{/* Code window */}
-				<div className="m-code border-2 border-m-divider bg-m-surface">
-					<div className="border-b-2 border-m-divider px-[16px] py-[9px]">
-						<span className="font-mono text-[11px] text-m-faint">
-							main.go
-						</span>
+				<Appear delay={140}>
+					<div className="m-code border-2 border-m-divider bg-m-surface">
+						<div className="flex items-center gap-[10px] border-b-2 border-m-divider px-[18px] py-[11px]">
+							<span
+								aria-hidden="true"
+								className="h-[7px] w-[7px] bg-m-accent"
+							/>
+							<span className="font-mono text-[11px] tracking-[0.04em] text-m-faint">
+								main.go
+							</span>
+						</div>
+						<pre className="overflow-x-auto p-[24px] font-mono text-[12.5px] leading-[1.75]">
+							<GoCode code={heroCode} />
+							<span aria-hidden="true" className="m-caret" />
+						</pre>
 					</div>
-					<pre className="overflow-x-auto p-[22px] font-mono text-[12.5px] leading-[1.75]">
-						<GoCode code={heroCode} />
-					</pre>
-				</div>
+				</Appear>
 			</div>
 
 			{/* STATS */}
 			<div className="border-y-2 border-m-divider bg-m-surface">
-				<div
-					className={`${SHELL} flex flex-wrap items-baseline justify-center gap-[12px] py-[22px]`}
+				<Appear
+					stagger
+					className={`${SHELL} flex flex-wrap items-center justify-center gap-x-[56px] gap-y-[20px] py-[32px]`}
 				>
-					<span className="text-[18px] font-extrabold">
-						12 programs shipped
-					</span>
-					<span aria-hidden="true" className="text-m-faint">
-						·
-					</span>
-					<span className="text-[18px] font-extrabold">
-						61 concepts explained
-					</span>
-					<span aria-hidden="true" className="text-m-faint">
-						·
-					</span>
-					<span className="text-[18px] font-extrabold">
-						15 failure labs
-					</span>
-				</div>
+					{stats.map((s) => (
+						<div
+							key={s.label}
+							className="flex items-baseline gap-[10px]"
+						>
+							<CountUp
+								to={s.n}
+								className="text-[30px] font-extrabold leading-none tracking-[-0.02em] text-m-accent-ink"
+							/>
+							<span className="text-[14px] text-m-muted">
+								{s.label}
+							</span>
+						</div>
+					))}
+				</Appear>
 			</div>
 
 			{/* PATH */}
-			<section className={`${SHELL} py-[64px]`} id="path">
-				<div className={KICKER}>The path</div>
-				<h2 className={`${H2} max-w-[22ch]`}>
-					Start at{" "}
-					<span className="font-mono text-[0.85em] font-normal">
-						package main
-					</span>
-					. Finish at a graded spec.
-				</h2>
-				<p className={`${LEAD} max-w-[56ch]`}>
-					Tier 0 teaches the syntax here instead of linking you out for
-					it. Eleven projects then build on each other in order. The
-					twelfth hands you a specification and no help at all.
-				</p>
+			<section className={`${SHELL} ${SECTION}`} id="path">
+				<Appear>
+					<div className={KICKER}>The path</div>
+					<h2 className={`${H2} max-w-[22ch]`}>
+						Start at{" "}
+						<span className="font-mono text-[0.82em] font-normal">
+							package main
+						</span>
+						. Finish at a graded spec.
+					</h2>
+					<p className={`${LEAD} max-w-[58ch]`}>
+						Tier 0 teaches the syntax here instead of linking you out
+						for it. Eleven projects then build on each other in
+						order. The twelfth hands you a specification and no help
+						at all.
+					</p>
+				</Appear>
 
-				<div>
+				<Appear stagger>
 					<PathRow href="/basics" num="Tier 00" name="Basics" muted>
-						<span className="text-[14px] text-m-muted">
+						<span className="text-[15px] text-m-muted">
 							14 micro-lessons teaching the syntax in-house, about
 							3 hours
 						</span>
@@ -223,7 +244,7 @@ export default function Home() {
 								{projects.map((p) => (
 									<span
 										key={p.slug}
-										className="bg-m-tag-neutral-bg px-[10px] py-[3px] text-[11px] tracking-[0.02em] text-m-tag-neutral-fg"
+										className="bg-m-tag-neutral-bg px-[12px] py-[5px] text-[12px] tracking-[0.01em] text-m-tag-neutral-fg"
 									>
 										{p.name}
 									</span>
@@ -239,90 +260,111 @@ export default function Home() {
 						desc="Zero guidance"
 						last
 					>
-						<span className="text-[14px] text-m-muted">
+						<span className="text-[15px] text-m-muted">
 							A link shortener: auth, rate limiting, durable
 							storage, metrics — a spec, 34 black-box checks, no
 							hints
 						</span>
 					</PathRow>
-				</div>
+				</Appear>
 			</section>
 
 			{/* TRACKS */}
 			<section className="border-t-2 border-m-divider bg-m-surface">
-				<div className={`${SHELL} py-[64px]`}>
-					<div className={KICKER}>Beyond the path</div>
-					<h2 className={`${H2} max-w-[24ch]`}>
-						The parts you would have gone looking for elsewhere.
-					</h2>
-					<p className={`${LEAD} max-w-[60ch]`}>
-						Debugging, idiom, and reading real source are what
-						separate someone who knows Go from someone who works in
-						it. None of them fit at the end of a chapter, so each one
-						is its own track.
-					</p>
-					<div className="grid grid-cols-1 gap-[2px] border-2 border-m-divider bg-m-divider sm:grid-cols-2">
+				<div className={`${SHELL} ${SECTION}`}>
+					<Appear>
+						<div className={KICKER}>Beyond the path</div>
+						<h2 className={`${H2} max-w-[24ch]`}>
+							The parts you would have gone looking for elsewhere.
+						</h2>
+						<p className={`${LEAD} max-w-[62ch]`}>
+							Debugging, idiom, and reading real source are what
+							separate someone who knows Go from someone who works
+							in it. None of them fit at the end of a chapter, so
+							each one is its own track.
+						</p>
+					</Appear>
+					<Appear
+						stagger
+						className="grid grid-cols-1 gap-[2px] border-2 border-m-divider bg-m-divider sm:grid-cols-2"
+					>
 						{tracks.map((t) => (
 							<Link
 								key={t.href}
 								href={t.href}
-								className="group bg-m-bg p-[24px] transition-colors hover:bg-m-surface"
+								className="m-card group bg-m-bg p-[32px] hover:bg-m-surface"
 							>
-								<div className="mb-[10px] flex items-baseline gap-[10px]">
-									<span className="text-[22px] font-extrabold">
-										{t.n}
-									</span>
-									<span className="text-[11px] uppercase tracking-[0.08em] text-m-faint">
-										{t.label}
-									</span>
-									<span
-										aria-hidden="true"
-										className="ml-auto font-mono text-[12px] text-m-faint transition-transform group-hover:translate-x-1 group-hover:text-m-accent"
-									>
-										→
-									</span>
+								<div>
+									<div className="mb-[14px] flex items-baseline gap-[12px]">
+										<span className="text-[26px] font-extrabold leading-none tracking-[-0.02em] transition-colors duration-300 group-hover:text-m-accent-ink">
+											{t.n}
+										</span>
+										<span className="text-[11px] uppercase tracking-[0.08em] text-m-faint">
+											{t.label}
+										</span>
+										<span
+											aria-hidden="true"
+											className="m-arrow ml-auto font-mono text-[13px] text-m-faint group-hover:text-m-accent"
+										>
+											→
+										</span>
+									</div>
+									<p className="text-[14px] leading-[1.7] text-m-muted">
+										{t.body}
+									</p>
 								</div>
-								<p className="text-[13px] leading-[1.65] text-m-muted">
-									{t.body}
-								</p>
 							</Link>
 						))}
-					</div>
+					</Appear>
 				</div>
 			</section>
 
 			{/* WHY */}
-			<section className={`${SHELL} py-[64px]`} id="why">
-				<div className={KICKER}>Why GoPath</div>
-				<h2 className={`${H2} max-w-[26ch]`}>
-					One resource, because assembling five was the actual problem.
-				</h2>
-				<p className={`${LEAD} max-w-[60ch]`}>
-					The usual route is a tour for the syntax, a book for the
-					idiom, a conference talk for the concurrency bugs, and a job
-					for everything after that. Nothing here sends you away to
-					finish a lesson, and every claim on this site is one you can
-					run yourself.
-				</p>
-				<div className="grid grid-cols-1 gap-[32px] sm:grid-cols-2 sm:gap-x-[48px]">
-					{why.map((d) => (
+			<section className={`${SHELL} ${SECTION}`} id="why">
+				<Appear>
+					<div className={KICKER}>Why GoPath</div>
+					<h2 className={`${H2} max-w-[26ch]`}>
+						One resource, because assembling five was the actual
+						problem.
+					</h2>
+					<p className={`${LEAD} max-w-[62ch]`}>
+						The usual route is a tour for the syntax, a book for the
+						idiom, a conference talk for the concurrency bugs, and a
+						job for everything after that. Nothing here sends you
+						away to finish a lesson, and every claim on this site is
+						one you can run yourself.
+					</p>
+				</Appear>
+				<Appear
+					stagger
+					className="grid grid-cols-1 gap-[44px] sm:grid-cols-2 sm:gap-x-[64px]"
+				>
+					{why.map((d, i) => (
 						<div key={d.h}>
-							<h3 className="mb-[8px] text-[17px] font-extrabold leading-[1.2] text-m-ink">
+							<div className="mb-[14px] flex items-center gap-[14px]">
+								<span className="font-mono text-[11px] text-m-accent-ink">
+									{String(i + 1).padStart(2, "0")}
+								</span>
+								<span className="h-[2px] flex-1 bg-m-divider" />
+							</div>
+							<h3 className="mb-[10px] text-[18px] font-extrabold leading-[1.25] text-m-ink">
 								{d.h}
 							</h3>
-							<p className="text-[13px] leading-[1.65] text-m-muted">
+							<p className="text-[14px] leading-[1.7] text-m-muted">
 								{d.b}
 							</p>
 						</div>
 					))}
-				</div>
+				</Appear>
 			</section>
 
-			<footer className="border-t-2 border-m-divider">
+			<footer className="border-t-2 border-m-divider bg-m-surface">
 				<div
-					className={`${SHELL} py-[24px] font-mono text-[12px] text-m-faint`}
+					className={`${SHELL} flex flex-wrap items-center gap-[16px] py-[32px]`}
 				>
-					gopath.dev · learn go by building real things
+					<span className="font-mono text-[12px] text-m-faint">
+						gopath.dev · learn go by building real things
+					</span>
 				</div>
 			</footer>
 		</main>
@@ -352,30 +394,32 @@ function PathRow({
 	return (
 		<Link
 			href={href}
-			className={`group grid grid-cols-1 gap-[8px] border-t-2 border-m-divider py-[22px] transition-colors hover:bg-m-surface lg:grid-cols-[200px_1fr] lg:gap-[24px] ${
+			className={`m-row group grid grid-cols-1 gap-[12px] border-t-2 border-m-divider py-[28px] pl-0 pr-[8px] transition-colors duration-300 hover:bg-m-surface lg:grid-cols-[210px_1fr] lg:gap-[32px] lg:py-[32px] ${
 				last ? "border-b-2" : ""
 			}`}
 		>
-			<div>
+			<div className="pl-[16px] transition-[padding] duration-300 group-hover:pl-[24px]">
 				<div
-					className={`mb-[4px] font-mono text-[11px] uppercase tracking-[0.08em] ${
+					className={`mb-[6px] font-mono text-[11px] uppercase tracking-[0.08em] ${
 						muted ? "text-m-faint" : "text-m-accent-ink"
 					}`}
 				>
 					{num}
 				</div>
-				<div className="text-[15px] font-extrabold">{name}</div>
+				<div className="text-[17px] font-extrabold leading-[1.2]">
+					{name}
+				</div>
 				{desc && (
-					<div className="mt-[2px] text-[12px] text-m-faint">
+					<div className="mt-[6px] text-[12.5px] leading-[1.5] text-m-faint">
 						{desc}
 					</div>
 				)}
 			</div>
-			<div className="flex flex-wrap items-center gap-[10px]">
+			<div className="flex flex-wrap items-center gap-[10px] pl-[16px] lg:pl-0">
 				{children}
 				<span
 					aria-hidden="true"
-					className="ml-auto font-mono text-[12px] text-m-faint transition-transform group-hover:translate-x-1 group-hover:text-m-accent"
+					className="m-arrow ml-auto font-mono text-[13px] text-m-faint group-hover:text-m-accent"
 				>
 					→
 				</span>

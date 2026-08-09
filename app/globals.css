@@ -93,7 +93,12 @@
 	--m-surface: #eae9e9;
 	--m-ink: #201e1d;
 	--m-muted: color-mix(in srgb, #201e1d 72%, transparent);
-	--m-faint: color-mix(in srgb, #201e1d 55%, transparent);
+	/* 63%, not the system's 55%. Its own `.text-muted` is 55%, which measures
+	   3.65:1 here and fails AA for the 11px meta labels this carries (tier
+	   numbers, track labels, the code window's filename). 63% is the lowest
+	   step that clears 4.5:1 — 4.65:1 — so it stays clearly lighter than
+	   --m-muted at 6.2:1 and the two roles remain distinguishable. */
+	--m-faint: color-mix(in srgb, #201e1d 63%, transparent);
 	--m-divider: color-mix(in srgb, #201e1d 40%, transparent);
 
 	/* accent-500 base; -700 is the step that carries body-size text on this
@@ -162,6 +167,192 @@
 
 .m-scope ::selection {
 	background: color-mix(in srgb, var(--m-accent) 30%, transparent);
+}
+
+/* ─── Motion ────────────────────────────────────────────────────────────────
+   Modernist is flat and undecorated, so the life in it has to come from
+   movement rather than from shadow and gloss. One easing curve throughout, and
+   every animation collapses to nothing under `prefers-reduced-motion`.
+
+   The hidden state lives here rather than in JS so that reduced-motion is
+   honoured in CSS and the components never branch on it. The <noscript>
+   override in the root layout keeps content visible if the observer never runs.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+	--m-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.m-appear {
+	opacity: 0;
+	transform: translateY(18px);
+	transition:
+		opacity 0.62s var(--m-ease),
+		transform 0.62s var(--m-ease);
+}
+.m-appear.is-in {
+	opacity: 1;
+	transform: none;
+}
+
+/* Stagger without wrapper elements: the container carries the class and its
+   existing children inherit the entrance, so grids keep their real children. */
+.m-stagger > * {
+	opacity: 0;
+	transform: translateY(14px);
+	transition:
+		opacity 0.55s var(--m-ease),
+		transform 0.55s var(--m-ease);
+}
+.m-stagger.is-in > * {
+	opacity: 1;
+	transform: none;
+}
+.m-stagger.is-in > *:nth-child(1) {
+	transition-delay: 0ms;
+}
+.m-stagger.is-in > *:nth-child(2) {
+	transition-delay: 70ms;
+}
+.m-stagger.is-in > *:nth-child(3) {
+	transition-delay: 140ms;
+}
+.m-stagger.is-in > *:nth-child(4) {
+	transition-delay: 210ms;
+}
+.m-stagger.is-in > *:nth-child(5) {
+	transition-delay: 280ms;
+}
+.m-stagger.is-in > *:nth-child(6) {
+	transition-delay: 350ms;
+}
+
+/* Path rows: an accent bar grows from the left edge and the row takes a tint.
+   The bar starts at -2px so it covers the row's own top rule and the block
+   reads as one moving edge rather than two. */
+.m-row {
+	position: relative;
+}
+.m-row::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: -2px;
+	bottom: 0;
+	width: 0;
+	background: var(--m-accent);
+	transition: width 0.3s var(--m-ease);
+}
+.m-row:hover::before,
+.m-row:focus-visible::before {
+	width: 4px;
+}
+
+/* Cards respond by lifting their *contents*, not themselves. These cells sit in
+   a divider grid — the gap is the rule — so moving the cell would slide the
+   rule out from under it and flash the divider colour. Moving what is inside
+   reads as the same gesture and leaves the grid intact. */
+.m-card {
+	transition: background-color 0.3s var(--m-ease);
+}
+.m-card > * {
+	transition: transform 0.3s var(--m-ease);
+}
+.m-card:hover > * {
+	transform: translateY(-2px);
+}
+
+/* Nav links draw their own underline rather than borrowing the browser's. */
+.m-navlink {
+	position: relative;
+}
+.m-navlink::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: -5px;
+	height: 2px;
+	background: var(--m-accent);
+	transform: scaleX(0);
+	transform-origin: left;
+	transition: transform 0.26s var(--m-ease);
+}
+.m-navlink:hover::after,
+.m-navlink[data-active="true"]::after {
+	transform: scaleX(1);
+}
+
+/* The mega panel stays mounted and hides with `visibility`, which keeps its
+   links out of the tab order while still allowing it to fade both ways. */
+.m-mega {
+	transition:
+		opacity 0.22s ease,
+		transform 0.24s var(--m-ease),
+		visibility 0.24s;
+}
+.m-mega[data-open="false"] {
+	opacity: 0;
+	transform: translateY(-10px);
+	visibility: hidden;
+	pointer-events: none;
+}
+.m-mega[data-open="true"] {
+	opacity: 1;
+	transform: none;
+	visibility: visible;
+}
+
+/* A live caret in the otherwise still code window. */
+.m-caret {
+	display: inline-block;
+	width: 7px;
+	height: 1.02em;
+	background: var(--m-accent);
+	vertical-align: -2px;
+	animation: m-blink 1.15s step-end infinite;
+}
+@keyframes m-blink {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0;
+	}
+}
+
+.m-arrow {
+	transition: transform 0.28s var(--m-ease);
+}
+.group:hover .m-arrow {
+	transform: translateX(6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.m-appear,
+	.m-appear.is-in,
+	.m-stagger > *,
+	.m-stagger.is-in > * {
+		opacity: 1;
+		transform: none;
+		transition: none;
+		transition-delay: 0ms;
+	}
+	.m-row::before,
+	.m-card,
+	.m-card > *,
+	.m-navlink::after,
+	.m-mega,
+	.m-arrow {
+		transition: none;
+	}
+	.m-card:hover > *,
+	.group:hover .m-arrow {
+		transform: none;
+	}
+	.m-caret {
+		animation: none;
+	}
 }
 
 /* ─── Base styles ─────────────────────────────────────────────────────────── */
