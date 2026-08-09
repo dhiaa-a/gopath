@@ -25,11 +25,31 @@ const config: Config = {
 				"go-cyan": "rgb(var(--go-cyan) / <alpha-value>)",
 				"go-teal": "rgb(var(--go-teal) / <alpha-value>)",
 				"go-amber": "rgb(var(--go-amber) / <alpha-value>)",
+				// Modernist — the redesigned homepage and the shared nav. Plain
+				// var() rather than RGB channels because these carry color-mix()
+				// tints; reach for the named step you want instead of an opacity
+				// modifier (see the --m-* block in globals.css).
+				"m-bg": "var(--m-bg)",
+				"m-surface": "var(--m-surface)",
+				"m-ink": "var(--m-ink)",
+				"m-muted": "var(--m-muted)",
+				"m-faint": "var(--m-faint)",
+				"m-divider": "var(--m-divider)",
+				"m-accent": "var(--m-accent)",
+				"m-accent-ink": "var(--m-accent-ink)",
+				"m-accent-hover": "var(--m-accent-hover)",
+				"m-on-accent": "var(--m-on-accent)",
+				"m-tag-bg": "var(--m-tag-bg)",
+				"m-tag-fg": "var(--m-tag-fg)",
+				"m-tag-neutral-bg": "var(--m-tag-neutral-bg)",
+				"m-tag-neutral-fg": "var(--m-tag-neutral-fg)",
 			},
 			fontFamily: {
 				sans: ["Outfit", "sans-serif"],
 				serif: ["DM Serif Display", "serif"],
 				mono: ["JetBrains Mono", "monospace"],
+				// Modernist sets the whole system in one family at two weights.
+				display: ["Archivo", "system-ui", "sans-serif"],
 			},
 			fontSize: {
 				xs: ["0.75rem", { lineHeight: "1.5" }],

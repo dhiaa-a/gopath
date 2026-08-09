@@ -4,6 +4,38 @@ Append-only. Newest at the top.
 
 ---
 
+## 2026-08-09 — Homepage redesign: implementing the Modernist proof, and the three places I did not follow it
+
+**Scope:** `app/page.tsx`, `app/globals.css`, `app/layout.tsx`, `app/icon.svg` (new), `components/Nav.tsx`, `components/GoPathMark.tsx` (new), `components/ThemeToggle.tsx`, `lib/nav.ts` (new), `tailwind.config.ts`. No content modules, no labs, no validate contract, no other page.
+
+**What this is.** An external design handoff (Claude Design project *Website redesign and logo exploration*) delivered a critique of the live homepage, a new logo mark, and a redesigned homepage drawn in a design system called Modernist: one family (Archivo) at two weights, an off-white ground, a single red accent, zero corner radius, strong 2px rules, everything flush left. The handoff is high-fidelity — exact hexes, sizes, and copy — and scopes itself to the homepage plus the shared nav and footer, leaving every other page on the current design "until/unless redesigned separately". Implemented as specified.
+
+**Token namespacing.** Modernist's own variable names (`--color-surface`, `--color-text`) collide with the existing theme block, so the whole system is namespaced `--m-*` and exposed to Tailwind as `m-bg`, `m-ink`, `m-accent`, and so on. Two palettes now coexist deliberately: the redesigned surfaces read `--m-*`, everything else keeps the tokens it had.
+
+**Spacing is written in explicit px, not on Tailwind's rem scale.** `globals.css` sets `html { font-size: 17px }`, so every rem-based utility lands 6.25% off the value the handoff specifies — `gap-8` is 34px, not 32px. The handoff calls spacing final and exact, so the redesigned surfaces use `px-[32px]`-style arbitrary values throughout. Verified against the running page: section padding 32/64, hero gap 64 at 1.05fr/1fr, why-grid gap 32×48, tag padding 3×10, nav gap 32.
+
+**Three deliberate departures from the proof:**
+
+1. **Dark mode exists, and the handoff never mentions it.** Modernist is specified light-only, but the site server-renders dark, defaults to dark on OS preference, and ships a theme toggle. A light-only homepage would have stranded every dark-mode visitor on a white page with a toggle that did nothing there. Added a derived dark counterpart following the system's own rules for an ink ground (its logo spec already draws the mark "on ink ground", and its readme specifies a lifted accent step for dark). Measured: ink 15.7:1, muted 8.2:1, faint 5.1:1, accent phrase 8.4:1, CTA label on fill 5.3:1 — all AA. Aboturab chose this over a light-only homepage.
+
+2. **Kickers use accent-700, not the raw accent the proof draws.** The handoff's token table assigns `#ec3013` to kickers, but the design system's own readme says the accent-to-ground pair only reaches 3:1 — "enough for icons, large text and interface chrome, not for body copy" — and names `--color-accent-700` as the fix for accent text at paragraph size. An 11px label is not large text: measured 3.76:1 in the raw accent, which fails AA. At -700 it measures 6.41:1 light / 8.37:1 dark and still reads as the accent. Following the system's written rule over its own token table.
+
+3. **The hero code sample is the current site's, not the proof's.** The proof's sample does not compile: it calls `syscall.SIGINT` without importing `syscall`, and declares `mux` without using it — two errors, one of which is the single most common thing a Go beginner hits. On the homepage of a site that teaches Go, at rest, that is a defect rather than a design choice. Kept the sample the site already shipped, tightened to the proof's shorter shape, and checked it: `gofmt` clean, `go vet` clean, `go build` OK on go1.23.12. Indented with tabs so gofmt is satisfied; `pre` sets `tab-size: 4`, so it renders exactly as drawn.
+
+**The nav drops five links, so they got a mega menu.** The redesign cuts the bar from nine links to four plus a CTA, which orphans Basics, Failures, Idioms, Source and Capstone — the handoff flags this as unresolved and out of scope, recommending a "Projects" or "More" menu. Since `Nav` renders on every page, leaving it unresolved would have removed those sections' only nav entry site-wide. Aboturab asked for a mega menu: `Projects` now opens a three-column panel (the path / beyond the path / the eleven builds, pulled from the project modules). The mobile drawer carries the same destinations as flat labelled groups.
+
+**The mega trigger is a link, not a toggle button.** A trigger that opens on hover and toggles on click fights itself — the pointer opens the panel on the way to the click, so the click reads as "close". Caught this on the running page: clicking `Projects` closed a menu hover had just opened. It is now a real `<a href="/projects">`: hover and keyboard focus reveal the panel, Escape closes it and returns focus, and a tap or click navigates. Every input lands somewhere, and touch users — who never hover — are not tapping a control that only ever opens a menu.
+
+**Menu data is derived server-side.** `lib/nav.ts` runs in the layout and hands `Nav` plain `{href, label}` data. `Nav` is a client component; importing the project modules there would have shipped every step of every project to the browser to label eleven links.
+
+**Known and accepted, not fixed:** two contrast pairs the design chose deliberately stay as drawn — the primary button's off-white label on the accent fill (3.76:1 at 14px) and the 11px faint meta labels at 55% ink (3.65:1). Both are the design system's own token choices rather than implementation slips, and changing either would shift the look materially. Raised for Aboturab rather than decided unilaterally; the remedy for each is one token.
+
+**Also:** the mark ships as `app/icon.svg` (Next's app-router convention, auto-linked, replacing no previous favicon — the site had none) and as `components/GoPathMark.tsx` for the nav, which derives the waypoint node from the stroke width so the spec's 4/6 and 5/7 pairings both fall out of one component.
+
+**Verified:** `tsc --noEmit` clean, `npm run lint` clean (`--max-warnings=0`), `npm run build` clean at 124 static pages, no console errors, no horizontal overflow at 375px, `/concepts` confirmed still on the old design with 61 entries.
+
+---
+
 ## 2026-08-06 — Homepage repositioning: the brief's last gate, and the truth-audit that came with it
 
 **Scope:** `app/page.tsx`, `app/layout.tsx`. No content modules, no labs, no validate contract.
