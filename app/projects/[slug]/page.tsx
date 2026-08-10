@@ -10,6 +10,10 @@ import { SpacedReuseCallout } from "@/components/SpacedReuseCallout"
 import { StepRecap } from "@/components/StepRecap"
 import { PageNav, type PageNavItem } from "@/components/PageNav"
 import { Appear } from "@/components/Motion"
+import { VisitTracker } from "@/components/VisitTracker"
+import { StepMarker } from "@/components/StepMarker"
+import { ProgressBadge } from "@/components/ProgressBadge"
+import { stepId } from "@/lib/progress-ids"
 
 export function generateStaticParams() {
 	return projects.map((p) => ({ slug: p.slug }))
@@ -89,6 +93,10 @@ export default async function ProjectPage({
 	return (
 		<div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-[56px] px-6 py-16 xl:grid-cols-[minmax(0,760px)_220px] xl:justify-center">
 			<main className="min-w-0 xl:col-start-1">
+			<VisitTracker
+				href={`/projects/${project.slug}`}
+				label={project.name}
+			/>
 			{/* Breadcrumb */}
 			<div className="mb-8 flex items-center gap-2 font-mono text-xs text-muted">
 				<Link href="/" className="transition-colors hover:text-foreground">
@@ -176,11 +184,14 @@ export default async function ProjectPage({
 
 			{/* Steps */}
 			<div className="mb-6 flex items-baseline justify-between border-b-2 border-border pb-3">
-				<h2 className="text-3xl text-foreground">
+				<h2 className="flex items-baseline gap-3 text-3xl text-foreground">
 					Steps{" "}
 					<span className="font-mono text-base font-normal text-m-faint">
 						({project.steps.length})
 					</span>
+					<ProgressBadge
+						ids={project.steps.map((s) => stepId(project.slug, s.n))}
+					/>
 				</h2>
 				<span className="font-mono text-sm text-m-faint">
 					{stepCue[project.tier]}
@@ -210,11 +221,11 @@ export default async function ProjectPage({
 								id={`step-${step.n}`}
 								className="mb-4 flex items-center gap-4 scroll-mt-[110px]"
 							>
-								<div
-									className={`relative flex h-10 w-10 shrink-0 items-center justify-center border-2 border-border bg-surface font-mono text-sm font-semibold ${c.accent}`}
-								>
-									{step.n}
-								</div>
+								<StepMarker
+									projectSlug={project.slug}
+									n={step.n}
+									accentClass={c.accent}
+								/>
 								<h3 className="text-xl font-semibold text-foreground">
 									{step.heading.en}
 								</h3>

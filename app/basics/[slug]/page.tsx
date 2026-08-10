@@ -5,6 +5,8 @@ import { ContentRenderer } from "@/components/ContentRenderer"
 import { RetrievalPrompts } from "@/components/RetrievalPrompts"
 import { GoCode } from "@/components/GoCode"
 import { playgroundUrl } from "@/lib/playground"
+import { VisitTracker } from "@/components/VisitTracker"
+import { LessonMarker } from "@/components/LessonMarker"
 
 export function generateStaticParams() {
 	return tier0Lessons.map((l) => ({ slug: l.slug }))
@@ -44,6 +46,11 @@ export default async function BasicsLessonPage({
 
 	return (
 		<main className="mx-auto max-w-3xl px-6 py-16">
+			<VisitTracker
+				href={`/basics/${lesson.slug}`}
+				label={lesson.title}
+			/>
+
 			{/* Breadcrumb */}
 			<div className="mb-8 flex items-center gap-2 font-mono text-xs text-muted">
 				<Link href="/" className="transition-colors hover:text-foreground">
@@ -113,8 +120,12 @@ export default async function BasicsLessonPage({
 			{/* Retrieval prompts */}
 			<RetrievalPrompts prompts={lesson.retrievalPrompts} />
 
+			<div className="mt-10">
+				<LessonMarker slug={lesson.slug} />
+			</div>
+
 			{/* Prev / next navigation */}
-			<div className="mt-14 flex items-center justify-between border-t border-border pt-8">
+			<div className="mt-8 flex items-center justify-between border-t border-border pt-8">
 				{prev ? (
 					<Link
 						href={`/basics/${prev.slug}`}

@@ -5,10 +5,21 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { GoPathMark } from "@/components/GoPathMark"
 import { ReadingProgress } from "@/components/ReadingProgress"
+import { useProgress } from "@/lib/progress"
 import type { NavMenu } from "@/lib/nav"
+
+const START_CTA = { href: "/projects/cli-renamer", label: "Start the path" }
 
 export default function Nav({ menu }: { menu: NavMenu }) {
 	const pathname = usePathname()
+	// Server render (and the client's first hydration pass) always sees the
+	// empty snapshot, so the CTA starts as "Start the path" and swaps to
+	// "Continue: X" once the real client snapshot lands — no mismatch, the
+	// same swap ThemeToggle already does for the theme icon.
+	const progress = useProgress()
+	const cta = progress.last
+		? { href: progress.last.href, label: `Continue: ${progress.last.label}` }
+		: START_CTA
 	const [mobileOpen, setMobileOpen] = useState(false)
 	const [megaOpen, setMegaOpen] = useState(false)
 	const megaRef = useRef<HTMLDivElement>(null)
@@ -152,11 +163,11 @@ export default function Nav({ menu }: { menu: NavMenu }) {
 				<div className="flex items-center gap-[14px]">
 					<ThemeToggle />
 					<Link
-						href="/projects/cli-renamer"
-						className="group hidden items-center gap-[8px] bg-m-accent px-[20px] py-[11px] text-[13px] font-extrabold text-m-on-accent transition-colors duration-300 hover:bg-m-accent-hover lg:flex"
+						href={cta.href}
+						className="group hidden max-w-[220px] items-center gap-[8px] bg-m-accent px-[20px] py-[11px] text-[13px] font-extrabold text-m-on-accent transition-colors duration-300 hover:bg-m-accent-hover lg:flex"
 					>
-						Start the path
-						<span aria-hidden="true" className="m-arrow">
+						<span className="truncate">{cta.label}</span>
+						<span aria-hidden="true" className="m-arrow shrink-0">
 							→
 						</span>
 					</Link>
@@ -200,10 +211,10 @@ export default function Nav({ menu }: { menu: NavMenu }) {
 							links={menu.tracks}
 						/>
 						<Link
-							href="/projects/cli-renamer"
-							className="inline-block self-start bg-m-accent px-[20px] py-[12px] text-[13px] font-extrabold text-m-on-accent"
+							href={cta.href}
+							className="inline-block max-w-full truncate self-start bg-m-accent px-[20px] py-[12px] text-[13px] font-extrabold text-m-on-accent"
 						>
-							Start the path →
+							{cta.label} →
 						</Link>
 					</div>
 				</div>

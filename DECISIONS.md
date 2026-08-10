@@ -4,6 +4,24 @@ Append-only. Newest at the top.
 
 ---
 
+## 2026-08-09 — Progress tracking (localStorage MVP): one flat id map, and a continue button that goes in the nav
+
+**Scope:** `lib/progress.ts` (new), `lib/progress-ids.ts` (new), `components/{VisitTracker,ProgressBadge,StepMarker,LessonMarker}.tsx` (new), `app/page.tsx`, `app/basics/{page,[slug]/page}.tsx`, `app/projects/[slug]/page.tsx`, `components/Nav.tsx`. Ships Up Next #4 as specced: "no backend yet; just visible tier completion and a last-visited continue button."
+
+**One flat map of ids, not separate step/lesson collections.** A step and a Tier 0 lesson are both just "a thing you can check off" from the UI's point of view, and a single namespaced id (`step:<project>:<n>`, `lesson:<slug>`) lets one function — `countDone(data, ids)` — answer "how many of these are done" for a single project's header, a whole tier's aggregate on the homepage, or one marker, without three separate code paths.
+
+**Split into two modules over one, and it was not optional.** The store (`lib/progress.ts`) is `"use client"`, because it touches `localStorage` and `useSyncExternalStore`. The homepage and the basics index are server components that need to build id arrays — `stepId(project.slug, s.n)` — to hand to `<ProgressBadge>`. Calling a function from a `"use client"` module inside a server component is a Next.js **build error**, not a lint warning, and it was caught exactly that way: `npm run build` failed on `/` with "Attempted to call lessonId() from the server but lessonId is on the client." The fix is `lib/progress-ids.ts`, holding only the pure id builders and the `ProgressData` type — no React, no storage — importable from either side. `lib/progress.ts` re-exports them so client components can still pull everything from one path.
+
+**State lives in a module-level external store, the same shape as `ThemeToggle`'s.** Progress has to be readable from components with no shared parent — the nav's CTA, a step marker three levels into a server-rendered tree — and a React context provider would mean wrapping the entire app in a client boundary for what is, in the end, one object synced to `localStorage`. `useSyncExternalStore`'s server snapshot is the empty state, so SSR and the first hydration pass always render "Start the path"; the real snapshot lands right after, the same swap `ThemeToggle` already does for its icon. No hydration mismatch, verified: the console stayed clean on load.
+
+**The continue affordance is literally "last visited," not a guess at "where you meant to resume."** ROADMAP asked for a last-visited button, not a smart resume-to-next-incomplete-step, and the two are different features — a wrong guess at intent is worse than an honest link to the page you were last on. `VisitTracker` records `{href, label}` on mount of any project or basics-lesson page; the nav's primary CTA reads it and swaps from "Start the path →" to "Continue: `<label>` →" everywhere in the site, not just on the homepage, since the nav is the one element present on every page.
+
+**One deliberate, disclosed reuse of an already-flagged color pair.** The step and lesson markers' "done" state uses the same `bg-m-accent`/`text-m-on-accent` fill as the primary button, which measures 3.76:1 in light mode — the exact pair already logged as below AA and parked for Aboturab's call. Considered inventing a different done-state color to dodge it, and didn't: that would leave the site with two different answers to "accent fill, light label" instead of one flagged one, and whatever fix lands for the button now fixes all three uses at once. Noted in the existing ROADMAP entry rather than opened as a new one.
+
+**Verified in the browser, not just built:** cleared `localStorage`, confirmed "Start the path" on a cold load, clicked a step marker and watched the project's own badge, the homepage tier badge, and the nav CTA all update from the same click with no reload — that's the actual claim (one store, many readers), not just that each piece renders. Marked a basics lesson complete and confirmed the index page shows a checkmark instead of its order number. tsc, lint, and build clean at 124 pages.
+
+---
+
 ## 2026-08-09 — Redesign, third pass: migrating the whole site through the token layer, and making a 15,000px page navigable
 
 **Scope:** `app/globals.css`, `tailwind.config.ts`, `app/projects/[slug]`, `app/source/[slug]`, `components/{ProjectSection,GoCode,PageNav,ReadingProgress}`, `app/{basics,concepts}/[slug]`. No content modules, no copy, no validate contract.

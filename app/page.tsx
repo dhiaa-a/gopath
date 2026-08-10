@@ -1,6 +1,9 @@
 import Link from "next/link"
 import { getProjectsByTier } from "@/lib/projects"
+import { tier0Lessons } from "@/lib/tier0"
 import { GoCode } from "@/components/GoCode"
+import { ProgressBadge } from "@/components/ProgressBadge"
+import { lessonId, stepId } from "@/lib/progress-ids"
 import { Appear, CountUp } from "@/components/Motion"
 
 // Short enough to sit in the label cell. The longer forms the project pages use
@@ -223,7 +226,13 @@ export default function Home() {
 				</Appear>
 
 				<Appear stagger>
-					<PathRow href="/basics" num="Tier 00" name="Basics" muted>
+					<PathRow
+						href="/basics"
+						num="Tier 00"
+						name="Basics"
+						muted
+						progressIds={tier0Lessons.map((l) => lessonId(l.slug))}
+					>
 						<span className="text-[15px] text-m-muted">
 							14 micro-lessons teaching the syntax in-house, about
 							3 hours
@@ -240,6 +249,9 @@ export default function Home() {
 								num={m.num}
 								name={m.name}
 								desc={m.desc}
+								progressIds={projects.flatMap((p) =>
+									p.steps.map((s) => stepId(p.slug, s.n)),
+								)}
 							>
 								{projects.map((p) => (
 									<span
@@ -381,6 +393,7 @@ function PathRow({
 	desc,
 	muted,
 	last,
+	progressIds,
 	children,
 }: {
 	href: string
@@ -389,6 +402,9 @@ function PathRow({
 	desc?: string
 	muted?: boolean
 	last?: boolean
+	// Step or lesson ids this row's progress badge counts against. Omitted
+	// for the capstone — zero guidance means no steps to check off.
+	progressIds?: string[]
 	children: React.ReactNode
 }) {
 	return (
@@ -400,11 +416,12 @@ function PathRow({
 		>
 			<div className="pl-[16px] transition-[padding] duration-300 group-hover:pl-[24px]">
 				<div
-					className={`mb-[6px] font-mono text-[11px] uppercase tracking-[0.08em] ${
+					className={`mb-[6px] flex items-center gap-[10px] font-mono text-[11px] uppercase tracking-[0.08em] ${
 						muted ? "text-m-faint" : "text-m-accent-ink"
 					}`}
 				>
-					{num}
+					<span>{num}</span>
+					{progressIds && <ProgressBadge ids={progressIds} />}
 				</div>
 				<div className="text-[17px] font-extrabold leading-[1.2]">
 					{name}
