@@ -4,6 +4,28 @@ Append-only. Newest at the top.
 
 ---
 
+## 2026-08-09 — Search (fuse.js): the whole site, not just the two types the backlog named, and one entry that would have been silently missing
+
+**Scope:** `lib/search-index.ts` (new), `components/SearchPalette.tsx` (new), `app/layout.tsx`, `components/Nav.tsx`. Adds `fuse.js` as a dependency (zero dependencies of its own). Ships Up Next #5, scoped wider than its literal wording.
+
+**Scoped to every content type, not the two the backlog named.** Up Next #5 says "search across projects and concepts" — written before failure labs, idiom exercises, source walkthroughs, and Tier 0 existed as separate tracks. The reason the item exists at all — "the site is now large enough that browsing is slow" — applies exactly as much to a failure lab as to a project, so the index covers all six content types plus the capstone. Logged as a deliberate scope call, not a literal reading of the backlog line.
+
+**The index is `{type, title, subtitle, href, tags}` only — never full content.** Project step bodies, concept prose, and failure-lab diagnosis HTML never enter it. That keeps ~120 records at a few hundred bytes each (~15KB uncompressed), trivial to pass server → client as a prop, and — the real reason — keeps every project's full lesson text and every concept's full explanation out of the search palette's client bundle, which is what would actually be heavy.
+
+**The capstone is not an array, and it was missing on the first pass.** Every other content type is `Type[]`, mapped straight into records. `capstone` (`lib/capstone.ts`) is a single object — the one entity that doesn't fit the `.map()` pattern the rest of the file uses — and it was absent from the index until a manual search for "capstone" during browser verification came back empty. Added as a one-off literal entry, with a comment naming exactly why it needed one.
+
+**Querying "capstone" still failed after adding the record, for an unrelated reason.** `capstone.name` is `"linkd"` and its tagline never uses the word "capstone" — so Fuse's fuzzy match against title/subtitle/tags had nothing close enough to match. The record's own `type` field ("Capstone", "Concept", "Failure lab", …) is metadata Fuse never looks at, not searchable text. Fixed generally, not as a one-off: every record's `type` is folded into its own `tags` array, so a type-name search ("capstone", "concept", "failure") works for all six categories, not patched only for the one that happened to get caught.
+
+**The trigger is a real link's sibling, not a toggle-inside-toggle.** Learned from the mega menu's earlier bug in the same file (hover-open + click-toggle fighting each other): the search trigger is a plain button that only ever opens, with its own effect handling Escape/focus/scroll-lock while open. The ⌘K/Ctrl+K global listener is registered once, unconditionally, in its own effect — it has to outlive the panel to reopen it, unlike everything else.
+
+**Query/selection reset on open moved out of the effect entirely, matching Nav's own pattern for closing on navigation.** The natural first draft called `setQuery("")` synchronously inside `useEffect(() => { if (!open) return; ... }, [open])`, which is a lint error (`react-hooks/set-state-in-effect`) for the same reason it was in Nav: reacting to a state change during render is not a sync with an external system. Split it: a render-time `wasOpen` comparison (identical shape to Nav's `lastPathname` trick) resets query/selection, and the effect keeps only genuine DOM work — focusing the input, locking `body.style.overflow`, subscribing to Escape.
+
+**Verified end to end in the browser, including one deliberately wrong query.** Searched the typo "gorutine" and got four different content types back (a concept, an idiom exercise, a failure lab, three projects) — confirming cross-type fuzzy matching, not just an exact-title lookup. Arrow-key navigation, Enter-to-navigate (landed on `/concepts/scheduler`), Escape, and ⌘K toggle all exercised directly; the first ⌘K test produced a false negative from double-dispatching the same synthetic event in one test call, re-verified clean with a single dispatch. Contrast checked in both themes on the dialog's title, subtitle, type label, and input text — all pass AA. No horizontal overflow at 375px.
+
+**`npm audit` surfaced 8 pre-existing vulnerabilities while installing `fuse.js`**, none of them from `fuse.js` itself (it has zero dependencies) — all transitive from `next`/`eslint` tooling. Not fixed here: `next` itself is in the high-severity list, so `npm audit fix` risks a Next.js version bump as an unrelated side effect of a search feature. Logged in ROADMAP as its own item for a deliberate pass.
+
+---
+
 ## 2026-08-09 — Progress tracking (localStorage MVP): one flat id map, and a continue button that goes in the nav
 
 **Scope:** `lib/progress.ts` (new), `lib/progress-ids.ts` (new), `components/{VisitTracker,ProgressBadge,StepMarker,LessonMarker}.tsx` (new), `app/page.tsx`, `app/basics/{page,[slug]/page}.tsx`, `app/projects/[slug]/page.tsx`, `components/Nav.tsx`. Ships Up Next #4 as specced: "no backend yet; just visible tier completion and a last-visited continue button."

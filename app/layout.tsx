@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import "./globals.css"
 import Nav from "@/components/Nav"
 import { getNavMenu } from "@/lib/nav"
+import { buildSearchIndex } from "@/lib/search-index"
 
 export const metadata: Metadata = {
 	title: "GoPath — Learn Go by Building Real Things",
@@ -43,7 +44,7 @@ export default function RootLayout({
 				{/* Derived here rather than inside Nav: Nav is a client component,
 				    and importing the project modules there would ship every step
 				    of every project to the browser to label eleven links. */}
-				<Nav menu={getNavMenu()} />
+				<Nav menu={getNavMenu()} searchRecords={buildSearchIndex()} />
 				{children}
 			</body>
 		</html>

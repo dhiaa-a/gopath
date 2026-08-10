@@ -5,12 +5,20 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { GoPathMark } from "@/components/GoPathMark"
 import { ReadingProgress } from "@/components/ReadingProgress"
+import { SearchPalette } from "@/components/SearchPalette"
 import { useProgress } from "@/lib/progress"
 import type { NavMenu } from "@/lib/nav"
+import type { SearchRecord } from "@/lib/search-index"
 
 const START_CTA = { href: "/projects/cli-renamer", label: "Start the path" }
 
-export default function Nav({ menu }: { menu: NavMenu }) {
+export default function Nav({
+	menu,
+	searchRecords,
+}: {
+	menu: NavMenu
+	searchRecords: SearchRecord[]
+}) {
 	const pathname = usePathname()
 	// Server render (and the client's first hydration pass) always sees the
 	// empty snapshot, so the CTA starts as "Start the path" and swaps to
@@ -161,6 +169,7 @@ export default function Nav({ menu }: { menu: NavMenu }) {
 				</div>
 
 				<div className="flex items-center gap-[14px]">
+					<SearchPalette records={searchRecords} />
 					<ThemeToggle />
 					<Link
 						href={cta.href}
