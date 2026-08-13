@@ -4,6 +4,126 @@ Append-only. Newest at the top.
 
 ---
 
+## 2026-08-09 — Search (fuse.js): the whole site, not just the two types the backlog named, and one entry that would have been silently missing
+
+**Scope:** `lib/search-index.ts` (new), `components/SearchPalette.tsx` (new), `app/layout.tsx`, `components/Nav.tsx`. Adds `fuse.js` as a dependency (zero dependencies of its own). Ships Up Next #5, scoped wider than its literal wording.
+
+**Scoped to every content type, not the two the backlog named.** Up Next #5 says "search across projects and concepts" — written before failure labs, idiom exercises, source walkthroughs, and Tier 0 existed as separate tracks. The reason the item exists at all — "the site is now large enough that browsing is slow" — applies exactly as much to a failure lab as to a project, so the index covers all six content types plus the capstone. Logged as a deliberate scope call, not a literal reading of the backlog line.
+
+**The index is `{type, title, subtitle, href, tags}` only — never full content.** Project step bodies, concept prose, and failure-lab diagnosis HTML never enter it. That keeps ~120 records at a few hundred bytes each (~15KB uncompressed), trivial to pass server → client as a prop, and — the real reason — keeps every project's full lesson text and every concept's full explanation out of the search palette's client bundle, which is what would actually be heavy.
+
+**The capstone is not an array, and it was missing on the first pass.** Every other content type is `Type[]`, mapped straight into records. `capstone` (`lib/capstone.ts`) is a single object — the one entity that doesn't fit the `.map()` pattern the rest of the file uses — and it was absent from the index until a manual search for "capstone" during browser verification came back empty. Added as a one-off literal entry, with a comment naming exactly why it needed one.
+
+**Querying "capstone" still failed after adding the record, for an unrelated reason.** `capstone.name` is `"linkd"` and its tagline never uses the word "capstone" — so Fuse's fuzzy match against title/subtitle/tags had nothing close enough to match. The record's own `type` field ("Capstone", "Concept", "Failure lab", …) is metadata Fuse never looks at, not searchable text. Fixed generally, not as a one-off: every record's `type` is folded into its own `tags` array, so a type-name search ("capstone", "concept", "failure") works for all six categories, not patched only for the one that happened to get caught.
+
+**The trigger is a real link's sibling, not a toggle-inside-toggle.** Learned from the mega menu's earlier bug in the same file (hover-open + click-toggle fighting each other): the search trigger is a plain button that only ever opens, with its own effect handling Escape/focus/scroll-lock while open. The ⌘K/Ctrl+K global listener is registered once, unconditionally, in its own effect — it has to outlive the panel to reopen it, unlike everything else.
+
+**Query/selection reset on open moved out of the effect entirely, matching Nav's own pattern for closing on navigation.** The natural first draft called `setQuery("")` synchronously inside `useEffect(() => { if (!open) return; ... }, [open])`, which is a lint error (`react-hooks/set-state-in-effect`) for the same reason it was in Nav: reacting to a state change during render is not a sync with an external system. Split it: a render-time `wasOpen` comparison (identical shape to Nav's `lastPathname` trick) resets query/selection, and the effect keeps only genuine DOM work — focusing the input, locking `body.style.overflow`, subscribing to Escape.
+
+**Verified end to end in the browser, including one deliberately wrong query.** Searched the typo "gorutine" and got four different content types back (a concept, an idiom exercise, a failure lab, three projects) — confirming cross-type fuzzy matching, not just an exact-title lookup. Arrow-key navigation, Enter-to-navigate (landed on `/concepts/scheduler`), Escape, and ⌘K toggle all exercised directly; the first ⌘K test produced a false negative from double-dispatching the same synthetic event in one test call, re-verified clean with a single dispatch. Contrast checked in both themes on the dialog's title, subtitle, type label, and input text — all pass AA. No horizontal overflow at 375px.
+
+**`npm audit` surfaced 8 pre-existing vulnerabilities while installing `fuse.js`**, none of them from `fuse.js` itself (it has zero dependencies) — all transitive from `next`/`eslint` tooling. Not fixed here: `next` itself is in the high-severity list, so `npm audit fix` risks a Next.js version bump as an unrelated side effect of a search feature. Logged in ROADMAP as its own item for a deliberate pass.
+
+---
+
+## 2026-08-09 — Progress tracking (localStorage MVP): one flat id map, and a continue button that goes in the nav
+
+**Scope:** `lib/progress.ts` (new), `lib/progress-ids.ts` (new), `components/{VisitTracker,ProgressBadge,StepMarker,LessonMarker}.tsx` (new), `app/page.tsx`, `app/basics/{page,[slug]/page}.tsx`, `app/projects/[slug]/page.tsx`, `components/Nav.tsx`. Ships Up Next #4 as specced: "no backend yet; just visible tier completion and a last-visited continue button."
+
+**One flat map of ids, not separate step/lesson collections.** A step and a Tier 0 lesson are both just "a thing you can check off" from the UI's point of view, and a single namespaced id (`step:<project>:<n>`, `lesson:<slug>`) lets one function — `countDone(data, ids)` — answer "how many of these are done" for a single project's header, a whole tier's aggregate on the homepage, or one marker, without three separate code paths.
+
+**Split into two modules over one, and it was not optional.** The store (`lib/progress.ts`) is `"use client"`, because it touches `localStorage` and `useSyncExternalStore`. The homepage and the basics index are server components that need to build id arrays — `stepId(project.slug, s.n)` — to hand to `<ProgressBadge>`. Calling a function from a `"use client"` module inside a server component is a Next.js **build error**, not a lint warning, and it was caught exactly that way: `npm run build` failed on `/` with "Attempted to call lessonId() from the server but lessonId is on the client." The fix is `lib/progress-ids.ts`, holding only the pure id builders and the `ProgressData` type — no React, no storage — importable from either side. `lib/progress.ts` re-exports them so client components can still pull everything from one path.
+
+**State lives in a module-level external store, the same shape as `ThemeToggle`'s.** Progress has to be readable from components with no shared parent — the nav's CTA, a step marker three levels into a server-rendered tree — and a React context provider would mean wrapping the entire app in a client boundary for what is, in the end, one object synced to `localStorage`. `useSyncExternalStore`'s server snapshot is the empty state, so SSR and the first hydration pass always render "Start the path"; the real snapshot lands right after, the same swap `ThemeToggle` already does for its icon. No hydration mismatch, verified: the console stayed clean on load.
+
+**The continue affordance is literally "last visited," not a guess at "where you meant to resume."** ROADMAP asked for a last-visited button, not a smart resume-to-next-incomplete-step, and the two are different features — a wrong guess at intent is worse than an honest link to the page you were last on. `VisitTracker` records `{href, label}` on mount of any project or basics-lesson page; the nav's primary CTA reads it and swaps from "Start the path →" to "Continue: `<label>` →" everywhere in the site, not just on the homepage, since the nav is the one element present on every page.
+
+**One deliberate, disclosed reuse of an already-flagged color pair.** The step and lesson markers' "done" state uses the same `bg-m-accent`/`text-m-on-accent` fill as the primary button, which measures 3.76:1 in light mode — the exact pair already logged as below AA and parked for Aboturab's call. Considered inventing a different done-state color to dodge it, and didn't: that would leave the site with two different answers to "accent fill, light label" instead of one flagged one, and whatever fix lands for the button now fixes all three uses at once. Noted in the existing ROADMAP entry rather than opened as a new one.
+
+**Verified in the browser, not just built:** cleared `localStorage`, confirmed "Start the path" on a cold load, clicked a step marker and watched the project's own badge, the homepage tier badge, and the nav CTA all update from the same click with no reload — that's the actual claim (one store, many readers), not just that each piece renders. Marked a basics lesson complete and confirmed the index page shows a checkmark instead of its order number. tsc, lint, and build clean at 124 pages.
+
+---
+
+## 2026-08-09 — Redesign, third pass: migrating the whole site through the token layer, and making a 15,000px page navigable
+
+**Scope:** `app/globals.css`, `tailwind.config.ts`, `app/projects/[slug]`, `app/source/[slug]`, `components/{ProjectSection,GoCode,PageNav,ReadingProgress}`, `app/{basics,concepts}/[slug]`. No content modules, no copy, no validate contract.
+
+**The migration was done at the token layer, not by editing pages.** A count first: roughly a thousand utility uses across twenty-odd files — `go-cyan` ×100, `text-muted` ×164, `text-foreground` ×112, `border-border` ×80, `rounded*` ×109, `font-serif` ×29. Rewriting those by hand is a large diff with a large chance of missing some. Instead the original semantic tokens now *alias* the Modernist ones, and two Tailwind scales were repointed: `sans` and `serif` both resolve to Archivo (so the 29 serif headings convert untouched, and the critique's "three families read as three different sites" is fixed everywhere rather than only on the homepage), and the whole `borderRadius` scale is 0 (the system's "do not round a corner anywhere"). Verified on a project page afterwards: only Archivo and JetBrains Mono in use, zero rounded elements, modernist ground and accent throughout.
+
+**The three Go brand colours collapse to one role**, which is what a mono scheme means. They resolve to **accent-700, not the raw accent**, because 48 of their ~210 uses are `text-go-cyan` on small labels where the raw accent measures 3.76:1 and fails AA. Tier differentiation is no loss: the labels already say "Tier 01/02/03", and the redesigned homepage had already put all three tiers in one colour.
+
+**Syntax highlighting was retuned, not stripped.** The obvious reading of a mono system is that code goes ink-and-one-accent, which is what the homepage hero does. That is wrong for the rest of the site: the handoff itself keeps a monospace face because code is "functional, not decorative", and by exactly that reasoning the colour separating a string from a comment on a site that teaches Go is carrying information. Kept eight distinct token colours drawn from the accent ramp and neutrals, separated by value where they cannot be separated by hue. All eight measured against the code surface in both themes.
+
+**One real contrast miss, found by measuring rather than assuming:** `--sx-comment` at `#6f6c6c` came in at **4.29:1** against the code block's own surface (`#eae9e9`, darker than the page ground it was chosen against). On the source-reading walkthroughs the comments are the standard library's own and are the thing being taught — content, not chrome — so it moved to `#686565`, 4.76:1, still a step lighter than `--sx-punct` so the two stay apart.
+
+**Contrast sweeps needed two corrections before they meant anything.** The first pass reported failures at 2.02:1 that were not real: `bg-go-cyan/5` is a 5% *tint*, and treating the nearest painted layer as opaque ignores everything behind it, so the sweep now composites the full background stack. The second pass reported failures at ~1.00:1 — foreground equal to background — which is the signature of a colour pinned mid-transition, because toggling `.dark` in a pane that composites no frames leaves `getComputedStyle` returning the old value. Settling animations first fixed it. With both corrected: **zero failures across the homepage, project, concept, capstone, failure and source pages in both themes.**
+
+**A project page is ~15,000px — about seventeen screens.** That was the actual complaint, and it is a navigation problem, not a prose problem. Three things:
+
+- **`PageNav`**, a sticky contents rail at `xl` and up, built from what the page actually renders (a project with no constraints section gets no orphan entry). It tracks the section you are *in* rather than the one you last clicked, so it doubles as a position indicator. Active section is "the last one whose top has passed a reading line", not "topmost visible" — the latter flickers backwards whenever a tall block scrolls through, and "most visible" sits on a long step while its successor fills the screen. Added to project pages and to source walkthroughs (~10,700px, twelve screens).
+- **`ReadingProgress`**, drawn into the nav's existing 2px bottom rule rather than added as a new bar. The divider already spans the viewport; filling it with the accent answers "how much is left" without introducing an element the system would have to justify.
+- **A single spine behind the step markers**, so ten steps read as one run of work rather than ten unrelated blocks, plus scroll entrances per step.
+
+**Verified:** tsc, lint (`--max-warnings=0`), validate and build clean at 124 pages; every rail anchor resolves to a real element on both page types; no horizontal overflow; all thirteen page types return 200.
+
+---
+
+## 2026-08-09 — Redesign, second pass: the mega menu's dead strip, and giving a flat system somewhere to move
+
+**Scope:** `app/page.tsx`, `app/globals.css`, `app/layout.tsx`, `components/Nav.tsx`, `components/Motion.tsx` (new). No content changes, no copy changes, no other page.
+
+**Why.** Aboturab's read of the first pass: cramped, static, and the mega menu unusable — "it disappears" when you try to move into it. All three are fair, and the first is a real bug rather than taste.
+
+**The mega menu had a dead strip.** The panel hangs below the whole nav bar, but the trigger's hover box ends with the word "Projects" — measured on the running page, the trigger's box ended at y=45 and the panel began at y=66. Those 21px of nav padding belong to neither element, so a pointer travelling straight down from the trigger into the panel left the wrapper, fired `mouseleave`, and unmounted the panel before it could be reached. Fixed by two things together, because either alone is fragile: the trigger's hit area is padded down to the nav's bottom edge (`-my-[16px] py-[16px]`, so the box grows without moving the layout) which takes the gap to a measured **0px**, and closing is now deferred 220ms so a diagonal approach or a brief excursion does not count as leaving. Re-entering cancels the pending close.
+
+**The panel also stopped unmounting.** It now stays in the DOM and hides with `visibility: hidden`, which keeps its links out of the tab order exactly as unmounting did while letting it fade in *and* out. Unmounting could only ever animate one direction.
+
+**And it was too dense.** 18 links in three columns, every one with a second line of explanatory text. The third column listed all eleven projects individually — the single biggest contributor — and is now three tier-level rows with a project count each. 18 links down to 10, column padding up to 40px, gutters to 48px. The full project list is one click away at `/projects`, which is where the trigger itself goes.
+
+**Motion, because a flat system has nothing else.** Modernist is deliberately undecorated — no radius, no shadows, no gradients — so there is no gloss to make it feel alive; the life has to be movement. Added one easing curve (`--m-ease`) and: scroll entrances with per-child stagger, a count-up on the stats, an accent bar that grows from the left edge of each path row on hover, arrows that slide, nav links that draw their own underline, a caret blinking in the code window. Every one collapses to nothing under `prefers-reduced-motion`.
+
+**The entrance needed a fail-safe, and finding out why was the useful part.** Scroll entrance means content starts at `opacity: 0` and is revealed by an IntersectionObserver — so an observer that never delivers leaves the homepage permanently blank. Verifying in the browser, *nothing* revealed; the cause turned out to be that the preview pane is not displayed, so `document.visibilityState` is `hidden`, no animation frames run, and an observer cannot deliver callbacks. An artifact rather than a page bug — but it is the exact shape of the real failure, and a background tab reproduces it. IntersectionObserver always delivers an initial callback per observed element, so "nothing has arrived at all" is a reliable signal it is not working: if no callback of any kind lands within 1500ms, the content reveals anyway. Healthy observers are untouched, so scroll entrances still behave. There is also a `<noscript>` override for readers without JavaScript at all. A statically generated site being readable is not something to stake on one browser API.
+
+**`--m-faint` moved from 55% to 63% ink.** Previously flagged as accepted-as-designed; with the page being reworked anyway it was cheap to fix. The system's own `.text-muted` is 55%, which measures 3.65:1 and fails AA for the 11px meta labels it carries. 63% is the lowest step clearing 4.5:1 (measured 4.65:1 light, 5.09:1 dark) and stays clearly lighter than `--m-muted` at 6.2:1, so the two roles remain distinguishable. The primary button's label on the accent fill is still 3.76:1 and still Aboturab's call, since it changes the loudest element on the page.
+
+**Spacing.** Sections 64px → 112px, hero 88/104 with an 80px gutter, path rows 32px, track cells 32px, nav 79px tall. H1 to 58px at xl with tighter tracking. The stats strip stopped being one flat 18px line and became accent numerals at 30px against muted labels.
+
+**Verified:** tsc, lint (`--max-warnings=0`) and build clean at 124 pages; mega gap measured at 0px and real trusted hover confirmed opening it; the fail-safe proven by the pane that cannot deliver callbacks (9/9 revealed); no horizontal overflow at 375px; contrast re-measured in both themes.
+
+---
+
+## 2026-08-09 — Homepage redesign: implementing the Modernist proof, and the three places I did not follow it
+
+**Scope:** `app/page.tsx`, `app/globals.css`, `app/layout.tsx`, `app/icon.svg` (new), `components/Nav.tsx`, `components/GoPathMark.tsx` (new), `components/ThemeToggle.tsx`, `lib/nav.ts` (new), `tailwind.config.ts`. No content modules, no labs, no validate contract, no other page.
+
+**What this is.** An external design handoff (Claude Design project *Website redesign and logo exploration*) delivered a critique of the live homepage, a new logo mark, and a redesigned homepage drawn in a design system called Modernist: one family (Archivo) at two weights, an off-white ground, a single red accent, zero corner radius, strong 2px rules, everything flush left. The handoff is high-fidelity — exact hexes, sizes, and copy — and scopes itself to the homepage plus the shared nav and footer, leaving every other page on the current design "until/unless redesigned separately". Implemented as specified.
+
+**Token namespacing.** Modernist's own variable names (`--color-surface`, `--color-text`) collide with the existing theme block, so the whole system is namespaced `--m-*` and exposed to Tailwind as `m-bg`, `m-ink`, `m-accent`, and so on. Two palettes now coexist deliberately: the redesigned surfaces read `--m-*`, everything else keeps the tokens it had.
+
+**Spacing is written in explicit px, not on Tailwind's rem scale.** `globals.css` sets `html { font-size: 17px }`, so every rem-based utility lands 6.25% off the value the handoff specifies — `gap-8` is 34px, not 32px. The handoff calls spacing final and exact, so the redesigned surfaces use `px-[32px]`-style arbitrary values throughout. Verified against the running page: section padding 32/64, hero gap 64 at 1.05fr/1fr, why-grid gap 32×48, tag padding 3×10, nav gap 32.
+
+**Three deliberate departures from the proof:**
+
+1. **Dark mode exists, and the handoff never mentions it.** Modernist is specified light-only, but the site server-renders dark, defaults to dark on OS preference, and ships a theme toggle. A light-only homepage would have stranded every dark-mode visitor on a white page with a toggle that did nothing there. Added a derived dark counterpart following the system's own rules for an ink ground (its logo spec already draws the mark "on ink ground", and its readme specifies a lifted accent step for dark). Measured: ink 15.7:1, muted 8.2:1, faint 5.1:1, accent phrase 8.4:1, CTA label on fill 5.3:1 — all AA. Aboturab chose this over a light-only homepage.
+
+2. **Kickers use accent-700, not the raw accent the proof draws.** The handoff's token table assigns `#ec3013` to kickers, but the design system's own readme says the accent-to-ground pair only reaches 3:1 — "enough for icons, large text and interface chrome, not for body copy" — and names `--color-accent-700` as the fix for accent text at paragraph size. An 11px label is not large text: measured 3.76:1 in the raw accent, which fails AA. At -700 it measures 6.41:1 light / 8.37:1 dark and still reads as the accent. Following the system's written rule over its own token table.
+
+3. **The hero code sample is the current site's, not the proof's.** The proof's sample does not compile: it calls `syscall.SIGINT` without importing `syscall`, and declares `mux` without using it — two errors, one of which is the single most common thing a Go beginner hits. On the homepage of a site that teaches Go, at rest, that is a defect rather than a design choice. Kept the sample the site already shipped, tightened to the proof's shorter shape, and checked it: `gofmt` clean, `go vet` clean, `go build` OK on go1.23.12. Indented with tabs so gofmt is satisfied; `pre` sets `tab-size: 4`, so it renders exactly as drawn.
+
+**The nav drops five links, so they got a mega menu.** The redesign cuts the bar from nine links to four plus a CTA, which orphans Basics, Failures, Idioms, Source and Capstone — the handoff flags this as unresolved and out of scope, recommending a "Projects" or "More" menu. Since `Nav` renders on every page, leaving it unresolved would have removed those sections' only nav entry site-wide. Aboturab asked for a mega menu: `Projects` now opens a three-column panel (the path / beyond the path / the eleven builds, pulled from the project modules). The mobile drawer carries the same destinations as flat labelled groups.
+
+**The mega trigger is a link, not a toggle button.** A trigger that opens on hover and toggles on click fights itself — the pointer opens the panel on the way to the click, so the click reads as "close". Caught this on the running page: clicking `Projects` closed a menu hover had just opened. It is now a real `<a href="/projects">`: hover and keyboard focus reveal the panel, Escape closes it and returns focus, and a tap or click navigates. Every input lands somewhere, and touch users — who never hover — are not tapping a control that only ever opens a menu.
+
+**Menu data is derived server-side.** `lib/nav.ts` runs in the layout and hands `Nav` plain `{href, label}` data. `Nav` is a client component; importing the project modules there would have shipped every step of every project to the browser to label eleven links.
+
+**Known and accepted, not fixed:** two contrast pairs the design chose deliberately stay as drawn — the primary button's off-white label on the accent fill (3.76:1 at 14px) and the 11px faint meta labels at 55% ink (3.65:1). Both are the design system's own token choices rather than implementation slips, and changing either would shift the look materially. Raised for Aboturab rather than decided unilaterally; the remedy for each is one token.
+
+**Also:** the mark ships as `app/icon.svg` (Next's app-router convention, auto-linked, replacing no previous favicon — the site had none) and as `components/GoPathMark.tsx` for the nav, which derives the waypoint node from the stroke width so the spec's 4/6 and 5/7 pairings both fall out of one component.
+
+**Verified:** `tsc --noEmit` clean, `npm run lint` clean (`--max-warnings=0`), `npm run build` clean at 124 static pages, no console errors, no horizontal overflow at 375px, `/concepts` confirmed still on the old design with 61 entries.
+
+---
+
 ## 2026-08-06 — Homepage repositioning: the brief's last gate, and the truth-audit that came with it
 
 **Scope:** `app/page.tsx`, `app/layout.tsx`. No content modules, no labs, no validate contract.

@@ -33,11 +33,13 @@ export function ThemeToggle() {
 		} catch {}
 	}
 
+	// Lives in the redesigned nav, so it takes the Modernist tokens: no radius,
+	// a divider for its edge, accent on hover.
 	return (
 		<button
 			onClick={toggle}
 			aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-			className="flex h-8 w-8 items-center justify-center rounded border border-border text-muted transition-colors hover:border-go-cyan/40 hover:text-foreground"
+			className="flex h-8 w-8 items-center justify-center border border-m-divider text-m-muted transition-colors hover:border-m-accent hover:text-m-accent"
 		>
 			{isDark ? (
 				<svg

@@ -127,9 +127,7 @@ export default async function ConceptPage({
 				</div>
 				<div className="overflow-hidden rounded-lg border border-border bg-surface">
 					<div className="flex items-center gap-2 border-b border-border bg-surface2 px-4 py-2.5">
-						<span className="h-2 w-2 rounded-full bg-red-500/60" />
-						<span className="h-2 w-2 rounded-full bg-yellow-500/60" />
-						<span className="h-2 w-2 rounded-full bg-green-500/60" />
+						<span aria-hidden="true" className="h-[7px] w-[7px] bg-m-accent" />
 						<span className="ml-2 font-mono text-xs text-muted">
 							example.go
 						</span>
@@ -175,7 +173,7 @@ export default async function ConceptPage({
 								className="rounded-lg border border-border bg-surface p-5"
 							>
 								<div className="mb-1.5 flex items-center gap-2">
-									<span className="font-mono text-xs text-red-400">
+									<span className="font-mono text-xs text-m-accent-ink">
 										✗
 									</span>
 									<span className="font-semibold text-foreground">

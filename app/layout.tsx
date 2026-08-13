@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import "./globals.css"
 import Nav from "@/components/Nav"
+import { getNavMenu } from "@/lib/nav"
+import { buildSearchIndex } from "@/lib/search-index"
 
 export const metadata: Metadata = {
 	title: "GoPath — Learn Go by Building Real Things",
@@ -28,9 +30,21 @@ export default function RootLayout({
 						__html: `try{var t=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.classList.toggle('dark',t==='dark')}catch(e){document.documentElement.classList.add('dark')}`,
 					}}
 				/>
+				{/* Scroll-entrance starts hidden and is revealed by an observer.
+				    These pages are statically generated and perfectly readable
+				    without JavaScript, so if the observer never runs the content
+				    must not stay invisible. */}
+				<noscript
+					dangerouslySetInnerHTML={{
+						__html: `<style>.m-appear,.m-stagger>*{opacity:1!important;transform:none!important}</style>`,
+					}}
+				/>
 			</head>
 			<body>
-				<Nav />
+				{/* Derived here rather than inside Nav: Nav is a client component,
+				    and importing the project modules there would ship every step
+				    of every project to the browser to label eleven links. */}
+				<Nav menu={getNavMenu()} searchRecords={buildSearchIndex()} />
 				{children}
 			</body>
 		</html>

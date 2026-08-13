@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -9,68 +9,368 @@
    Go brand colors use space-separated RGB channels so Tailwind's opacity
    modifiers (bg-go-cyan/10 etc.) work in both themes.
    ─────────────────────────────────────────────────────────────────────────── */
+/* The original semantic tokens now alias the Modernist ones below, so every
+   page written against `bg-surface` / `text-muted` / `border-border` adopts the
+   new system without its markup being touched. Roughly a thousand utility uses
+   across twenty files migrate here rather than by hand.
+
+   The three Go brand colors collapse onto one role, which is the point of a
+   mono scheme — and they resolve to accent-700 rather than the raw accent
+   because 48 of their uses are `text-go-cyan` on small labels, where the raw
+   accent measures 3.76:1 and fails AA. */
 :root {
 	/* Layout */
-	--bg: 255 255 255;
-	--color-surface: #f6f8fa;
-	--color-surface2: #eaeef2;
-	--color-border: #d0d7de;
-	--color-border2: #b6bfc8;
+	--bg: 243 242 242;
+	--color-surface: #eae9e9;
+	--color-surface2: #dedcdc;
+	--color-border: color-mix(in srgb, #201e1d 40%, transparent);
+	--color-border2: color-mix(in srgb, #201e1d 62%, transparent);
 
 	/* Text */
-	--color-fg: #1f2328;
-	--color-muted: #57606a;
-	--color-faint: #8c959f;
+	--color-fg: #201e1d;
+	--color-muted: color-mix(in srgb, #201e1d 72%, transparent);
+	--color-faint: color-mix(in srgb, #201e1d 63%, transparent);
 
 	/* Code block background */
-	--color-code-bg: #f6f8fa;
+	--color-code-bg: #eae9e9;
 
-	/* Go brand — darker variants readable on white */
-	--go-cyan: 0 120 160;
-	--go-teal: 13 148 136;
-	--go-amber: 180 83 9;
+	/* One accent role, three legacy names */
+	--go-cyan: 174 24 0;
+	--go-teal: 174 24 0;
+	--go-amber: 174 24 0;
 
-	/* Syntax highlighting */
-	--sx-keyword: #cf222e;
-	--sx-type: #8250df;
-	--sx-fn: #0550ae;
-	--sx-string: #0a3069;
-	--sx-number: #953800;
-	--sx-comment: #6e7781;
-	--sx-ident: #1f2328;
-	--sx-punct: #57606a;
+	/* Syntax highlighting. Retuned onto the Modernist ground rather than
+	   stripped to grey: the handoff keeps a monospace face because code is
+	   functional and not decorative, and by the same reasoning the colour that
+	   separates a string from a comment on a site that teaches Go is carrying
+	   information, not ornament. Kept mono — the accent ramp plus neutrals,
+	   separated by value where it cannot be separated by hue. */
+	--sx-keyword: #ae1800;
+	--sx-type: #7c1405;
+	--sx-fn: #2d2b2b;
+	--sx-string: #56534f;
+	--sx-number: #7c1405;
+	/* Measured against the code surface (#eae9e9), not the page ground: on the
+	   source-reading walkthroughs the comments are the stdlib's own and are the
+	   thing being taught, so they are content and have to clear AA. 4.76:1,
+	   and still a step lighter than --sx-punct so the two stay apart. */
+	--sx-comment: #686565;
+	--sx-ident: #201e1d;
+	--sx-punct: #605d5d;
 }
 
 .dark {
 	/* Layout */
-	--bg: 13 17 23;
-	--color-surface: #161b22;
-	--color-surface2: #1c2128;
-	--color-border: #30363d;
-	--color-border2: #3d444d;
+	--bg: 26 25 24;
+	--color-surface: #242220;
+	--color-surface2: #2d2b2b;
+	--color-border: color-mix(in srgb, #f3f2f2 28%, transparent);
+	--color-border2: color-mix(in srgb, #f3f2f2 46%, transparent);
 
 	/* Text */
-	--color-fg: #e6edf3;
-	--color-muted: #8b949e;
-	--color-faint: #484f58;
+	--color-fg: #f3f2f2;
+	--color-muted: color-mix(in srgb, #f3f2f2 70%, transparent);
+	--color-faint: color-mix(in srgb, #f3f2f2 52%, transparent);
 
 	/* Code block background */
-	--color-code-bg: #0d1117;
+	--color-code-bg: #242220;
 
-	/* Go brand — official palette works well on dark */
-	--go-cyan: 0 173 216;
-	--go-teal: 22 199 154;
-	--go-amber: 251 191 36;
+	/* One accent role, three legacy names — lifted a ramp step for ink ground */
+	--go-cyan: 255 151 131;
+	--go-teal: 255 151 131;
+	--go-amber: 255 151 131;
 
 	/* Syntax highlighting */
-	--sx-keyword: #ff79c6;
-	--sx-type: #bd93f9;
-	--sx-fn: #00add8;
-	--sx-string: #16c79a;
-	--sx-number: #fbbf24;
-	--sx-comment: #6e7781;
-	--sx-ident: #e6edf3;
-	--sx-punct: #8b949e;
+	--sx-keyword: #ff9783;
+	--sx-type: #ffc4b8;
+	--sx-fn: #eae7e7;
+	--sx-string: #c4c0c0;
+	--sx-number: #ffc4b8;
+	--sx-comment: #9b9797;
+	--sx-ident: #f3f2f2;
+	--sx-punct: #bab6b6;
+}
+
+/* ─── Modernist tokens ──────────────────────────────────────────────────────
+   The homepage redesign (and the nav it shares with every other page) is drawn
+   in the Modernist system: an off-white ground, one red accent, zero radius and
+   strong 2px rules. It is namespaced `--m-*` because the system's own names
+   (--color-surface, --color-text) collide with the tokens above, and because
+   the rest of the site deliberately keeps its current look until it is
+   redesigned too.
+
+   Modernist is specified light-only. The dark block below is a derived
+   counterpart, not part of the handoff: the site server-renders dark and ships
+   a theme toggle, so a light-only homepage would strand every dark-mode
+   visitor. It follows the system's own rules for an ink ground — the accent
+   lifts a ramp step so it clears contrast on dark, and the divider is ink-on-
+   ground inverted at the same visual weight.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+	--m-bg: #f3f2f2;
+	--m-surface: #eae9e9;
+	--m-ink: #201e1d;
+	--m-muted: color-mix(in srgb, #201e1d 72%, transparent);
+	/* 63%, not the system's 55%. Its own `.text-muted` is 55%, which measures
+	   3.65:1 here and fails AA for the 11px meta labels this carries (tier
+	   numbers, track labels, the code window's filename). 63% is the lowest
+	   step that clears 4.5:1 — 4.65:1 — so it stays clearly lighter than
+	   --m-muted at 6.2:1 and the two roles remain distinguishable. */
+	--m-faint: color-mix(in srgb, #201e1d 63%, transparent);
+	--m-divider: color-mix(in srgb, #201e1d 40%, transparent);
+
+	/* accent-500 base; -700 is the step that carries body-size text on this
+	   ground, since the raw accent only reaches 3:1 against it. */
+	--m-accent: #ec3013;
+	--m-accent-ink: #ae1800;
+	--m-accent-hover: #dd2b0f;
+	--m-accent-active: #ae1800;
+	--m-on-accent: #f3f2f2;
+
+	--m-tag-bg: #fff2ef;
+	--m-tag-fg: #7c1405;
+	--m-tag-neutral-bg: #f8f4f4;
+	--m-tag-neutral-fg: #444141;
+}
+
+.dark {
+	--m-bg: #1a1918;
+	--m-surface: #242220;
+	--m-ink: #f3f2f2;
+	--m-muted: color-mix(in srgb, #f3f2f2 70%, transparent);
+	--m-faint: color-mix(in srgb, #f3f2f2 52%, transparent);
+	--m-divider: color-mix(in srgb, #f3f2f2 28%, transparent);
+
+	--m-accent: #ff563c;
+	--m-accent-ink: #ff9783;
+	--m-accent-hover: #ff9783;
+	--m-accent-active: #ffc4b8;
+	--m-on-accent: #201e1d;
+
+	--m-tag-bg: #4d170e;
+	--m-tag-fg: #ffc4b8;
+	--m-tag-neutral-bg: #2d2b2b;
+	--m-tag-neutral-fg: #d7d3d3;
+}
+
+/* Rehost the shared Go highlighter on the Modernist palette instead of forking
+   it: GoCode paints every token through a --sx-* variable, so scoping them here
+   recolors the homepage's code window and leaves every other page alone.
+   Keywords take the accent; strings and comments drop to a tint of the ink;
+   everything else stays default ink. */
+.m-code {
+	--sx-keyword: var(--m-accent-ink);
+	--sx-type: var(--m-ink);
+	--sx-fn: var(--m-ink);
+	--sx-string: var(--m-faint);
+	--sx-number: var(--m-faint);
+	--sx-comment: color-mix(in srgb, var(--m-ink) 45%, transparent);
+	--sx-ident: var(--m-ink);
+	--sx-punct: var(--m-ink);
+}
+
+/* The base `code` rule carries a 4px radius. `pre code` already strips its
+   background and border, so nothing shows through it — but the system's rule is
+   that no corner is rounded anywhere, and an invisible exception is still one. */
+.m-code code {
+	border-radius: 0;
+}
+
+/* The system styles keyboard focus itself rather than leaving the browser
+   default, and its ring is the accent at 2px. */
+.m-scope :focus-visible {
+	outline: 2px solid var(--m-accent);
+	outline-offset: 2px;
+}
+
+.m-scope ::selection {
+	background: color-mix(in srgb, var(--m-accent) 30%, transparent);
+}
+
+/* ─── Motion ────────────────────────────────────────────────────────────────
+   Modernist is flat and undecorated, so the life in it has to come from
+   movement rather than from shadow and gloss. One easing curve throughout, and
+   every animation collapses to nothing under `prefers-reduced-motion`.
+
+   The hidden state lives here rather than in JS so that reduced-motion is
+   honoured in CSS and the components never branch on it. The <noscript>
+   override in the root layout keeps content visible if the observer never runs.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+	--m-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.m-appear {
+	opacity: 0;
+	transform: translateY(18px);
+	transition:
+		opacity 0.62s var(--m-ease),
+		transform 0.62s var(--m-ease);
+}
+.m-appear.is-in {
+	opacity: 1;
+	transform: none;
+}
+
+/* Stagger without wrapper elements: the container carries the class and its
+   existing children inherit the entrance, so grids keep their real children. */
+.m-stagger > * {
+	opacity: 0;
+	transform: translateY(14px);
+	transition:
+		opacity 0.55s var(--m-ease),
+		transform 0.55s var(--m-ease);
+}
+.m-stagger.is-in > * {
+	opacity: 1;
+	transform: none;
+}
+.m-stagger.is-in > *:nth-child(1) {
+	transition-delay: 0ms;
+}
+.m-stagger.is-in > *:nth-child(2) {
+	transition-delay: 70ms;
+}
+.m-stagger.is-in > *:nth-child(3) {
+	transition-delay: 140ms;
+}
+.m-stagger.is-in > *:nth-child(4) {
+	transition-delay: 210ms;
+}
+.m-stagger.is-in > *:nth-child(5) {
+	transition-delay: 280ms;
+}
+.m-stagger.is-in > *:nth-child(6) {
+	transition-delay: 350ms;
+}
+
+/* Path rows: an accent bar grows from the left edge and the row takes a tint.
+   The bar starts at -2px so it covers the row's own top rule and the block
+   reads as one moving edge rather than two. */
+.m-row {
+	position: relative;
+}
+.m-row::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: -2px;
+	bottom: 0;
+	width: 0;
+	background: var(--m-accent);
+	transition: width 0.3s var(--m-ease);
+}
+.m-row:hover::before,
+.m-row:focus-visible::before {
+	width: 4px;
+}
+
+/* Cards respond by lifting their *contents*, not themselves. These cells sit in
+   a divider grid — the gap is the rule — so moving the cell would slide the
+   rule out from under it and flash the divider colour. Moving what is inside
+   reads as the same gesture and leaves the grid intact. */
+.m-card {
+	transition: background-color 0.3s var(--m-ease);
+}
+.m-card > * {
+	transition: transform 0.3s var(--m-ease);
+}
+.m-card:hover > * {
+	transform: translateY(-2px);
+}
+
+/* Nav links draw their own underline rather than borrowing the browser's. */
+.m-navlink {
+	position: relative;
+}
+.m-navlink::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: -5px;
+	height: 2px;
+	background: var(--m-accent);
+	transform: scaleX(0);
+	transform-origin: left;
+	transition: transform 0.26s var(--m-ease);
+}
+.m-navlink:hover::after,
+.m-navlink[data-active="true"]::after {
+	transform: scaleX(1);
+}
+
+/* The mega panel stays mounted and hides with `visibility`, which keeps its
+   links out of the tab order while still allowing it to fade both ways. */
+.m-mega {
+	transition:
+		opacity 0.22s ease,
+		transform 0.24s var(--m-ease),
+		visibility 0.24s;
+}
+.m-mega[data-open="false"] {
+	opacity: 0;
+	transform: translateY(-10px);
+	visibility: hidden;
+	pointer-events: none;
+}
+.m-mega[data-open="true"] {
+	opacity: 1;
+	transform: none;
+	visibility: visible;
+}
+
+/* A live caret in the otherwise still code window. */
+.m-caret {
+	display: inline-block;
+	width: 7px;
+	height: 1.02em;
+	background: var(--m-accent);
+	vertical-align: -2px;
+	animation: m-blink 1.15s step-end infinite;
+}
+@keyframes m-blink {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0;
+	}
+}
+
+.m-arrow {
+	transition: transform 0.28s var(--m-ease);
+}
+.group:hover .m-arrow {
+	transform: translateX(6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.m-appear,
+	.m-appear.is-in,
+	.m-stagger > *,
+	.m-stagger.is-in > * {
+		opacity: 1;
+		transform: none;
+		transition: none;
+		transition-delay: 0ms;
+	}
+	.m-row::before,
+	.m-card,
+	.m-card > *,
+	.m-navlink::after,
+	.m-mega,
+	.m-arrow {
+		transition: none;
+	}
+	.m-card:hover > *,
+	.group:hover .m-arrow {
+		transform: none;
+	}
+	.m-caret {
+		animation: none;
+	}
 }
 
 /* ─── Base styles ─────────────────────────────────────────────────────────── */
@@ -82,16 +382,24 @@
 	body {
 		background-color: rgb(var(--bg));
 		color: var(--color-muted);
-		font-family: "Outfit", sans-serif;
+		font-family: "Archivo", system-ui, sans-serif;
 		line-height: 1.75;
 		-webkit-font-smoothing: antialiased;
 	}
 
+	/* Modernist sets the whole system in one family at two weights, so headings
+	   that used to be a 400-weight serif are now Archivo at 800. Without this
+	   they would inherit the body weight and stop reading as headings at all. */
 	h1,
 	h2,
 	h3,
-	h4 {
-		line-height: 1.2;
+	h4,
+	h5,
+	h6 {
+		font-family: "Archivo", system-ui, sans-serif;
+		font-weight: 800;
+		line-height: 1.15;
+		letter-spacing: -0.02em;
 		color: var(--color-fg);
 	}
 
@@ -102,7 +410,7 @@
 	}
 
 	::selection {
-		background: rgb(var(--go-cyan) / 0.2);
+		background: color-mix(in srgb, var(--m-accent) 30%, transparent);
 	}
 
 	::-webkit-scrollbar {
@@ -119,14 +427,17 @@
 		background: var(--color-muted);
 	}
 
+	/* Inline code was a cyan chip on a cyan tint. In a mono system it reads as
+	   quiet ink on the surface instead, so it marks a term without competing
+	   with the accent, which is reserved for actions. */
 	code {
 		font-family: "JetBrains Mono", monospace;
 		font-size: 0.82em;
-		background: rgb(var(--go-cyan) / 0.08);
-		border: 1px solid rgb(var(--go-cyan) / 0.2);
+		background: var(--color-surface2);
+		border: 1px solid var(--color-border);
 		padding: 0.15em 0.4em;
-		border-radius: 4px;
-		color: rgb(var(--go-cyan));
+		border-radius: 0;
+		color: var(--color-fg);
 		letter-spacing: -0.01em;
 	}
 
