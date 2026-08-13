@@ -23,6 +23,12 @@ labs/**/*.exe
 # typescript incremental build cache
 tsconfig.tsbuildinfo
 
+# next.js regenerates this on every dev/build/lint run; committing it just
+# means every `next dev` after a `next build` (or vice versa) dirties the
+# working tree with a one-line import-path flip, and nothing reads it but
+# the type checker
+next-env.d.ts
+
 # claude code local settings (per-user permissions, not project config)
 .claude/settings.local.json
 
