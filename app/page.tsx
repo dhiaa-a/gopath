@@ -152,10 +152,10 @@ export default function Home() {
 							</span>
 						</Link>
 						<Link
-							href="/basics"
+							href="/orientation"
 							className="group flex items-center gap-[8px] border-b-2 border-m-divider pb-[3px] text-[14px] text-m-ink transition-colors duration-300 hover:border-m-accent hover:text-m-accent"
 						>
-							New to Go? Start with Basics
+							New to Go? Start with Orientation
 							<span aria-hidden="true" className="m-arrow">
 								→
 							</span>
@@ -226,6 +226,19 @@ export default function Home() {
 				</Appear>
 
 				<Appear stagger>
+					<PathRow
+						href="/orientation"
+						num="Start here"
+						name="Orientation"
+						muted
+					>
+						<span className="text-[15px] text-m-muted">
+							Six short pages if you&apos;ve never written Go,
+							about 30 minutes — install, a first look at the
+							syntax, and a readiness check
+						</span>
+					</PathRow>
+
 					<PathRow
 						href="/basics"
 						num="Tier 00"

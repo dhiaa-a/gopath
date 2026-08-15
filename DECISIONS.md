@@ -4,6 +4,20 @@ Append-only. Newest at the top.
 
 ---
 
+## 2026-08-13 — Orientation becomes the stated first step, not a discoverable one
+
+**Scope:** `app/page.tsx`. Direct follow-up to the walkthrough below, same day: Aboturab's answer to the routing question that entry left open was "yes, and go further" — his stated top concern is a learner (or himself) ever being unsure what to read first, second, third. That's a stronger bar than "fix the broken link," so the fix isn't just a redirect.
+
+**The CTA change is the small half.** `"New to Go? Start with Basics"` → `/basics` becomes `"New to Go? Start with Orientation"` → `/orientation`. Orientation's own pages already end by pointing at Basics (step 5, "Learn Go syntax here"), so this one change puts a newcomer through the sequence the content was already written to expect, instead of dropping them in the middle of it.
+
+**The bigger half: the sequence is now stated, not implied by which link you happen to click.** Before this, "THE PATH" section on the homepage — the one place that visually lays out the whole curriculum — started at "TIER 00 Basics". Orientation existed (top-level nav, and now the hero CTA), but nothing told a visitor reading that section that something comes *before* Tier 00. Added it as the first row, labelled "Start here" (matching the term the mobile nav's own drawer already uses for the same page, `components/Nav.tsx`'s `MobileGroup heading="Start here"` — reused rather than inventing a second phrase for one concept), `muted` styling to match Basics' own secondary-not-primary treatment. The homepage now reads, top to bottom, exactly the order Aboturab asked for: Orientation → Basics → Foundations → Systems → Production → Capstone.
+
+**Deliberately not touched: `lib/nav.ts`'s mega-menu path list.** It feeds the desktop "Projects" dropdown's "The path" column (Basics / All projects / Capstone) and the mobile drawer's equivalent group. Orientation already has its own permanent slot at the very front of the top-level nav bar, visible on every page regardless of which dropdown is open — adding a second copy inside the dropdown would be redundant with a link that's already one click away everywhere, not a fix for a gap. The mobile drawer's separate hardcoded "Start here" group (Orientation, the `/#path` anchor, Concepts) is a different, intentionally curated set of early destinations, not a duplicate of the path list, and was left as-is too.
+
+**Verification:** `tsc`, `lint` (one `react/no-unescaped-entities` catch on "you've" in the new row's copy, fixed to `&apos;`), and `build` all clean, same page count. Checked live post-edit: the hero CTA's new label and href, the new "START HERE / Orientation" row rendering first in the path list, and no horizontal overflow at 375px.
+
+---
+
 ## 2026-08-13 — Student-persona walkthrough: a live rendering bug on every Tier 0 lesson, found by actually reading the pages
 
 **Scope:** `components/ContentRenderer.tsx`, `lib/content/tier0/{hello,packages}.ts`. Found while doing a live, in-browser walkthrough of the whole site as a Python-fluent, Go-naive learner — not a code review, an attempt to actually use the product the way a visitor would, clicking, typing, and running the labs for real.
