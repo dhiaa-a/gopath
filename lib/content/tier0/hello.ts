@@ -16,7 +16,7 @@ export const hello: Tier0Lesson = {
 		{
 			type: "text",
 			value: {
-				en: "Here is the smallest useful Go program. Work inside the <code>hello</code> folder you created on the setup page; it already has the <code>go.mod</code> file the build commands below need. Type the program out yourself in a file called <code>main.go</code>. Typing, not pasting, is the point of every lesson in this track.",
+				en: "Here is the smallest useful Go program. Work inside the <code>hello</code> folder you created on the <a href=\"/orientation/setup\" class=\"text-go-cyan underline decoration-go-cyan/40 hover:no-underline\">setup page</a>; it already has the <code>go.mod</code> file the build commands below need. Haven't done that yet? It's three commands: <code>mkdir hello && cd hello && go mod init example/hello</code>. Type the program out yourself in a file called <code>main.go</code>. Typing, not pasting, is the point of every lesson in this track.",
 			},
 		},
 	],

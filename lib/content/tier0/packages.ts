@@ -55,7 +55,7 @@ func main() {
 		{
 			type: "text",
 			value: {
-				en: "The toolchain you already know closes the loop. <code>go run main.go</code> for the dev loop, <code>go build</code> for a shippable binary, and one more worth adopting today: <code>gofmt -w .</code> (or your editor's format-on-save) rewrites your files into the one canonical Go style. There are no formatting debates in Go; the tool is the style guide. Real projects also start with <code>go mod init</code>, which you did once on the setup page and will repeat for every Tier 1 project.",
+				en: "The toolchain you already know closes the loop. <code>go run main.go</code> for the dev loop, <code>go build</code> for a shippable binary, and one more worth adopting today: <code>gofmt -w .</code> (or your editor's format-on-save) rewrites your files into the one canonical Go style. There are no formatting debates in Go; the tool is the style guide. Real projects also start with <code>go mod init</code>, which you did once on the <a href=\"/orientation/setup\" class=\"text-go-cyan underline decoration-go-cyan/40 hover:no-underline\">setup page</a> and will repeat for every Tier 1 project.",
 			},
 		},
 		{

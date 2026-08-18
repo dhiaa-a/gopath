@@ -180,13 +180,15 @@ function VerifyBlock({
 			<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-muted">
 				you should see
 			</div>
-			<p className="text-sm leading-relaxed text-muted">
-				{t(block.expect, lang)}
-			</p>
+			<p
+				className="text-sm leading-relaxed text-muted"
+				dangerouslySetInnerHTML={{ __html: t(block.expect, lang) }}
+			/>
 			{block.note && (
-				<p className="mt-2 text-xs leading-relaxed text-faint">
-					{t(block.note, lang)}
-				</p>
+				<p
+					className="mt-2 text-xs leading-relaxed text-faint"
+					dangerouslySetInnerHTML={{ __html: t(block.note, lang) }}
+				/>
 			)}
 			{block.labPath && (
 				<div className="mt-3 font-mono text-xs">
@@ -220,15 +222,17 @@ function BreakItBlock({
 			<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-muted">
 				change
 			</div>
-			<p className="mb-3 text-sm leading-relaxed text-foreground">
-				{t(block.change, lang)}
-			</p>
+			<p
+				className="mb-3 text-sm leading-relaxed text-foreground"
+				dangerouslySetInnerHTML={{ __html: t(block.change, lang) }}
+			/>
 			<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-muted">
 				what happens
 			</div>
-			<p className="text-sm leading-relaxed text-muted">
-				{t(block.observe, lang)}
-			</p>
+			<p
+				className="text-sm leading-relaxed text-muted"
+				dangerouslySetInnerHTML={{ __html: t(block.observe, lang) }}
+			/>
 			<div className="mt-3">
 				<button
 					onClick={() => setOpen((o) => !o)}
@@ -237,9 +241,10 @@ function BreakItBlock({
 					{open ? "▾" : "▸"} why does it do that?
 				</button>
 				{open && (
-					<div className="mt-1.5 rounded border border-go-amber/20 bg-bg px-3 py-2 text-sm leading-relaxed text-muted">
-						{t(block.why, lang)}
-					</div>
+					<div
+						className="mt-1.5 rounded border border-go-amber/20 bg-bg px-3 py-2 text-sm leading-relaxed text-muted"
+						dangerouslySetInnerHTML={{ __html: t(block.why, lang) }}
+					/>
 				)}
 			</div>
 		</div>
@@ -281,9 +286,13 @@ export function ContentRenderer({
 						return (
 							<ul key={i} className="mb-4 flex flex-col gap-2">
 								{block.items.map((item, j) => (
-									<li key={j} className="text-sm text-muted">
-										{t(item, lang)}
-									</li>
+									<li
+										key={j}
+										className="text-sm text-muted"
+										dangerouslySetInnerHTML={{
+											__html: t(item, lang),
+										}}
+									/>
 								))}
 							</ul>
 						)
@@ -297,9 +306,10 @@ export function ContentRenderer({
 										? "border-go-amber/20 bg-go-amber/5"
 										: "border-go-cyan/20 bg-go-cyan/5"
 								}`}
-							>
-								{t(block.value, lang)}
-							</div>
+								dangerouslySetInnerHTML={{
+									__html: t(block.value, lang),
+								}}
+							/>
 						)
 
 					// T1 pattern block
@@ -313,9 +323,12 @@ export function ContentRenderer({
 									<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-go-cyan">
 										concept
 									</div>
-									<p className="text-sm leading-relaxed text-muted">
-										{t(block.concept, lang)}
-									</p>
+									<p
+										className="text-sm leading-relaxed text-muted"
+										dangerouslySetInnerHTML={{
+											__html: t(block.concept, lang),
+										}}
+									/>
 								</div>
 								<div className="border-b border-border px-5 py-5">
 									<div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-muted">
@@ -327,17 +340,23 @@ export function ContentRenderer({
 									<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-go-teal">
 										similar example
 									</div>
-									<p className="text-sm leading-relaxed text-muted">
-										{t(block.example, lang)}
-									</p>
+									<p
+										className="text-sm leading-relaxed text-muted"
+										dangerouslySetInnerHTML={{
+											__html: t(block.example, lang),
+										}}
+									/>
 								</div>
 								<div className="px-5 py-4">
 									<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-go-amber">
 										your task
 									</div>
-									<p className="text-sm leading-relaxed text-foreground">
-										{t(block.task, lang)}
-									</p>
+									<p
+										className="text-sm leading-relaxed text-foreground"
+										dangerouslySetInnerHTML={{
+											__html: t(block.task, lang),
+										}}
+									/>
 									{block.hints && (
 										<HintRow hints={block.hints} />
 									)}
@@ -356,17 +375,23 @@ export function ContentRenderer({
 									<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-go-teal">
 										requirement
 									</div>
-									<p className="text-sm font-medium leading-relaxed text-foreground">
-										{t(block.what, lang)}
-									</p>
+									<p
+										className="text-sm font-medium leading-relaxed text-foreground"
+										dangerouslySetInnerHTML={{
+											__html: t(block.what, lang),
+										}}
+									/>
 								</div>
 								<div className="border-b border-border px-5 py-4">
 									<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-muted">
 										why
 									</div>
-									<p className="text-sm leading-relaxed text-muted">
-										{t(block.why, lang)}
-									</p>
+									<p
+										className="text-sm leading-relaxed text-muted"
+										dangerouslySetInnerHTML={{
+											__html: t(block.why, lang),
+										}}
+									/>
 								</div>
 								{(block.stdlibHint || block.thirdPartyHint) && (
 									<div className="border-b border-border px-5 py-3 flex flex-wrap gap-4">
@@ -420,12 +445,18 @@ export function ContentRenderer({
 								<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-go-amber">
 									constraint
 								</div>
-								<p className="mb-2 text-sm font-medium text-foreground">
-									{t(block.what, lang)}
-								</p>
-								<p className="text-sm leading-relaxed text-muted">
-									{t(block.rationale, lang)}
-								</p>
+								<p
+									className="mb-2 text-sm font-medium text-foreground"
+									dangerouslySetInnerHTML={{
+										__html: t(block.what, lang),
+									}}
+								/>
+								<p
+									className="text-sm leading-relaxed text-muted"
+									dangerouslySetInnerHTML={{
+										__html: t(block.rationale, lang),
+									}}
+								/>
 								{block.hints && (
 									<div className="mt-3">
 										<HintRow hints={block.hints} />
