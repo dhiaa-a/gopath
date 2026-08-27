@@ -305,9 +305,26 @@ const en = {
 		projectsTitle: "Eleven projects. One path.",
 		projectsLead: "Work through them in order. Each one builds on the last.",
 		sourceKicker: "Source reading",
+		capstoneDesc:
+			"A link shortener with auth, rate limiting, durable storage and metrics. A spec, a suite, and nothing else.",
 		sourceTitle: "Read the code you already depend on.",
 		sourceLead:
 			"Every working Go programmer eventually reads the standard library, and almost nothing teaches you how. Each walkthrough here takes one real file and reads it the way an experienced Go programmer would: where to enter, what to skip, what to notice, and what the code is defending against. The skill you are practising is not memorising these files. It is being able to open the next one on your own.",
+	},
+	// <title> and meta description per index page. Static `export const
+	// metadata` cannot see the [lang] param, so these pages use
+	// generateMetadata instead — otherwise an Arabic page ships an English
+	// browser tab and an English description to every crawler.
+	meta: {
+		basicsTitle: "Basics — GoPath",
+		basicsDesc:
+			"Tier 0: Go syntax taught in-house. Fourteen micro-lessons from your first compiled binary to error handling, each built around one small program you type and run.",
+		orientationTitle: "Orientation — GoPath",
+		orientationDesc:
+			"A short on-ramp for newcomers: what Go is, where to learn the syntax, and how to know when you're ready for Tier 1.",
+		idiomsTitle: "Idiom track — GoPath",
+		sourceTitle: "Source reading — GoPath",
+		capstoneTitle: "Capstone: linkd — GoPath",
 	},
 	notFound: {
 		title: "Page not found",
@@ -520,9 +537,22 @@ const ar: Dict = {
 		projectsTitle: "أحد عشر مشروعاً. مسار واحد.",
 		projectsLead: "اعمل عليها بالترتيب. كل مشروع يبني على سابقه.",
 		sourceKicker: "قراءة المصدر",
+		capstoneDesc:
+			"مختصِر روابط بمصادقة وتحديد معدّل وتخزين دائم ومقاييس. مواصفات، وفاحص، ولا شيء غير ذلك.",
 		sourceTitle: "اقرأ الشيفرة التي تعتمد عليها أصلاً.",
 		sourceLead:
 			"كل مبرمج Go عامل ينتهي به الأمر إلى قراءة المكتبة القياسية، ولا شيء تقريباً يعلّمك كيف. كل قراءة هنا تأخذ ملفاً حقيقياً واحداً وتقرأه كما يقرأه مبرمج Go متمرّس: من أين تدخل، وما الذي تتخطّاه، وما الذي تنتبه له، ومِمّ تدافع الشيفرة عن نفسها. والمهارة التي تتدرّب عليها ليست حفظ هذه الملفات، بل قدرتك على فتح الملف التالي وحدك.",
+	},
+	meta: {
+		basicsTitle: "الأساسيات — GoPath",
+		basicsDesc:
+			"المستوى صفر: صياغة Go تُدرَّس هنا. أربعة عشر درساً مصغّراً من أول ملف تنفيذي تُصرِّفه إلى معالجة الأخطاء، كل درس مبني على برنامج صغير واحد تكتبه وتشغّله.",
+		orientationTitle: "التمهيد — GoPath",
+		orientationDesc:
+			"مدخل قصير للقادمين الجدد: ما هي Go، وأين تتعلّم الصياغة، وكيف تعرف أنك صرت جاهزاً للمستوى الأول.",
+		idiomsTitle: "مسار الأسلوب — GoPath",
+		sourceTitle: "قراءة المصدر — GoPath",
+		capstoneTitle: "المشروع الختامي: linkd — GoPath",
 	},
 	notFound: {
 		title: "الصفحة غير موجودة",

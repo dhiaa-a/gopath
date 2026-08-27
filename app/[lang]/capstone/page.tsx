@@ -6,10 +6,16 @@ import { projects } from "@/lib/projects"
 import { localePath, localizeHtml, toLang, ui } from "@/lib/i18n"
 import { TranslationNotice } from "@/components/TranslationNotice"
 
-export const metadata = {
-	title: "Capstone: linkd — GoPath",
-	description:
-		"A link shortener with auth, rate limiting, durable storage and metrics. A spec, a black-box suite, four service level objectives, and no guidance at all.",
+export async function generateMetadata({
+	params,
+}: {
+	params: Promise<{ lang: string }>
+}) {
+	const tr = ui(toLang((await params).lang))
+	return {
+		title: tr.meta.capstoneTitle,
+		description: tr.index.capstoneDesc,
+	}
 }
 
 function failureName(slug: string) {

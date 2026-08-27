@@ -6,10 +6,16 @@ import {
 	goSourceLicense,
 } from "@/lib/source"
 
-export const metadata = {
-	title: "Source reading — GoPath",
-	description:
-		"Guided reads of real standard library files: where to enter, what to skip, what to notice. Every excerpt is quoted verbatim and every line number was measured against a pinned toolchain.",
+export async function generateMetadata({
+	params,
+}: {
+	params: Promise<{ lang: string }>
+}) {
+	const tr = ui(toLang((await params).lang))
+	return {
+		title: tr.meta.sourceTitle,
+		description: tr.index.sourceLead,
+	}
 }
 
 export default async function SourcePage({

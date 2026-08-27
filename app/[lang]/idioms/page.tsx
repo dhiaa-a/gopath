@@ -1,10 +1,16 @@
 import { idioms, idiomAccents } from "@/lib/idioms"
 import { localePath, toLang, ui } from "@/lib/i18n"
 
-export const metadata = {
-	title: "Idiom track — GoPath",
-	description:
-		"Refactor working-but-unidiomatic Go until the tests stay green and a strict linter comes up clean. Accent removal for Java, Python, and C habits.",
+export async function generateMetadata({
+	params,
+}: {
+	params: Promise<{ lang: string }>
+}) {
+	const tr = ui(toLang((await params).lang))
+	return {
+		title: tr.meta.idiomsTitle,
+		description: tr.index.idiomsLead,
+	}
 }
 
 // Colour per accent is presentation, so it lives here; the accent list

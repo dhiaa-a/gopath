@@ -5,10 +5,16 @@ import { ProgressBadge } from "@/components/ProgressBadge"
 import { LessonNumber } from "@/components/LessonMarker"
 import { localePath, toLang, ui } from "@/lib/i18n"
 
-export const metadata = {
-	title: "Basics — GoPath",
-	description:
-		"Tier 0: Go syntax taught in-house. Fourteen micro-lessons from your first compiled binary to error handling, each built around one small program you type and run.",
+export async function generateMetadata({
+	params,
+}: {
+	params: Promise<{ lang: string }>
+}) {
+	const tr = ui(toLang((await params).lang))
+	return {
+		title: tr.meta.basicsTitle,
+		description: tr.meta.basicsDesc,
+	}
 }
 
 export default async function BasicsIndexPage({

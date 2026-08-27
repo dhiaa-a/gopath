@@ -3,10 +3,16 @@ import { orientationPages } from "@/lib/orientation"
 import { t } from "@/lib/content"
 import { localePath, toLang, ui } from "@/lib/i18n"
 
-export const metadata = {
-	title: "Orientation — GoPath",
-	description:
-		"A short on-ramp for newcomers: what Go is, where to learn the syntax, and how to know when you're ready for Tier 1.",
+export async function generateMetadata({
+	params,
+}: {
+	params: Promise<{ lang: string }>
+}) {
+	const tr = ui(toLang((await params).lang))
+	return {
+		title: tr.meta.orientationTitle,
+		description: tr.meta.orientationDesc,
+	}
 }
 
 export default async function OrientationIndexPage({
