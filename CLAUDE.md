@@ -25,7 +25,8 @@ The site also includes:
 - **Capstone** — one page at `/capstone` and `labs/capstone`: a link shortener spec (`linkd`) with auth, rate limiting, durable storage and metrics, graded by a black-box suite of 34 checks plus four SLOs, and **zero guidance**. The suite never reads the submission's source; it builds the package, runs the binary, and speaks HTTP. `labs/capstone/check.sh` runs three stages: the reference passes, 11 seeded bugs are each caught by the checks they name, and the reference meets its own objectives. Nine seeds come from the failure classes; the other six classes are listed as blind spots with the reason, and validate.ts enforces that every class appears in exactly one of the two lists.
 - **Spaced reuse callouts** — when a step reuses a prior concept, the learner is prompted to recall before reading.
 - **Go Playground integration** — every code example has a "Run in Playground" link; share IDs cached at build.
-- **Validation** — `scripts/validate.ts` runs in `npm run build` and enforces relation integrity.
+- **Validation** — `scripts/validate.ts` runs in `npm run build` and enforces relation integrity. `scripts/link-check.ts` runs after the build in the same command and asserts every internal link on every generated page resolves — the failure mode language-prefixed routing makes easy and silent.
+- **Bilingual (English + Arabic)** — every route lives under `/en/` or `/ar/`; `lib/i18n.ts` holds the language helpers and the UI dictionary. **Two rules that differ on purpose**: UI chrome is type-enforced complete (Arabic is declared `typeof en`, so a missing key is a compile error), while content falls back to English (`LocalizedString.ar` is optional). Arabic is RTL, code stays LTR, and identifiers stay in Latin script inside Arabic prose. Orientation is translated; the rest of the corpus is not yet — those pages tell the reader so. See DECISIONS 2026-08-18 before adding pages or content.
 
 ## Audience
 
@@ -148,21 +149,25 @@ All agents can and should pull from the public web when relevant. Cite sources i
 ```
 gopath/
 ├── app/
-│   ├── basics/[slug]/      — Tier 0 syntax micro-lesson page
-│   ├── basics/             — Tier 0 index
-│   ├── capstone/           — the capstone: spec surface, objectives, seeded bugs, blind spots
-│   ├── concepts/[slug]/    — concept detail page
-│   ├── concepts/           — concept index (grouped)
-│   ├── failures/[slug]/    — failure-lab diagnostic page
-│   ├── failures/           — failure labs index (grouped)
-│   ├── idioms/             — idiom track index (accent removal)
-│   ├── orientation/[slug]/ — orientation page
-│   ├── orientation/        — orientation index
-│   ├── projects/[slug]/    — project detail page
-│   ├── projects/           — all projects list
-│   ├── source/[slug]/      — stdlib source-reading walkthrough
-│   ├── source/             — source-reading index + BSD-3-Clause attribution
-│   └── page.tsx            — homepage
+│   ├── [lang]/             — EVERY route lives under a language segment (en | ar)
+│   │   ├── layout.tsx      — the root layout: sets <html lang dir>, mounts Nav
+│   │   ├── basics/[slug]/  — Tier 0 syntax micro-lesson page
+│   │   ├── basics/         — Tier 0 index
+│   │   ├── capstone/       — the capstone: spec surface, objectives, seeded bugs, blind spots
+│   │   ├── concepts/[slug]/ — concept detail page
+│   │   ├── concepts/       — concept index (grouped)
+│   │   ├── failures/[slug]/ — failure-lab diagnostic page
+│   │   ├── failures/       — failure labs index (grouped)
+│   │   ├── idioms/         — idiom track index (accent removal)
+│   │   ├── orientation/[slug]/ — orientation page
+│   │   ├── orientation/    — orientation index
+│   │   ├── projects/[slug]/ — project detail page
+│   │   ├── projects/       — all projects list
+│   │   ├── source/[slug]/  — stdlib source-reading walkthrough
+│   │   ├── source/         — source-reading index + BSD-3-Clause attribution
+│   │   ├── not-found.tsx   — 404; a client component, since not-found gets no params
+│   │   └── page.tsx        — homepage
+│   └── globals.css         — tokens, motion, and the RTL layer
 ├── components/
 │   ├── ContentRenderer.tsx — renders all block types
 │   ├── GoCode.tsx          — custom Go syntax highlighter, zero deps
@@ -171,6 +176,7 @@ gopath/
 │   ├── RetrievalPrompts.tsx — flip-card retrieval practice
 │   ├── Reveal.tsx          — reveal interaction (failure pages' production war story)
 │   ├── SpacedReuseCallout.tsx — spaced reuse prompt
+│   ├── TranslationNotice.tsx — says (in Arabic) that a page's body is still English
 │   └── ProjectSection.tsx
 ├── labs/                   — executable spine: one Go module per project
 │   ├── check.sh            — gofmt/vet/build/test/gates across every module
@@ -212,6 +218,7 @@ gopath/
 │   └── playground.ts       — reads cached share IDs at runtime
 └── scripts/
     ├── validate.ts         — runs in `npm run build`; also validates labs links
+    ├── link-check.ts       — post-build: every internal link must resolve to a generated page
     ├── source-check.ts     — holds every walkthrough excerpt against GOROOT (needs Go, so not in the build)
     ├── source-excerpt.ts   — authoring tool: extracts a line range so excerpts are never hand typed
     └── playground-shares.ts — caches Go Playground share IDs at build
