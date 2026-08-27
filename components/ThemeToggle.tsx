@@ -1,5 +1,6 @@
 "use client"
 import { useSyncExternalStore } from "react"
+import { ui, type Lang } from "@/lib/i18n"
 
 // The `dark` class on <html> is the source of truth — the inline script in the
 // root layout sets it before hydration. Subscribe to it instead of mirroring it
@@ -22,8 +23,9 @@ function getServerSnapshot() {
 	return true
 }
 
-export function ThemeToggle() {
+export function ThemeToggle({ lang }: { lang: Lang }) {
 	const isDark = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+	const s = ui(lang)
 
 	function toggle() {
 		const next = !isDark
@@ -38,7 +40,7 @@ export function ThemeToggle() {
 	return (
 		<button
 			onClick={toggle}
-			aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+			aria-label={isDark ? s.theme.toLight : s.theme.toDark}
 			className="flex h-8 w-8 items-center justify-center border border-m-divider text-m-muted transition-colors hover:border-m-accent hover:text-m-accent"
 		>
 			{isDark ? (

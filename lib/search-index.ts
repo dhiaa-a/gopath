@@ -5,6 +5,7 @@ import { idioms } from "./idioms"
 import { sourceWalkthroughs } from "./source"
 import { tier0Lessons } from "./tier0"
 import { capstone } from "./capstone"
+import { localePath, ui, type Lang } from "@/lib/i18n"
 
 // The backlog item that asked for this ("search across projects and
 // concepts") predates four of the site's six content types. The reason it
@@ -34,15 +35,16 @@ export type SearchRecord = {
 	tags: string[]
 }
 
-export function buildSearchIndex(): SearchRecord[] {
+export function buildSearchIndex(lang: Lang): SearchRecord[] {
+	const p = (href: string) => localePath(href, lang)
 	const records = [
 		...projects.map(
-			(p): SearchRecord => ({
+			(proj): SearchRecord => ({
 				type: "Project",
-				title: p.name,
-				subtitle: p.tagline,
-				href: `/projects/${p.slug}`,
-				tags: [p.tierLabel, ...p.tags],
+				title: proj.name,
+				subtitle: proj.tagline,
+				href: p(`/projects/${proj.slug}`),
+				tags: [proj.tierLabel, ...proj.tags],
 			}),
 		),
 		...concepts.map(
@@ -50,7 +52,7 @@ export function buildSearchIndex(): SearchRecord[] {
 				type: "Concept",
 				title: c.name,
 				subtitle: c.tagline,
-				href: `/concepts/${c.slug}`,
+				href: p(`/concepts/${c.slug}`),
 				tags: [],
 			}),
 		),
@@ -59,7 +61,7 @@ export function buildSearchIndex(): SearchRecord[] {
 				type: "Failure lab",
 				title: f.name,
 				subtitle: f.tagline,
-				href: `/failures/${f.slug}`,
+				href: p(`/failures/${f.slug}`),
 				tags: [f.category],
 			}),
 		),
@@ -68,7 +70,7 @@ export function buildSearchIndex(): SearchRecord[] {
 				type: "Idiom exercise",
 				title: i.name,
 				subtitle: i.tagline,
-				href: `/idioms/${i.slug}`,
+				href: p(`/idioms/${i.slug}`),
 				tags: [i.accent],
 			}),
 		),
@@ -77,7 +79,7 @@ export function buildSearchIndex(): SearchRecord[] {
 				type: "Source walkthrough",
 				title: w.name,
 				subtitle: w.tagline,
-				href: `/source/${w.slug}`,
+				href: p(`/source/${w.slug}`),
 				tags: [w.pkg],
 			}),
 		),
@@ -86,7 +88,7 @@ export function buildSearchIndex(): SearchRecord[] {
 				type: "Basics lesson",
 				title: l.title,
 				subtitle: l.tagline,
-				href: `/basics/${l.slug}`,
+				href: p(`/basics/${l.slug}`),
 				tags: [],
 			}),
 		),
@@ -97,7 +99,7 @@ export function buildSearchIndex(): SearchRecord[] {
 			type: "Capstone",
 			title: capstone.name,
 			subtitle: capstone.tagline,
-			href: `/${capstone.slug}`,
+			href: p(`/${capstone.slug}`),
 			tags: [],
 		} satisfies SearchRecord,
 	]
@@ -109,5 +111,14 @@ export function buildSearchIndex(): SearchRecord[] {
 	// characters with the query to fuzzy-match. Folded into `tags` for every
 	// record, not just the capstone, so "concept" or "failure" work as
 	// type-name searches too.
-	return records.map((r) => ({ ...r, tags: [...r.tags, r.type] }))
+	// Both spellings of the type go in, not just the active language's. The
+	// English one keeps working for a reader who searches "concept" while
+	// browsing Arabic (the identifiers, the docs and the whole Go ecosystem
+	// they are learning from are in English, so they will), and the Arabic one
+	// makes "مفهوم" find the same page.
+	const types = ui(lang).search.types
+	return records.map((r) => ({
+		...r,
+		tags: [...r.tags, r.type, types[r.type]],
+	}))
 }

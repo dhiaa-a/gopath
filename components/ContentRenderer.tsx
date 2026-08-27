@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react"
 import { ContentBlock, Hint, t } from "@/lib/content"
+import { localizeHtml, toLang, ui } from "@/lib/i18n"
 import { GoCodeBlock } from "./GoCode"
 
 function HintPill({ hint }: { hint: Hint }) {
@@ -164,30 +165,32 @@ function VerifyBlock({
 	block: ContentBlock & { type: "verify" }
 	lang: string
 }) {
+	const L = toLang(lang)
+	const tr = ui(L)
 	return (
 		<div className="mb-6 rounded-lg border border-go-teal/25 bg-go-teal/5 px-5 py-4">
 			<div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-go-teal">
-				verify
+				{tr.blocks.verify}
 			</div>
 			{block.where && (
 				<div className="mb-1 font-mono text-[11px] text-faint">
-					from {block.where}
+					{tr.blocks.from} {block.where}
 				</div>
 			)}
 			<pre className="mb-3 overflow-x-auto rounded bg-bg p-3 font-mono text-xs text-foreground">
 				{block.command}
 			</pre>
 			<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-muted">
-				you should see
+				{tr.blocks.youShouldSee}
 			</div>
 			<p
 				className="text-sm leading-relaxed text-muted"
-				dangerouslySetInnerHTML={{ __html: t(block.expect, lang) }}
+				dangerouslySetInnerHTML={{ __html: localizeHtml(t(block.expect, lang), L) }}
 			/>
 			{block.note && (
 				<p
 					className="mt-2 text-xs leading-relaxed text-faint"
-					dangerouslySetInnerHTML={{ __html: t(block.note, lang) }}
+					dangerouslySetInnerHTML={{ __html: localizeHtml(t(block.note, lang), L) }}
 				/>
 			)}
 			{block.labPath && (
@@ -213,37 +216,41 @@ function BreakItBlock({
 	block: ContentBlock & { type: "breakIt" }
 	lang: string
 }) {
+	const L = toLang(lang)
+	const tr = ui(L)
 	const [open, setOpen] = useState(false)
 	return (
 		<div className="mb-6 rounded-lg border border-go-amber/25 bg-go-amber/5 px-5 py-4">
 			<div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-go-amber">
-				break it
+				{tr.blocks.breakIt}
 			</div>
 			<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-muted">
-				change
+				{tr.blocks.change}
 			</div>
 			<p
 				className="mb-3 text-sm leading-relaxed text-foreground"
-				dangerouslySetInnerHTML={{ __html: t(block.change, lang) }}
+				dangerouslySetInnerHTML={{ __html: localizeHtml(t(block.change, lang), L) }}
 			/>
 			<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-muted">
-				what happens
+				{tr.blocks.whatHappens}
 			</div>
 			<p
 				className="text-sm leading-relaxed text-muted"
-				dangerouslySetInnerHTML={{ __html: t(block.observe, lang) }}
+				dangerouslySetInnerHTML={{ __html: localizeHtml(t(block.observe, lang), L) }}
 			/>
 			<div className="mt-3">
 				<button
 					onClick={() => setOpen((o) => !o)}
 					className="font-mono text-[10px] text-muted transition-colors hover:text-go-amber"
 				>
-					{open ? "▾" : "▸"} why does it do that?
+					{open ? "▾" : "▸"} {tr.blocks.whyDoesItDoThat}
 				</button>
 				{open && (
 					<div
 						className="mt-1.5 rounded border border-go-amber/20 bg-bg px-3 py-2 text-sm leading-relaxed text-muted"
-						dangerouslySetInnerHTML={{ __html: t(block.why, lang) }}
+						dangerouslySetInnerHTML={{
+							__html: localizeHtml(t(block.why, lang), L),
+						}}
 					/>
 				)}
 			</div>
@@ -258,6 +265,8 @@ export function ContentRenderer({
 	blocks: ContentBlock[]
 	lang?: string
 }) {
+	const L = toLang(lang)
+	const tr = ui(L)
 	return (
 		<>
 			{blocks.map((block, i) => {
@@ -268,7 +277,7 @@ export function ContentRenderer({
 								key={i}
 								className="mb-4 text-base leading-relaxed text-muted"
 								dangerouslySetInnerHTML={{
-									__html: t(block.value, lang),
+									__html: localizeHtml(t(block.value, lang), L),
 								}}
 							/>
 						)
@@ -290,7 +299,7 @@ export function ContentRenderer({
 										key={j}
 										className="text-sm text-muted"
 										dangerouslySetInnerHTML={{
-											__html: t(item, lang),
+											__html: localizeHtml(t(item, lang), L),
 										}}
 									/>
 								))}
@@ -307,7 +316,7 @@ export function ContentRenderer({
 										: "border-go-cyan/20 bg-go-cyan/5"
 								}`}
 								dangerouslySetInnerHTML={{
-									__html: t(block.value, lang),
+									__html: localizeHtml(t(block.value, lang), L),
 								}}
 							/>
 						)
@@ -321,40 +330,40 @@ export function ContentRenderer({
 							>
 								<div className="border-b border-border px-5 py-5">
 									<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-go-cyan">
-										concept
+										{tr.blocks.concept}
 									</div>
 									<p
 										className="text-sm leading-relaxed text-muted"
 										dangerouslySetInnerHTML={{
-											__html: t(block.concept, lang),
+											__html: localizeHtml(t(block.concept, lang), L),
 										}}
 									/>
 								</div>
 								<div className="border-b border-border px-5 py-5">
 									<div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-muted">
-										pattern
+										{tr.blocks.pattern}
 									</div>
 									<GoCodeBlock code={block.pattern} />
 								</div>
 								<div className="border-b border-border px-5 py-5">
 									<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-go-teal">
-										similar example
+										{tr.blocks.similarExample}
 									</div>
 									<p
 										className="text-sm leading-relaxed text-muted"
 										dangerouslySetInnerHTML={{
-											__html: t(block.example, lang),
+											__html: localizeHtml(t(block.example, lang), L),
 										}}
 									/>
 								</div>
 								<div className="px-5 py-4">
 									<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-go-amber">
-										your task
+										{tr.blocks.yourTask}
 									</div>
 									<p
 										className="text-sm leading-relaxed text-foreground"
 										dangerouslySetInnerHTML={{
-											__html: t(block.task, lang),
+											__html: localizeHtml(t(block.task, lang), L),
 										}}
 									/>
 									{block.hints && (
@@ -373,23 +382,23 @@ export function ContentRenderer({
 							>
 								<div className="border-b border-border px-5 py-4">
 									<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-go-teal">
-										requirement
+										{tr.blocks.requirement}
 									</div>
 									<p
 										className="text-sm font-medium leading-relaxed text-foreground"
 										dangerouslySetInnerHTML={{
-											__html: t(block.what, lang),
+											__html: localizeHtml(t(block.what, lang), L),
 										}}
 									/>
 								</div>
 								<div className="border-b border-border px-5 py-4">
 									<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-muted">
-										why
+										{tr.blocks.why}
 									</div>
 									<p
 										className="text-sm leading-relaxed text-muted"
 										dangerouslySetInnerHTML={{
-											__html: t(block.why, lang),
+											__html: localizeHtml(t(block.why, lang), L),
 										}}
 									/>
 								</div>
@@ -398,7 +407,7 @@ export function ContentRenderer({
 										{block.stdlibHint && (
 											<div>
 												<span className="mr-1.5 font-mono text-[9px] uppercase tracking-widest text-muted">
-													stdlib
+													{tr.blocks.stdlib}
 												</span>
 												<code className="font-mono text-xs text-go-cyan">
 													{block.stdlibHint}
@@ -408,7 +417,7 @@ export function ContentRenderer({
 										{block.thirdPartyHint && (
 											<div>
 												<span className="mr-1.5 font-mono text-[9px] uppercase tracking-widest text-muted">
-													third-party
+													{tr.blocks.thirdParty}
 												</span>
 												<code className="font-mono text-xs text-go-teal">
 													{block.thirdPartyHint}
@@ -420,7 +429,7 @@ export function ContentRenderer({
 								{block.complexSnippet && (
 									<div className="border-b border-border px-5 py-4">
 										<div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-muted">
-											api shape
+											{tr.blocks.apiShape}
 										</div>
 										<GoCodeBlock
 											code={block.complexSnippet}
@@ -443,18 +452,18 @@ export function ContentRenderer({
 								className="mb-4 rounded-lg border border-go-amber/20 bg-go-amber/5 px-5 py-4"
 							>
 								<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-go-amber">
-									constraint
+									{tr.blocks.constraint}
 								</div>
 								<p
 									className="mb-2 text-sm font-medium text-foreground"
 									dangerouslySetInnerHTML={{
-										__html: t(block.what, lang),
+										__html: localizeHtml(t(block.what, lang), L),
 									}}
 								/>
 								<p
 									className="text-sm leading-relaxed text-muted"
 									dangerouslySetInnerHTML={{
-										__html: t(block.rationale, lang),
+										__html: localizeHtml(t(block.rationale, lang), L),
 									}}
 								/>
 								{block.hints && (

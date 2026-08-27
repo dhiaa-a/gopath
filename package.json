@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx tsx scripts/validate.ts && npx tsx scripts/playground-shares.ts && next build",
+    "build": "npx tsx scripts/validate.ts && npx tsx scripts/playground-shares.ts && next build && npx tsx scripts/link-check.ts",
+    "link-check": "npx tsx scripts/link-check.ts",
     "start": "next start",
     "lint": "eslint . --max-warnings=0"
   },
