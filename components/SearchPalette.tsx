@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import Fuse from "fuse.js"
 import type { SearchRecord } from "@/lib/search-index"
+import { ui, type Lang } from "@/lib/i18n"
 
 const MAX_RESULTS = 8
 
@@ -11,7 +12,14 @@ const MAX_RESULTS = 8
 // Fuse is built once from `records` (a few hundred bytes each, ~116 rows
 // today) — cheap enough that lazy construction on first open would only add
 // complexity, not save anything measurable.
-export function SearchPalette({ records }: { records: SearchRecord[] }) {
+export function SearchPalette({
+	records,
+	lang,
+}: {
+	records: SearchRecord[]
+	lang: Lang
+}) {
+	const s = ui(lang)
 	const [open, setOpen] = useState(false)
 	const [query, setQuery] = useState("")
 	const [activeIndex, setActiveIndex] = useState(0)
@@ -110,7 +118,7 @@ export function SearchPalette({ records }: { records: SearchRecord[] }) {
 				ref={triggerRef}
 				type="button"
 				onClick={() => setOpen(true)}
-				aria-label="Search the site"
+				aria-label={s.nav.search}
 				className="flex h-8 items-center gap-[8px] border border-m-divider px-[10px] text-m-muted transition-colors hover:border-m-accent hover:text-m-accent"
 			>
 				<svg
@@ -138,7 +146,7 @@ export function SearchPalette({ records }: { records: SearchRecord[] }) {
 					<div
 						role="dialog"
 						aria-modal="true"
-						aria-label="Search"
+						aria-label={s.nav.search}
 						onClick={(e) => e.stopPropagation()}
 						className="m-scope h-fit w-full max-w-[600px] border-2 border-m-divider bg-m-bg font-display shadow-[0_24px_64px_-24px_rgba(0,0,0,0.5)]"
 					>
@@ -164,11 +172,11 @@ export function SearchPalette({ records }: { records: SearchRecord[] }) {
 									setActiveIndex(0)
 								}}
 								onKeyDown={onInputKeyDown}
-								placeholder="Search projects, concepts, failure labs…"
+								placeholder={s.search.placeholder}
 								className="h-[56px] flex-1 bg-transparent text-[16px] text-m-ink outline-none placeholder:text-m-faint"
 							/>
 							<kbd className="hidden shrink-0 border border-m-divider px-[6px] py-[2px] font-mono text-[10px] text-m-faint sm:block">
-								Esc
+								{s.search.escape}
 							</kbd>
 						</div>
 
@@ -176,7 +184,7 @@ export function SearchPalette({ records }: { records: SearchRecord[] }) {
 							<div className="max-h-[50vh] overflow-y-auto py-[6px]">
 								{results.length === 0 ? (
 									<p className="px-[20px] py-[24px] text-[13px] text-m-faint">
-										No matches for “{query}”.
+										{s.search.noMatches} “{query}”.
 									</p>
 								) : (
 									results.map((r, i) => (
@@ -192,7 +200,7 @@ export function SearchPalette({ records }: { records: SearchRecord[] }) {
 											}`}
 										>
 											<span className="mt-[2px] shrink-0 font-mono text-[10px] uppercase tracking-[0.06em] text-m-accent-ink">
-												{r.type}
+												{s.search.types[r.type]}
 											</span>
 											<span className="min-w-0">
 												<span className="block truncate text-[14px] font-extrabold text-m-ink">

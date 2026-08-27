@@ -1,5 +1,11 @@
+// `ar` is optional and `t()` falls back to English on purpose: the content
+// corpus is ~150k words of technical prose, so translation lands in stages and
+// an untranslated concept page must render rather than break the build. The UI
+// chrome takes the opposite rule — see lib/i18n.ts, where Arabic is
+// type-enforced complete.
 export type LocalizedString = {
 	en: string
+	ar?: string
 }
 
 export type Hint = {
@@ -388,4 +394,65 @@ export type Capstone = {
 
 export function t(val: LocalizedString, lang: string) {
 	return val[lang as keyof LocalizedString] ?? val.en
+}
+
+/**
+ * Whether this string would fall back to English for `lang`.
+ *
+ * Used to tell a reader that a page is untranslated rather than letting them
+ * discover it by hitting a wall of English mid-lesson. Empty strings count as
+ * missing: a blank `ar` is an authoring slip, not a translation.
+ */
+export function isTranslated(val: LocalizedString, lang: string): boolean {
+	if (lang === "en") return true
+	const v = val[lang as keyof LocalizedString]
+	return typeof v === "string" && v.trim().length > 0
+}
+
+/**
+ * Whether a run of content blocks is fully translated into `lang`.
+ *
+ * Derived from the data rather than tracked in a list, so the "not translated
+ * yet" notice on a page disappears by itself the moment the last string in it
+ * gains an `ar` — there is no second place to remember to update, and the
+ * notice cannot outlive the condition it describes.
+ *
+ * Deliberately strict: one untranslated string means the page still hands the
+ * reader English mid-way, which is exactly what the notice warns about.
+ */
+export function blocksTranslated(
+	blocks: ContentBlock[],
+	lang: string,
+): boolean {
+	if (lang === "en") return true
+
+	const ok = (v: LocalizedString) => isTranslated(v, lang)
+
+	return blocks.every((block) => {
+		switch (block.type) {
+			case "text":
+			case "callout":
+				return ok(block.value)
+			case "list":
+				return block.items.every(ok)
+			case "pattern":
+				return (
+					ok(block.concept) && ok(block.example) && ok(block.task)
+				)
+			case "requirement":
+				return ok(block.what) && ok(block.why)
+			case "constraint":
+				return ok(block.what) && ok(block.rationale)
+			case "verify":
+				return ok(block.expect) && (!block.note || ok(block.note))
+			case "breakIt":
+				return ok(block.change) && ok(block.observe) && ok(block.why)
+			// Code is never translated, and an assessment carries plain
+			// strings that have no localized form yet.
+			case "code":
+				return true
+			case "assessment":
+				return false
+		}
+	})
 }

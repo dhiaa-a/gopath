@@ -1,7 +1,15 @@
 "use client"
 import { useState } from "react"
+import { toLang, ui } from "@/lib/i18n"
 
-export function RetrievalPrompts({ prompts }: { prompts: string[] }) {
+export function RetrievalPrompts({
+	prompts,
+	lang,
+}: {
+	prompts: string[]
+	lang?: string
+}) {
+	const tr = ui(toLang(lang))
 	const [flipped, setFlipped] = useState<boolean[]>(prompts.map(() => false))
 
 	function flip(i: number) {
@@ -11,10 +19,10 @@ export function RetrievalPrompts({ prompts }: { prompts: string[] }) {
 	return (
 		<section className="mb-8">
 			<div className="mb-1 font-mono text-xs uppercase tracking-widest text-go-cyan">
-				Retrieval practice
+				{tr.common.retrievalPractice}
 			</div>
 			<p className="mb-4 text-sm text-muted">
-				Think of your answer, then click the card to reveal it.
+				{tr.common.retrievalIntro}
 			</p>
 			<div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
 				{prompts.map((prompt, i) => {
@@ -26,7 +34,7 @@ export function RetrievalPrompts({ prompts }: { prompts: string[] }) {
 						<button
 							key={i}
 							onClick={() => flip(i)}
-							className="group relative h-44 w-full cursor-pointer text-left"
+							className="group relative h-44 w-full cursor-pointer text-start"
 							style={{ perspective: "1000px" }}
 						>
 							<div
@@ -49,7 +57,10 @@ export function RetrievalPrompts({ prompts }: { prompts: string[] }) {
 										</p>
 									</div>
 									<span className="mt-3 shrink-0 font-mono text-[10px] text-muted transition-colors group-hover:text-go-cyan">
-										click to reveal →
+										{tr.common.clickToReveal}{" "}
+										<span aria-hidden="true" className="m-arrow">
+											→
+										</span>
 									</span>
 								</div>
 
@@ -67,7 +78,10 @@ export function RetrievalPrompts({ prompts }: { prompts: string[] }) {
 										</p>
 									</div>
 									<span className="mt-3 shrink-0 font-mono text-[10px] text-muted transition-colors group-hover:text-go-cyan">
-										click to flip back →
+										{tr.common.clickToFlipBack}{" "}
+										<span aria-hidden="true" className="m-arrow">
+											→
+										</span>
 									</span>
 								</div>
 							</div>

@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -373,6 +373,84 @@
 	}
 }
 
+/* ─── Right-to-left ───────────────────────────────────────────────────────────
+   Arabic sets dir="rtl" on <html>, which flips the block direction for free.
+   What it does NOT flip is the handful of places this design reaches for a
+   physical side, plus one thing that must never flip at all: code.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Code is not prose and does not mirror. A Go snippet, a shell command, a
+   stack trace and a file path are all left-to-right artifacts, and the
+   bidirectional algorithm will happily reorder `if err != nil {` into nonsense
+   if it is allowed to inherit an RTL paragraph direction. `isolate` keeps each
+   inline snippet from leaking its direction into the Arabic sentence around
+   it, which is the common case in this translation's house style — Arabic
+   prose wrapped around Latin identifiers. */
+pre,
+code,
+kbd,
+samp,
+.m-code {
+	direction: ltr;
+	unicode-bidi: isolate;
+}
+
+/* Block-level code additionally pins its alignment: inside an RTL container a
+   <pre> would otherwise ragged-right its lines. */
+pre,
+.m-code {
+	text-align: left;
+}
+
+/* The path row's accent bar grows from the reading edge, which is the right
+   in Arabic. */
+.m-row::before {
+	inset-inline-start: 0;
+	left: auto;
+}
+
+/* The nav underline draws from the reading edge outward, so it has to start
+   on the opposite side in RTL or it appears to draw backwards. */
+[dir="rtl"] .m-navlink::after {
+	transform-origin: right;
+}
+
+/* Arrows point *forward*, and forward is leftward in Arabic. Mirroring the
+   glyph keeps one character (→) in the markup instead of branching every call
+   site on language. The hover nudge is composed onto the same transform: a
+   bare translateX in the hover rule would replace the flip and the arrow would
+   snap back to pointing right mid-animation. */
+[dir="rtl"] .m-arrow {
+	transform: scaleX(-1);
+}
+[dir="rtl"] .group:hover .m-arrow {
+	transform: scaleX(-1) translateX(6px);
+}
+@media (prefers-reduced-motion: reduce) {
+	[dir="rtl"] .group:hover .m-arrow {
+		transform: scaleX(-1);
+	}
+}
+
+/* Arabic has no letter case, so `uppercase` on a kicker does nothing to the
+   Arabic and quietly mangles the Latin words embedded in it — "مفاهيم Go"
+   renders as "مفاهيم GO", which is a different (and wrong) spelling of the
+   language's name. The tracking that goes with small-caps labels is also
+   tuned for Latin capitals and only loosens Arabic joins, so both come off. */
+[dir="rtl"] .uppercase {
+	text-transform: none;
+	letter-spacing: normal;
+}
+
+/* Latin runs inside Arabic prose — version numbers, `go1.23.12`, GOROOT paths
+   — are isolated so a trailing period or bracket does not jump to the wrong
+   end of the phrase. */
+[dir="rtl"] .m-ltr {
+	direction: ltr;
+	unicode-bidi: isolate;
+	display: inline-block;
+}
+
 /* ─── Base styles ─────────────────────────────────────────────────────────── */
 @layer base {
 	html {
@@ -382,7 +460,7 @@
 	body {
 		background-color: rgb(var(--bg));
 		color: var(--color-muted);
-		font-family: "Archivo", system-ui, sans-serif;
+		font-family: "Archivo", "IBM Plex Sans Arabic", system-ui, sans-serif;
 		line-height: 1.75;
 		-webkit-font-smoothing: antialiased;
 	}
@@ -396,7 +474,7 @@
 	h4,
 	h5,
 	h6 {
-		font-family: "Archivo", system-ui, sans-serif;
+		font-family: "Archivo", "IBM Plex Sans Arabic", system-ui, sans-serif;
 		font-weight: 800;
 		line-height: 1.15;
 		letter-spacing: -0.02em;

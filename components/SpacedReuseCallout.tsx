@@ -1,15 +1,18 @@
 "use client"
 import Link from "next/link"
 import { useState } from "react"
+import { localePath, toLang } from "@/lib/i18n"
 
 type State = "pending" | "remembered" | "forgot"
 
 export function SpacedReuseCallout({
 	projectName,
 	projectSlug,
+	lang,
 }: {
 	projectName: string
 	projectSlug: string
+	lang?: string
 }) {
 	const [state, setState] = useState<State>("pending")
 
@@ -51,7 +54,7 @@ export function SpacedReuseCallout({
 			{state === "forgot" && (
 				<div className="flex flex-wrap items-center gap-3">
 					<Link
-						href={`/projects/${projectSlug}`}
+						href={localePath(`/projects/${projectSlug}`, toLang(lang))}
 						className="font-mono text-xs text-go-teal underline decoration-go-teal/40 hover:no-underline"
 					>
 						Review {projectName} →

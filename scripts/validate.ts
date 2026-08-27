@@ -249,7 +249,14 @@ function blockTexts(blocks: ContentBlock[]): string[] {
 
 function collectScannableText(page: OrientationPage): string[] {
 	const out = blockTexts(page.blocks)
-	if (page.retrievalPrompts) out.push(...page.retrievalPrompts)
+	// Prompts are localized now, so scan every language's text rather than
+	// only English — a broken link introduced in a translation is still a
+	// broken link.
+	if (page.retrievalPrompts) {
+		for (const prompt of page.retrievalPrompts) {
+			out.push(...Object.values(prompt).filter(Boolean))
+		}
+	}
 	return out
 }
 

@@ -50,10 +50,35 @@ const config: Config = {
 			// three-family look the redesign's critique called out ("together
 			// they read as three different sites") goes away everywhere rather
 			// than only on the homepage. `mono` stays real — code is functional.
+			// IBM Plex Sans Arabic sits behind Archivo in every stack rather than
+			// being switched on by a [lang="ar"] rule. Font fallback is per-glyph:
+			// Archivo has no Arabic coverage, so Arabic characters resolve to Plex
+			// on their own while Latin keeps Archivo — which means mixed lines
+			// (Arabic prose around `go run` or `sync.WaitGroup`, the house style
+			// for the whole Arabic translation) render correctly with no
+			// conditional CSS and no chance of a page being switched to the wrong
+			// family. Plex Arabic is the closest grotesque match to Archivo's tone
+			// and carries the same flat, unornamented character the Modernist
+			// system is built on.
 			fontFamily: {
-				sans: ["Archivo", "system-ui", "sans-serif"],
-				serif: ["Archivo", "system-ui", "sans-serif"],
-				display: ["Archivo", "system-ui", "sans-serif"],
+				sans: [
+					"Archivo",
+					"IBM Plex Sans Arabic",
+					"system-ui",
+					"sans-serif",
+				],
+				serif: [
+					"Archivo",
+					"IBM Plex Sans Arabic",
+					"system-ui",
+					"sans-serif",
+				],
+				display: [
+					"Archivo",
+					"IBM Plex Sans Arabic",
+					"system-ui",
+					"sans-serif",
+				],
 				mono: ["JetBrains Mono", "monospace"],
 			},
 			// "Do not round a corner anywhere — --radius-md is 0 on purpose."
