@@ -78,7 +78,7 @@ export default async function BasicsLessonPage({
 					href={lp("/basics")}
 					className="transition-colors hover:text-foreground"
 				>
-					Basics
+					{tr.home.basicsName}
 				</Link>
 				<span className="text-faint">/</span>
 				<span className="text-foreground">{lesson.title}</span>
@@ -87,10 +87,12 @@ export default async function BasicsLessonPage({
 			{/* Header */}
 			<div className="mb-2 flex items-center gap-3 font-mono text-xs uppercase tracking-widest text-muted">
 				<span>
-					Lesson {lesson.order} of {ordered.length}
+					{tr.common.lesson} {lesson.order} {tr.common.of} {ordered.length}
 				</span>
 				<span className="text-faint">·</span>
-				<span>{lesson.estimatedMinutes} min</span>
+				<span>
+					{lesson.estimatedMinutes} {tr.common.minutes}
+				</span>
 			</div>
 			<h1 className="mb-3 font-serif text-4xl text-foreground">
 				{lesson.title}
@@ -148,7 +150,7 @@ export default async function BasicsLessonPage({
 						href={lp(`/basics/${prev.slug}`)}
 						className="group flex items-center gap-2 font-mono text-sm text-muted transition-colors hover:text-foreground"
 					>
-						<span>←</span>
+						<span aria-hidden="true" className="m-arrow">←</span>
 						<span>{prev.title}</span>
 					</Link>
 				) : (
@@ -160,7 +162,7 @@ export default async function BasicsLessonPage({
 					className="flex items-center gap-2 font-mono text-sm font-semibold text-muted transition-colors hover:text-foreground"
 				>
 					<span>{nextLabel}</span>
-					<span>→</span>
+					<span aria-hidden="true" className="m-arrow">→</span>
 				</Link>
 			</div>
 		</main>

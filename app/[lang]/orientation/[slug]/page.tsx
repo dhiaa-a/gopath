@@ -8,7 +8,7 @@ import { ContentRenderer } from "@/components/ContentRenderer"
 import { RetrievalPrompts } from "@/components/RetrievalPrompts"
 import { localePath, toLang, ui } from "@/lib/i18n"
 import { TranslationNotice } from "@/components/TranslationNotice"
-import { blocksTranslated } from "@/lib/content"
+import { blocksTranslated, t } from "@/lib/content"
 
 export function generateStaticParams() {
 	return orientationPages.map((p) => ({ slug: p.slug }))
@@ -24,8 +24,8 @@ export async function generateMetadata({
 	const page = getOrientationPage(slug)
 	if (!page) return {}
 	return {
-		title: `${page.title} — Orientation — GoPath`,
-		description: page.tagline,
+		title: `${t(page.title, lang)} — ${ui(lang).nav.orientation} — GoPath`,
+		description: t(page.tagline, lang),
 	}
 }
 
@@ -50,7 +50,9 @@ export default async function OrientationPage({
 	const nextHref = lp(
 		next ? `/orientation/${next.slug}` : "/projects/cli-renamer",
 	)
-	const nextLabel = next ? next.title : tr.common.tier1FirstProject
+	const nextLabel = next
+		? t(next.title, lang)
+		: tr.common.tier1FirstProject
 
 	return (
 		<main className="mx-auto max-w-3xl px-6 py-16">
@@ -69,24 +71,26 @@ export default async function OrientationPage({
 					href={lp("/orientation")}
 					className="transition-colors hover:text-foreground"
 				>
-					Orientation
+					{tr.nav.orientation}
 				</Link>
 				<span className="text-faint">/</span>
-				<span className="text-foreground">{page.title}</span>
+				<span className="text-foreground">{t(page.title, lang)}</span>
 			</div>
 
 			{/* Header */}
 			<div className="mb-2 flex items-center gap-3 font-mono text-xs uppercase tracking-widest text-muted">
 				<span>
-					Step {page.order} of {ordered.length}
+					{tr.common.step} {page.order} {tr.common.of} {ordered.length}
 				</span>
 				<span className="text-faint">·</span>
-				<span>{page.estimatedMinutes} min</span>
+				<span>
+					{page.estimatedMinutes} {tr.common.minutes}
+				</span>
 			</div>
 			<h1 className="mb-3 font-serif text-4xl text-foreground">
-				{page.title}
+				{t(page.title, lang)}
 			</h1>
-			<p className="mb-10 text-lg text-muted">{page.tagline}</p>
+			<p className="mb-10 text-lg text-muted">{t(page.tagline, lang)}</p>
 
 			{/* Body */}
 			{page.blocks.length > 0 && (
@@ -97,7 +101,10 @@ export default async function OrientationPage({
 
 			{/* Optional retrieval prompts (ready-check) */}
 			{page.retrievalPrompts && page.retrievalPrompts.length > 0 && (
-				<RetrievalPrompts prompts={page.retrievalPrompts} lang={lang} />
+				<RetrievalPrompts
+					prompts={page.retrievalPrompts.map((p) => t(p, lang))}
+					lang={lang}
+				/>
 			)}
 
 			{/* Optional CTA */}
@@ -107,7 +114,7 @@ export default async function OrientationPage({
 						href={lp(page.cta.href)}
 						className="rounded bg-go-cyan px-6 py-3 font-mono text-sm font-semibold text-black transition-opacity hover:opacity-85"
 					>
-						{page.cta.label}
+						{t(page.cta.label, lang)}
 					</Link>
 				</div>
 			)}
@@ -119,8 +126,8 @@ export default async function OrientationPage({
 						href={lp(`/orientation/${prev.slug}`)}
 						className="group flex items-center gap-2 font-mono text-sm text-muted transition-colors hover:text-foreground"
 					>
-						<span>←</span>
-						<span>{prev.title}</span>
+						<span aria-hidden="true" className="m-arrow">←</span>
+						<span>{t(prev.title, lang)}</span>
 					</Link>
 				) : (
 					<div />
@@ -131,7 +138,7 @@ export default async function OrientationPage({
 					className="flex items-center gap-2 font-mono text-sm font-semibold text-muted transition-colors hover:text-foreground"
 				>
 					<span>{nextLabel}</span>
-					<span>→</span>
+					<span aria-hidden="true" className="m-arrow">→</span>
 				</Link>
 			</div>
 		</main>

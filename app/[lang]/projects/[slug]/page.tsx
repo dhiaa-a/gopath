@@ -310,7 +310,7 @@ export default async function ProjectPage({
 						href={lp(`/projects/${prevProject.slug}`)}
 						className="group flex items-center gap-2 font-mono text-sm text-muted transition-colors hover:text-foreground"
 					>
-						<span>←</span>
+						<span aria-hidden="true" className="m-arrow">←</span>
 						<span>{prevProject.name}</span>
 					</Link>
 				) : (

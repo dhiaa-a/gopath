@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { orientationPages } from "@/lib/orientation"
+import { t } from "@/lib/content"
 import { localePath, toLang, ui } from "@/lib/i18n"
 
 export const metadata = {
@@ -49,10 +50,10 @@ export default async function OrientationIndexPage({
 							</div>
 							<div className="min-w-0 flex-1">
 								<div className="mb-1 font-semibold text-foreground group-hover:text-muted">
-									{page.title}
+									{t(page.title, lang)}
 								</div>
 								<div className="text-sm leading-relaxed text-muted">
-									{page.tagline}
+									{t(page.tagline, lang)}
 								</div>
 							</div>
 							<div className="shrink-0 self-center font-mono text-xs text-faint">
