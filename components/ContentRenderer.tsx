@@ -1,21 +1,105 @@
 "use client"
-import { useState } from "react"
+import { useId, useState } from "react"
+import Link from "next/link"
 import { ContentBlock, Hint, t } from "@/lib/content"
-import { localizeHtml, toLang, ui } from "@/lib/i18n"
+import { localePath, localizeHtml, toLang, ui } from "@/lib/i18n"
 import { GoCodeBlock } from "./GoCode"
+import { Disclosure } from "./Disclosure"
+
+// A handful of stdlib symbols this site has already annotated line by line —
+// worth a second link straight to the walkthrough, not just the godoc entry.
+const WALKTHROUGH_FOR_FUNC: Record<string, string> = {
+	"sync.WaitGroup": "sync-waitgroup",
+	"errors.Is": "errors",
+	"context.WithValue": "context",
+	"context.WithTimeout": "context",
+	"Context.Value": "context",
+}
+
+// One chip per package. An empty `funcs` marks a bare mention that isn't an
+// importable package at all (a keyword like `defer`, or a shell command like
+// `go test -race`) — there is nowhere on pkg.go.dev for that to link to, so
+// it renders as plain text instead of a broken or misleading link.
+function StdlibChip({
+	pkg,
+	funcs,
+	lang,
+}: {
+	pkg: string
+	funcs: string[]
+	lang: string
+}) {
+	if (funcs.length === 0) {
+		return <span className="font-mono text-xs text-muted">{pkg}</span>
+	}
+	const walkthrough = funcs.map((f) => WALKTHROUGH_FOR_FUNC[f]).find(Boolean)
+	return (
+		<span className="inline-flex flex-wrap items-baseline gap-x-1.5">
+			<a
+				href={`https://pkg.go.dev/${pkg}`}
+				target="_blank"
+				rel="noopener noreferrer"
+				className="font-mono text-xs font-semibold text-go-cyan hover:underline"
+			>
+				{pkg}
+			</a>
+			<span className="font-mono text-xs text-muted">{funcs.join(", ")}</span>
+			{walkthrough && (
+				<Link
+					href={localePath(`/source/${walkthrough}`, toLang(lang))}
+					className="font-mono text-[10px] text-go-teal hover:underline"
+				>
+					read the source →
+				</Link>
+			)}
+		</span>
+	)
+}
+
+// Real prose explaining a specific third-party choice, not a compressed
+// reference list — it was rendered in a monospace <code> tag regardless,
+// which reads as a code snippet split across three lines instead of the
+// sentence it actually is. This keeps the package name (when the text leads
+// with "pkg/path: ...") as a link and lets the rest wrap as a normal sentence.
+function ThirdPartyHint({ text }: { text: string }) {
+	const colonIdx = text.indexOf(":")
+	if (colonIdx === -1) {
+		return <p className="text-sm leading-relaxed text-muted">{text}</p>
+	}
+	const pkg = text.slice(0, colonIdx).trim()
+	const rest = text.slice(colonIdx + 1).trim()
+	return (
+		<p className="text-sm leading-relaxed text-muted">
+			<a
+				href={`https://pkg.go.dev/${pkg}`}
+				target="_blank"
+				rel="noopener noreferrer"
+				className="font-mono font-semibold text-go-teal hover:underline"
+			>
+				{pkg}
+			</a>
+			{": "}
+			{rest}
+		</p>
+	)
+}
 
 function HintPill({ hint }: { hint: Hint }) {
 	const [open, setOpen] = useState(false)
+	const id = useId()
 	return (
-		<span className="inline-block">
+		<span className="inline-flex items-center">
 			<button
 				onClick={() => setOpen((o) => !o)}
-				className="rounded border border-border bg-surface px-3 py-1 font-mono text-[11px] text-muted transition-colors hover:border-go-cyan/40 hover:text-go-cyan"
+				aria-expanded={open}
+				aria-controls={id}
+				className="flex min-h-[32px] items-center gap-1 rounded-full border border-border bg-surface px-3 py-1.5 font-mono text-[11px] text-muted transition-colors hover:border-go-cyan/40 hover:text-go-cyan"
 			>
-				{open ? "▾" : "▸"} {hint.label}
+				<span aria-hidden="true">{open ? "▾" : "▸"}</span>
+				{hint.label}
 			</button>
 			{open && (
-				<span className="ml-2 font-mono text-[11px] text-go-cyan">
+				<span id={id} className="ml-2 font-mono text-[11px] text-go-cyan">
 					{hint.value}
 				</span>
 			)}
@@ -39,7 +123,6 @@ function AssessmentBlock({
 }: {
 	block: ContentBlock & { type: "assessment" }
 }) {
-	const [metricsOpen, setMetricsOpen] = useState(false)
 	const a = block.assessment
 
 	const palette: Record<string, string> = {
@@ -59,7 +142,7 @@ function AssessmentBlock({
 
 	return (
 		<div
-			className={`my-5 rounded-lg border p-5 ${palette[a.kind] ?? "border-border bg-surface"}`}
+			className={`mb-10 rounded-lg border border-s-4 border-s-go-amber p-5 ${palette[a.kind] ?? "border-border bg-surface"}`}
 		>
 			<div
 				className={`mb-1 font-mono text-[10px] uppercase tracking-widest ${accent[a.kind] ?? "text-muted"}`}
@@ -136,18 +219,12 @@ function AssessmentBlock({
 					</div>
 					{a.metricsAchievable && (
 						<div className="mt-2">
-							<button
-								onClick={() => setMetricsOpen((o) => !o)}
-								className="font-mono text-[10px] text-muted transition-colors hover:text-go-amber"
-							>
-								{metricsOpen ? "▾" : "▸"} is this actually
-								achievable?
-							</button>
-							{metricsOpen && (
-								<div className="mt-1.5 rounded border border-go-amber/20 bg-go-amber/5 px-3 py-2 text-xs text-muted">
-									{a.metricsAchievable}
-								</div>
-							)}
+							<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-muted">
+								is this actually achievable?
+							</div>
+							<div className="rounded border border-go-amber/20 bg-go-amber/5 px-3 py-2 text-sm leading-relaxed text-muted">
+								{a.metricsAchievable}
+							</div>
 						</div>
 					)}
 				</div>
@@ -168,7 +245,7 @@ function VerifyBlock({
 	const L = toLang(lang)
 	const tr = ui(L)
 	return (
-		<div className="mb-6 rounded-lg border border-go-teal/25 bg-go-teal/5 px-5 py-4">
+		<div className="mb-10 rounded-lg border border-border border-s-4 border-s-go-teal bg-go-teal/5 px-5 py-4">
 			<div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-go-teal">
 				{tr.blocks.verify}
 			</div>
@@ -189,7 +266,7 @@ function VerifyBlock({
 			/>
 			{block.note && (
 				<p
-					className="mt-2 text-xs leading-relaxed text-faint"
+					className="mt-2 text-sm leading-relaxed text-muted"
 					dangerouslySetInnerHTML={{ __html: localizeHtml(t(block.note, lang), L) }}
 				/>
 			)}
@@ -218,9 +295,8 @@ function BreakItBlock({
 }) {
 	const L = toLang(lang)
 	const tr = ui(L)
-	const [open, setOpen] = useState(false)
 	return (
-		<div className="mb-6 rounded-lg border border-go-amber/25 bg-go-amber/5 px-5 py-4">
+		<div className="mb-10 rounded-lg border border-border border-s-4 border-s-go-amber bg-go-amber/5 px-5 py-4">
 			<div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-go-amber">
 				{tr.blocks.breakIt}
 			</div>
@@ -239,20 +315,14 @@ function BreakItBlock({
 				dangerouslySetInnerHTML={{ __html: localizeHtml(t(block.observe, lang), L) }}
 			/>
 			<div className="mt-3">
-				<button
-					onClick={() => setOpen((o) => !o)}
-					className="font-mono text-[10px] text-muted transition-colors hover:text-go-amber"
-				>
-					{open ? "▾" : "▸"} {tr.blocks.whyDoesItDoThat}
-				</button>
-				{open && (
+				<Disclosure label={tr.blocks.whyDoesItDoThat} tone="amber">
 					<div
-						className="mt-1.5 rounded border border-go-amber/20 bg-bg px-3 py-2 text-sm leading-relaxed text-muted"
+						className="rounded border border-go-amber/20 bg-bg px-3 py-2 text-sm leading-relaxed text-muted"
 						dangerouslySetInnerHTML={{
 							__html: localizeHtml(t(block.why, lang), L),
 						}}
 					/>
-				)}
+				</Disclosure>
 			</div>
 		</div>
 	)
@@ -275,7 +345,7 @@ export function ContentRenderer({
 						return (
 							<p
 								key={i}
-								className="mb-4 text-base leading-relaxed text-muted"
+								className="mb-4 max-w-[70ch] text-base leading-relaxed text-muted"
 								dangerouslySetInnerHTML={{
 									__html: localizeHtml(t(block.value, lang), L),
 								}}
@@ -293,15 +363,26 @@ export function ContentRenderer({
 
 					case "list":
 						return (
-							<ul key={i} className="mb-4 flex flex-col gap-2">
+							<ul
+								key={i}
+								className="mb-4 max-w-[70ch] list-disc space-y-3 pl-5 marker:text-muted"
+							>
 								{block.items.map((item, j) => (
-									<li
-										key={j}
-										className="text-sm text-muted"
-										dangerouslySetInnerHTML={{
-											__html: localizeHtml(t(item, lang), L),
-										}}
-									/>
+									<li key={j} className="text-base text-muted">
+										{item.title && (
+											<span
+												className="mb-0.5 block font-semibold text-foreground"
+												dangerouslySetInnerHTML={{
+													__html: localizeHtml(t(item.title, lang), L),
+												}}
+											/>
+										)}
+										<span
+											dangerouslySetInnerHTML={{
+												__html: localizeHtml(t(item.body, lang), L),
+											}}
+										/>
+									</li>
 								))}
 							</ul>
 						)
@@ -310,10 +391,10 @@ export function ContentRenderer({
 						return (
 							<div
 								key={i}
-								className={`mb-4 rounded border p-4 text-sm text-muted ${
+								className={`mb-4 rounded-lg border border-s-4 p-4 text-sm leading-relaxed text-muted ${
 									block.variant === "warning"
-										? "border-go-amber/20 bg-go-amber/5"
-										: "border-go-cyan/20 bg-go-cyan/5"
+										? "border-border border-s-go-amber bg-go-amber/5"
+										: "border-border border-s-go-cyan bg-go-cyan/5"
 								}`}
 								dangerouslySetInnerHTML={{
 									__html: localizeHtml(t(block.value, lang), L),
@@ -326,7 +407,7 @@ export function ContentRenderer({
 						return (
 							<div
 								key={i}
-								className="mb-6 rounded-xl border border-border bg-surface overflow-hidden"
+								className="mb-10 overflow-hidden rounded-xl border border-border border-t-4 border-t-go-cyan bg-surface"
 							>
 								<div className="border-b border-border px-5 py-5">
 									<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-go-cyan">
@@ -343,7 +424,7 @@ export function ContentRenderer({
 									<div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-muted">
 										{tr.blocks.pattern}
 									</div>
-									<GoCodeBlock code={block.pattern} />
+									<GoCodeBlock code={block.pattern} bare />
 								</div>
 								<div className="border-b border-border px-5 py-5">
 									<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-go-teal">
@@ -378,7 +459,7 @@ export function ContentRenderer({
 						return (
 							<div
 								key={i}
-								className="mb-6 rounded-xl border border-go-teal/20 bg-surface overflow-hidden"
+								className="mb-10 overflow-hidden rounded-xl border border-border border-t-4 border-t-go-teal bg-surface"
 							>
 								<div className="border-b border-border px-5 py-4">
 									<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-go-teal">
@@ -403,25 +484,30 @@ export function ContentRenderer({
 									/>
 								</div>
 								{(block.stdlibHint || block.thirdPartyHint) && (
-									<div className="border-b border-border px-5 py-3 flex flex-wrap gap-4">
-										{block.stdlibHint && (
+									<div className="flex flex-col gap-3 border-b border-border px-5 py-4">
+										{block.stdlibHint && block.stdlibHint.length > 0 && (
 											<div>
-												<span className="mr-1.5 font-mono text-[9px] uppercase tracking-widest text-muted">
+												<div className="mb-1.5 font-mono text-[9px] uppercase tracking-widest text-muted">
 													{tr.blocks.stdlib}
-												</span>
-												<code className="font-mono text-xs text-go-cyan">
-													{block.stdlibHint}
-												</code>
+												</div>
+												<div className="flex flex-wrap gap-x-4 gap-y-1.5">
+													{block.stdlibHint.map((ref, k) => (
+														<StdlibChip
+															key={k}
+															pkg={ref.pkg}
+															funcs={ref.funcs}
+															lang={lang}
+														/>
+													))}
+												</div>
 											</div>
 										)}
 										{block.thirdPartyHint && (
 											<div>
-												<span className="mr-1.5 font-mono text-[9px] uppercase tracking-widest text-muted">
+												<div className="mb-1.5 font-mono text-[9px] uppercase tracking-widest text-muted">
 													{tr.blocks.thirdParty}
-												</span>
-												<code className="font-mono text-xs text-go-teal">
-													{block.thirdPartyHint}
-												</code>
+												</div>
+												<ThirdPartyHint text={block.thirdPartyHint} />
 											</div>
 										)}
 									</div>
@@ -433,6 +519,7 @@ export function ContentRenderer({
 										</div>
 										<GoCodeBlock
 											code={block.complexSnippet}
+											bare
 										/>
 									</div>
 								)}
@@ -449,7 +536,7 @@ export function ContentRenderer({
 						return (
 							<div
 								key={i}
-								className="mb-4 rounded-lg border border-go-amber/20 bg-go-amber/5 px-5 py-4"
+								className="mb-10 rounded-lg border border-border border-s-4 border-s-go-amber bg-go-amber/5 px-5 py-4"
 							>
 								<div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-go-amber">
 									{tr.blocks.constraint}

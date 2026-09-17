@@ -87,19 +87,24 @@ tests: bufconn (in-memory listener) → generated stub → your server`,
 			type: "list",
 			items: [
 				{
-					en: "The generated code is committed. Running this lab needs neither buf nor protoc, and that is a deliberate property: a learner should never be blocked on a toolchain to read a lesson about a toolchain. Regenerating is a documented, optional step.",
+					title: { en: "The generated code is committed." },
+					body: { en: "Running this lab needs neither buf nor protoc, and that is a deliberate property: a learner should never be blocked on a toolchain to read a lesson about a toolchain. Regenerating is a documented, optional step." },
 				},
 				{
-					en: "Never edit anything under userspb/ or wirepb/. The header says DO NOT EDIT and means it: your change survives exactly until the next generate. If the generated code is wrong, the proto is wrong.",
+					title: { en: "Never edit anything under userspb/ or wirepb/." },
+					body: { en: "The header says DO NOT EDIT and means it: your change survives exactly until the next generate. If the generated code is wrong, the proto is wrong." },
 				},
 				{
-					en: "Return status errors, never raw Go errors. A bare error crosses the wire as codes.Unknown, which is indistinguishable from your server panicking. The status code is the part of your API that clients write code against.",
+					title: { en: "Return status errors, never raw Go errors." },
+					body: { en: "A bare error crosses the wire as codes.Unknown, which is indistinguishable from your server panicking. The status code is the part of your API that clients write code against." },
 				},
 				{
-					en: "The suite is black-box. It registers your Server on a real grpc.Server and reaches it only through the generated client stub, so every assertion crosses serialization, framing, interceptor dispatch, and status translation. How you store users is entirely your business.",
+					title: { en: "The suite is black-box." },
+					body: { en: "It registers your Server on a real grpc.Server and reaches it only through the generated client stub, so every assertion crosses serialization, framing, interceptor dispatch, and status translation. How you store users is entirely your business." },
 				},
 				{
-					en: "The auth interceptor here guards unary RPCs only. Streaming calls route through a separate hook and ListUsers is deliberately left unguarded, which is a hole, is called out as one in step 06, and is not something the suite checks.",
+					title: { en: "The auth interceptor here guards unary RPCs only." },
+					body: { en: "Streaming calls route through a separate hook and ListUsers is deliberately left unguarded, which is a hole, is called out as one in step 06, and is not something the suite checks." },
 				},
 			],
 		},

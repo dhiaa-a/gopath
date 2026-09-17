@@ -18,8 +18,12 @@ export function Reveal({
 		return (
 			<button
 				onClick={() => setOpen(true)}
-				className="rounded border border-border bg-surface2 px-4 py-2 font-mono text-xs text-muted transition-colors hover:border-go-amber/40 hover:text-foreground"
+				aria-expanded={false}
+				className="flex min-h-[36px] items-center gap-2 rounded-full border border-border bg-surface2 px-4 py-1.5 font-mono text-xs text-muted transition-colors hover:border-go-amber/40 hover:text-foreground"
 			>
+				<span aria-hidden="true" className="m-arrow text-sm leading-none">
+					▸
+				</span>
 				{prompt}
 			</button>
 		)

@@ -133,7 +133,7 @@ func buildURL(city string) (string, error) {
 		{
 			n: "02",
 			heading: { en: "Model the response, and find out what a wrong tag costs" },
-			uses: ["structs", "json-decode"],
+			uses: ["structs", "json-decode", "struct-tags", "encoding-json"],
 			blocks: [
 				{
 					type: "text",

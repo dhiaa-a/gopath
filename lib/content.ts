@@ -48,7 +48,11 @@ export type ProjectLab = {
 export type ContentBlock =
 	| { type: "text"; value: LocalizedString }
 	| { type: "code"; value: string; filename?: string }
-	| { type: "list"; items: LocalizedString[] }
+	// A plain item has only `body` and renders as an ordinary bullet. Most
+	// list items in this corpus are actually a rule and its reason, or a term
+	// and its gloss, authored as one run-on sentence a bullet couldn't set
+	// apart — `title` is how a step marks where that first clause ends.
+	| { type: "list"; items: { title?: LocalizedString; body: LocalizedString }[] }
 	| { type: "callout"; variant: "info" | "warning"; value: LocalizedString }
 	// T1 — show pattern skeleton + similar example, state the task
 	| {
@@ -64,7 +68,14 @@ export type ContentBlock =
 			type: "requirement"
 			what: LocalizedString
 			why: LocalizedString
-			stdlibHint?: string
+			// One entry per package, not one compressed string, so the UI can
+			// give each package its own link (pkg.go.dev, or a source
+			// walkthrough where one covers it) instead of a single unlinked
+			// line nothing can be done with.
+			stdlibHint?: { pkg: string; funcs: string[] }[]
+			// A specific real library and the reasoning for reaching for it
+			// (or not) here — prose, not a compressed reference list, so it
+			// stays a plain string.
 			thirdPartyHint?: string
 			complexSnippet?: string
 			hints?: Hint[]
@@ -434,7 +445,9 @@ export function blocksTranslated(
 			case "callout":
 				return ok(block.value)
 			case "list":
-				return block.items.every(ok)
+				return block.items.every(
+					(item) => (!item.title || ok(item.title)) && ok(item.body),
+				)
 			case "pattern":
 				return (
 					ok(block.concept) && ok(block.example) && ok(block.task)

@@ -77,8 +77,13 @@ Shutdown() → listener.Close() → Accept returns net.ErrClosed
 					why: {
 						en: "This is the accept loop pattern, and it is under every network server you have ever used, including net/http's. Accept blocks until a connection arrives or the listener is closed, and there is no other way to wake it: you cannot cancel it with a context, and you cannot interrupt the goroutine from outside. That is why Shutdown starts life as listener.Close(): closing is the shutdown signal, and the error Accept returns is how the loop learns which of the two things happened. Listen returning while the loop runs in the background is what makes the Server usable: the caller gets control back, and the tests can dial it on the next line. Port :0 is the OS telling you which port it picked rather than you guessing, which is why the suite can run tests without ever colliding with a leftover server or with whatever else on your machine wanted 8080.",
 					},
-					stdlibHint:
-						"net: net.Listen, net.Listener, net.Conn, net.ErrClosed, Listener.Addr, Listener.Close. errors: errors.Is.",
+					stdlibHint: [
+						{
+							pkg: "net",
+							funcs: ["net.Listen", "net.Listener", "net.Conn", "net.ErrClosed", "Listener.Addr", "Listener.Close"],
+						},
+						{ pkg: "errors", funcs: ["errors.Is"] },
+					],
 					complexSnippet: `func (s *Server) acceptLoop() {
     for {
         conn, err := s.ln.Accept()
@@ -135,7 +140,7 @@ Shutdown() → listener.Close() → Accept returns net.ErrClosed
 		{
 			n: "02",
 			heading: { en: "A connection is an io.Reader and an io.Writer" },
-			uses: ["interfaces"],
+			uses: ["interfaces", "io-reader-writer"],
 			blocks: [
 				{
 					type: "text",
@@ -151,7 +156,11 @@ Shutdown() → listener.Close() → Accept returns net.ErrClosed
 					why: {
 						en: "net.Conn's method set is Read([]byte) (int, error) and Write([]byte) (int, error), plus Close, two addresses, and three deadline setters. Eight methods. The first two are exactly io.Reader and io.Writer, which is why bufio.Scanner, io.Copy, fmt.Fprintln and every other consumer of those interfaces accepts a socket without knowing it is one. The standard library is composed this way deliberately: the interfaces are small enough that satisfying them is cheap, so anything that does inherits the whole ecosystem for free. Single ownership matters for the same reason it did in the log parser, only the failure is nastier here: two goroutines writing one conn interleave their bytes inside a line, and the client has no way to detect it. The deferred Close is how ownership becomes a fact rather than an intention, and step 04 is where you find out what it costs to leave it out.",
 					},
-					stdlibHint: "net: net.Conn, Conn.Close. io: io.Reader, io.Writer, io.Copy. defer.",
+					stdlibHint: [
+						{ pkg: "net", funcs: ["net.Conn", "Conn.Close"] },
+						{ pkg: "io", funcs: ["io.Reader", "io.Writer", "io.Copy"] },
+						{ pkg: "defer", funcs: [] },
+					],
 					hints: [
 						{
 							label: "read the method set, do not take my word for it",
@@ -207,8 +216,11 @@ Shutdown() → listener.Close() → Accept returns net.ErrClosed
 					why: {
 						en: "TCP is a byte stream, so the boundaries of the client's Write calls are not preserved and nothing promises to preserve them: the kernel, the NIC, and every router in between may split one write into four segments or coalesce four writes into one. Three writes can arrive as one read; one write can arrive as four. A line protocol answers this by agreeing on a delimiter, \\n, and that agreement is the entire protocol. bufio.Scanner's default split function is ScanLines: it buffers until it finds the delimiter, then hands you exactly one token with the delimiter stripped, so Scan() returning true means a complete line arrived and Text() is that line, whatever the packets did. This is the same problem HTTP solves with Content-Length and chunked encoding, and gRPC with a length prefix on every message. You have never had to think about it because that framing shipped inside the library. Here you are the library.",
 					},
-					stdlibHint:
-						"bufio: bufio.NewScanner, Scanner.Scan, Scanner.Text, bufio.ScanLines, bufio.MaxScanTokenSize. strings.ToUpper. fmt.Fprintln.",
+					stdlibHint: [
+						{ pkg: "bufio", funcs: ["bufio.NewScanner", "Scanner.Scan", "Scanner.Text", "bufio.ScanLines", "bufio.MaxScanTokenSize"] },
+						{ pkg: "strings", funcs: ["strings.ToUpper"] },
+						{ pkg: "fmt", funcs: ["fmt.Fprintln"] },
+					],
 					complexSnippet: `sc := bufio.NewScanner(conn)   // conn is just an io.Reader here
 for sc.Scan() {                // true = one whole line arrived
     line := sc.Text()          // the line, delimiter already stripped
@@ -276,7 +288,10 @@ for sc.Scan() {                // true = one whole line arrived
 					why: {
 						en: "defer is the answer to a question that has no good answer without it: how do you guarantee cleanup across five exit paths, one of which is a panic, without repeating the cleanup five times and missing the sixth when you add it? Registering the close once, next to the thing it closes, means the cleanup cannot drift away from the acquisition. That is the whole idiom, and it is why Go has no finally. The quit command is a small thing with a real lesson attached: it is a command, not data, and telling those apart is the job of the layer that understands the protocol, which is you. The client asked you to hang up. Hanging up is not an error and is not an echo.",
 					},
-					stdlibHint: "defer. net: Conn.Close.",
+					stdlibHint: [
+						{ pkg: "defer", funcs: [] },
+						{ pkg: "net", funcs: ["Conn.Close"] },
+					],
 					hints: [
 						{
 							label: "close the conn, not just the scanner",
@@ -336,7 +351,10 @@ for sc.Scan() {                // true = one whole line arrived
 					why: {
 						en: "This is fan-out, the same pattern as the log parser's worker pool, applied to connections instead of file paths, and with one difference that matters: there is no pool. A worker pool bounds concurrency on purpose because the work is CPU-bound and more workers than cores is waste. Connections are the opposite: they are almost always blocked on the network, costing a few KB of stack and nothing else, so Go's answer is one goroutine each and no ceiling. That is exactly what net/http does for every request it serves, and it is why goroutines were made cheap enough to be spent this way. The cost of the design is that the accept loop can no longer be where anything happens: the moment it does work, the server is serial again. And the rule about per-connection state is what pays for the goroutines being cheap: state on the stack is private by construction, so a hundred connections need no locks at all. Move one of those locals to a Server field and you have shared mutable state across every connection, which is a data race in a program that had none, bought for nothing.",
 					},
-					stdlibHint: "go statement. net: Listener.Accept, net.Conn.",
+					stdlibHint: [
+						{ pkg: "go statement", funcs: [] },
+						{ pkg: "net", funcs: ["Listener.Accept", "net.Conn"] },
+					],
 					hints: [
 						{
 							label: "the loop variable is not the trap it used to be",
@@ -393,8 +411,10 @@ for sc.Scan() {                // true = one whole line arrived
 					why: {
 						en: 'This is the sentence to keep: a Go deadline is an absolute point in time, not a duration and not a rolling window. SetDeadline says "fail any I/O on this conn that is still outstanding at 14:32:07", and it keeps meaning that until you say otherwise. It does not restart when data arrives, because it does not know or care that data arrived. So the deadline you set once at connect time is a 30-second limit on the connection\'s whole life, not on its idleness, and an active client gets hung up on mid-conversation. Pushing it forward after each line is what converts an absolute deadline into the idle timeout you actually wanted. Note also which deadline you are setting: SetDeadline covers reads and writes both. The write half is not decoration. A client that stops reading while it keeps sending fills your socket\'s send buffer, at which point your Write blocks, and without a write deadline it blocks forever, parking the goroutine just as thoroughly as the vanished client did. That is backpressure, and SetDeadline is what stops it from being a leak.',
 					},
-					stdlibHint:
-						"net: Conn.SetDeadline, Conn.SetReadDeadline, Conn.SetWriteDeadline. time: time.Now, time.Duration, Time.Add.",
+					stdlibHint: [
+						{ pkg: "net", funcs: ["Conn.SetDeadline", "Conn.SetReadDeadline", "Conn.SetWriteDeadline"] },
+						{ pkg: "time", funcs: ["time.Now", "time.Duration", "Time.Add"] },
+					],
 					complexSnippet: `_ = conn.SetDeadline(time.Now().Add(idleTimeout))
 sc := bufio.NewScanner(conn)
 for sc.Scan() {
@@ -467,8 +487,10 @@ for sc.Scan() {
 					why: {
 						en: "A WaitGroup is a counter with a blocking Wait, and that is the whole of it. Add before you start the goroutine, Done as the goroutine's first defer, Wait to block until the count is zero. Take the Add before the go statement, never inside it, or you have a race between the counter reaching zero and the goroutine that was about to increment it. The accept loop holding its own entry is not bookkeeping symmetry, it is what makes the whole scheme sound: it means the count cannot reach zero while the loop is alive, so a connection accepted at the last microsecond is always added to a counter that is still above zero, which is exactly the condition sync.WaitGroup's documentation puts on this pattern. Chain the guarantees and you get the property worth having: Shutdown returning means the listener is closed, every connection goroutine has run its deferred Close, and every socket this server ever owned is released. That is what lets main exit knowing it finished rather than hoping.",
 					},
-					stdlibHint:
-						"sync: sync.WaitGroup, WaitGroup.Add, WaitGroup.Done, WaitGroup.Wait. net: Listener.Close.",
+					stdlibHint: [
+						{ pkg: "sync", funcs: ["sync.WaitGroup", "WaitGroup.Add", "WaitGroup.Done", "WaitGroup.Wait"] },
+						{ pkg: "net", funcs: ["Listener.Close"] },
+					],
 					complexSnippet: `// In Listen, before the loop starts: the accept loop owns an entry
 // for its whole life, so the counter can never hit zero while it
 // is still able to accept another connection.
@@ -549,8 +571,11 @@ func (s *Server) Shutdown() {
 					why: {
 						en: 'goleak asks exactly one question, after the last test, once: is any goroutine still running that was not running when we started? A Shutdown that closes the listener and never waits does leave goroutines running, briefly, and then they end. The accept loop sees net.ErrClosed and returns. The connection goroutines see EOF, because the test client closed, and return. All of that takes microseconds, and goleak looks afterwards, and finds a clean process. It is not being fooled. It is answering the question it was asked, which is "is anything running at the end", not "did Shutdown wait", and those questions have the same answer only when the thing that would still be running is stuck forever. Orphaned goroutines that exit on their own a moment later are invisible to it by construction.',
 					},
-					stdlibHint:
-						"go.uber.org/goleak: goleak.VerifyTestMain. testing: TestMain. go test -race.",
+					stdlibHint: [
+						{ pkg: "go.uber.org/goleak", funcs: ["goleak.VerifyTestMain"] },
+						{ pkg: "testing", funcs: ["TestMain"] },
+						{ pkg: "go test -race", funcs: [] },
+					],
 					thirdPartyHint:
 						"goleak is the suite's second grader and it is already wired up in echo_test.go's TestMain. You do not add it; you find out what it is worth.",
 					hints: [
@@ -613,8 +638,10 @@ func (s *Server) Shutdown() {
 					why: {
 						en: 'Port :0 asks the OS for a free port and Addr reports which one it picked, so tests never collide with each other, with a leftover server from a crashed run, or with whatever else on your machine wanted 8080. Guessing a port is a flaky test you write yourself. The client-side deadlines are the difference between a failure and a hang: a server that never replies must fail this suite in five seconds with a message naming the guarantee, not stall CI for ten minutes and get killed by a timeout nobody reads. That is a property you design in, and it is why every dial, read, write, and Shutdown in there carries one. The t.Cleanup ordering is the subtle one and it is the whole story of this project: cleanups run in reverse registration order, so the connection closes before Shutdown is called, which means the connection goroutine was always already gone, which is exactly why four tests could not see a Shutdown that never waited. The hole was not carelessness. It was a consequence of a reasonable helper, and it took someone asking "what would still pass if this were broken" to find it.',
 					},
-					stdlibHint:
-						"testing: testing.T, T.Cleanup, T.Helper, TestMain. net: net.Dial, net.DialTimeout, Conn.SetDeadline.",
+					stdlibHint: [
+						{ pkg: "testing", funcs: ["testing.T", "T.Cleanup", "T.Helper", "TestMain"] },
+						{ pkg: "net", funcs: ["net.Dial", "net.DialTimeout", "Conn.SetDeadline"] },
+					],
 					hints: [
 						{
 							label: "why a real socket instead of a mock",

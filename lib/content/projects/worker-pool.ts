@@ -69,7 +69,7 @@ export const workerPool: Project = {
 		{
 			n: "01",
 			heading: { en: "Read the contract the suite compiles against" },
-			uses: ["goroutines", "channels", "structs"],
+			uses: ["goroutines", "channels", "structs", "channel-ownership"],
 			blocks: [
 				{
 					type: "text",
@@ -85,7 +85,9 @@ export const workerPool: Project = {
 					why: {
 						en: "The suite is black-box, in package pool_test, so it can only touch the exported API. That is a deliberate constraint on the lab and a deliberate gift to you: your fields, your locking, your internal names are all free to change without the grader noticing, which is what makes it a contract rather than a diff against one answer. It also means the API is the one thing you cannot iterate on, so it is worth ten minutes now. Answer these before you type: only Submit sends on jobs, so who may close it, and when is that safe? Only the workers send on results, so who may close that, and how would they know they are the last one?",
 					},
-					stdlibHint: "sync: sync.WaitGroup, sync.Once, sync.RWMutex",
+					stdlibHint: [
+						{ pkg: "sync", funcs: ["sync.WaitGroup", "sync.Once", "sync.RWMutex"] },
+					],
 					hints: [
 						{
 							label: "the ownership rule, in one sentence",
@@ -141,7 +143,9 @@ export const workerPool: Project = {
 					why: {
 						en: "for j := range p.jobs compiles to a blocking receive that ends when the channel closes. That single fact is the whole shutdown: close(jobs) wakes every worker parked on that receive, each one drains whatever is still buffered, and then each range ends and the goroutine returns. You do not signal N workers, you close one channel and the runtime does the broadcast. The order in Stop is the part that is not obvious and is not negotiable: the workers are the only senders on results, so results cannot close until every one of them has exited, and wg.Wait() is the only thing that knows when that is.",
 					},
-					stdlibHint: "sync: WaitGroup.Add, WaitGroup.Done, WaitGroup.Wait",
+					stdlibHint: [
+						{ pkg: "sync", funcs: ["WaitGroup.Add", "WaitGroup.Done", "WaitGroup.Wait"] },
+					],
 					hints: [
 						{
 							label: "wg.Add(workers) once, outside the loop",
@@ -298,7 +302,7 @@ export const workerPool: Project = {
 		{
 			n: "05",
 			heading: { en: "Stop is idempotent, and it blocks" },
-			uses: ["sync-waitgroup", "defer"],
+			uses: ["sync-waitgroup", "defer", "sync-once"],
 			blocks: [
 				{
 					type: "text",
@@ -314,7 +318,9 @@ export const workerPool: Project = {
 					why: {
 						en: "sync.Once gives you both halves and the second one is the one people miss. Once.Do does not just skip the function on later calls: it blocks every caller until the first call's function has returned. So if the shutdown work lives inside the Do, every concurrent Stop caller waits for the real shutdown to finish and they all return at the same moment, all of them telling the truth. Do the work outside the Once and guard it with a bool instead, and the second caller returns instantly while workers are still draining, which is a Stop that returned before the pool stopped. The whole reason Stop has no return value is that it is supposed to be unambiguous.",
 					},
-					stdlibHint: "sync: sync.Once and Once.Do",
+					stdlibHint: [
+						{ pkg: "sync", funcs: ["sync.Once", "Once.Do"] },
+					],
 					hints: [
 						{
 							label: "what Once actually guarantees",
@@ -371,7 +377,9 @@ export const workerPool: Project = {
 					why: {
 						en: "The naive version has a window between the read and the send, and Stop's close only has to land inside it. Nothing about a bool fixes that, no matter how carefully you order the statements, because two separate operations can always be interleaved. What closes the window is making the send and the close mutually exclusive: take a read lock around the check and the send, take the write lock to close. An RWMutex is the right shape because it is exactly the asymmetry you have. Many submitters send concurrently and must not serialize against each other, so they share the read lock; exactly one closer needs to exclude all of them, once, at shutdown. Holding the read lock across a blocking send looks alarming and is fine: RLock does not exclude other readers, so submitters still run in parallel, and Stop's Lock waits for the in-flight sends to finish, which is precisely the guarantee you want.",
 					},
-					stdlibHint: "sync: RWMutex.RLock, RWMutex.Lock",
+					stdlibHint: [
+						{ pkg: "sync", funcs: ["RWMutex.RLock", "RWMutex.Lock"] },
+					],
 					hints: [
 						{
 							label: "why the read lock across a blocking send does not deadlock",
@@ -435,7 +443,9 @@ export const workerPool: Project = {
 					why: {
 						en: "An unbuffered channel makes every Submit a synchronous handshake: the sender parks until a worker is ready to receive, which is two scheduler wakeups per job and no overlap at all between submitting and working. A buffer lets Submit deposit and move on, so the submitter and the workers run at the same time, and the scheduler stops being on the critical path of every single job. That is why the first few slots buy so much. It is also why the curve flattens: once the buffer is deep enough that Submit is never the thing waiting, more slots decouple nothing, because the bottleneck has moved to the workers and a queue in front of a saturated worker pool is just a place for jobs to sit. Note what the benchmark deliberately does not measure. It submits Job{ID: i} with a nil Payload, so nothing is boxed and nothing is allocated: this is channel and scheduler cost, isolated. Step 09 is where the payload comes back and the number changes.",
 					},
-					stdlibHint: "testing: b.ReportMetric, b.ReportAllocs, b.Run for sub-benchmarks",
+					stdlibHint: [
+						{ pkg: "testing", funcs: ["b.ReportMetric", "b.ReportAllocs", "b.Run (for sub-benchmarks)"] },
+					],
 					hints: [
 						{
 							label: "why Stop is inside the timed section",
@@ -504,7 +514,7 @@ export const workerPool: Project = {
 		{
 			n: "08",
 			heading: { en: "Make the pool generic" },
-			uses: ["interfaces", "structs"],
+			uses: ["interfaces", "structs", "generics"],
 			blocks: [
 				{
 					type: "text",
@@ -579,7 +589,9 @@ export const workerPool: Project = {
 					why: {
 						en: "An any is two words: a pointer to type information, and a pointer to the value. That second word is the problem, because it is a pointer, so the value has to live somewhere it can point at. Converting an int into an any therefore means putting that int on the heap and pointing at it: one allocation per job, and then work for the garbage collector proportional to your traffic. That is boxing. A chan GenericJob[int] has no such indirection: the compiler generates a version of the pool for the int shape, the channel's buffer holds GenericJob[int] structs laid out inline, and Submit copies 16 bytes into that buffer. Nothing reaches the heap because nothing needs a pointer to point at. That is monomorphisation, roughly: Go's implementation shares one instantiation per GC shape rather than emitting a copy per type, so pointer-shaped types share code while int-shaped ones get layout that does not box. The type assertion tells the same story from the compiler's side. j.Payload.(int) is a runtime check that has to exist because the type is not known until the value arrives; in the generic pool there is nothing to check, because the channel cannot hold anything else.",
 					},
-					stdlibHint: "testing: b.ReportAllocs, testing.Benchmark, BenchmarkResult.AllocsPerOp",
+					stdlibHint: [
+						{ pkg: "testing", funcs: ["b.ReportAllocs", "testing.Benchmark", "BenchmarkResult.AllocsPerOp"] },
+					],
 					hints: [
 						{
 							label: "compile-time safety, precisely",

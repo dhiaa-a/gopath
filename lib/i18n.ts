@@ -157,6 +157,10 @@ const en = {
 		retrievalIntro: "Think of your answer, then click the card to reveal it.",
 		readyCheck: "Ready check",
 		tier1FirstProject: "Tier 1 — CLI renamer",
+		newConcept: "new",
+		seenConcept: "seen before",
+		fullConceptPage: "Full page",
+		whichConceptsHere: "Which concepts does this use?",
 	},
 	blocks: {
 		concept: "concept",
@@ -399,6 +403,10 @@ const ar: Dict = {
 		retrievalIntro: "استحضر إجابتك أولاً، ثم اضغط البطاقة لكشفها.",
 		readyCheck: "اختبار الجاهزية",
 		tier1FirstProject: "المستوى الأول — مُعيد تسمية الملفات",
+		newConcept: "جديد",
+		seenConcept: "ظهر سابقًا",
+		fullConceptPage: "الصفحة الكاملة",
+		whichConceptsHere: "ما المفاهيم التي تُستخدم هنا؟",
 	},
 	blocks: {
 		concept: "المفهوم",

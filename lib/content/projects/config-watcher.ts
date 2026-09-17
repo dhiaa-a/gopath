@@ -221,7 +221,7 @@ for {
 		{
 			n: "03",
 			heading: { en: "Refuse to install a config that did not parse" },
-			uses: ["error-handling", "json-decode"],
+			uses: ["error-handling", "json-decode", "typed-nil"],
 			blocks: [
 				{
 					type: "text",
@@ -299,7 +299,7 @@ curl -s localhost:8080/config          # now it changes`,
 		{
 			n: "04",
 			heading: { en: "Hold the config in an atomic.Value" },
-			uses: ["pointers"],
+			uses: ["pointers", "atomic"],
 			blocks: [
 				{
 					type: "text",

@@ -71,19 +71,24 @@ export const observability: Project = {
 			type: "list",
 			items: [
 				{
-					en: "svc/baseline.go never changes. It is the fixed point every number in this lab is relative to, and a golden test fails loudly if it drifts. Editing the anchor to make your number look better is not a fix, it is moving the goalposts, and the suite treats it as a failure.",
+					title: { en: "svc/baseline.go never changes." },
+					body: { en: "It is the fixed point every number in this lab is relative to, and a golden test fails loudly if it drifts. Editing the anchor to make your number look better is not a fix, it is moving the goalposts, and the suite treats it as a failure." },
 				},
 				{
-					en: "The output must not change. Optimized is pinned to Baseline byte for byte at n=0, 1, and 1000, and the gate rechecks that before it measures anything. A faster function with different output is a bug you have not noticed yet.",
+					title: { en: "The output must not change." },
+					body: { en: "Optimized is pinned to Baseline byte for byte at n=0, 1, and 1000, and the gate rechecks that before it measures anything. A faster function with different output is a bug you have not noticed yet." },
 				},
 				{
-					en: "Every threshold is relative to Baseline measured in the same process, never an absolute nanosecond count. Both sides move together on a slow or loaded machine; the ratio does not. That is what makes the gate portable to your laptop.",
+					title: { en: "Every threshold is relative to Baseline measured in the same process, never an absolute nanosecond count." },
+					body: { en: "Both sides move together on a slow or loaded machine; the ratio does not. That is what makes the gate portable to your laptop." },
 				},
 				{
-					en: "Never profile or gate under -race. The detector instruments every memory access and allocation, so you would be measuring the instrumentation. The one race this lab could produce does not exist in a pure function.",
+					title: { en: "Never profile or gate under -race." },
+					body: { en: "The detector instruments every memory access and allocation, so you would be measuring the instrumentation. The one race this lab could produce does not exist in a pure function." },
 				},
 				{
-					en: "One change at a time. The lab is small enough that you could rewrite Optimized three ways in an afternoon; if you do it in one pass you will not know which change bought the win, and that knowledge is the entire deliverable.",
+					title: { en: "One change at a time." },
+					body: { en: "The lab is small enough that you could rewrite Optimized three ways in an afternoon; if you do it in one pass you will not know which change bought the win, and that knowledge is the entire deliverable." },
 				},
 			],
 		},

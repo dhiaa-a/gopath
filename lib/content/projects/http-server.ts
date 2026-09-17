@@ -67,7 +67,7 @@ server.Run(ctx, srv, ln, grace)        ← what happens to the requests in fligh
 			heading: {
 				en: "One interface, and the direction a chain wraps",
 			},
-			uses: ["interfaces", "http-handler"],
+			uses: ["interfaces", "http-handler", "closures"],
 			blocks: [
 				{
 					type: "text",
@@ -83,8 +83,12 @@ server.Run(ctx, srv, ln, grace)        ← what happens to the requests in fligh
 					why: {
 						en: "http.Handler is one method, ServeHTTP(ResponseWriter, *Request), and it is the only thing Go's HTTP stack knows how to talk to. Because a middleware takes a Handler and returns a Handler, it is itself a Handler factory, and that closure property is the entire reason chaining works: the output of one is a legal input to the next, so composition needs no machinery. Chain is a fold over that. The only real decision is which direction it folds, and it is a decision, not a fact: iterate the slice backwards and the first argument ends up outermost, iterate it forwards and the last one does. Pick one, write it down, and let a test hold you to it, because the two versions are indistinguishable until the day the order matters and by then you are debugging it in production.",
 					},
-					stdlibHint:
-						"net/http: http.Handler, http.HandlerFunc, http.ResponseWriter, *http.Request",
+					stdlibHint: [
+						{
+							pkg: "net/http",
+							funcs: ["http.Handler", "http.HandlerFunc", "http.ResponseWriter", "*http.Request"],
+						},
+					],
 					complexSnippet: `// HandlerFunc is a type conversion, not a constructor. It is defined as
 // type HandlerFunc func(ResponseWriter, *Request), with a ServeHTTP method
 // that calls the function itself. That is the whole adapter: it exists so a
@@ -133,7 +137,7 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		{
 			n: "02",
 			heading: { en: "Wrap the ResponseWriter, because it will not tell you anything" },
-			uses: ["interfaces", "structs"],
+			uses: ["interfaces", "structs", "embedding"],
 			blocks: [
 				{
 					type: "text",
@@ -149,7 +153,9 @@ return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					why: {
 						en: "Embedding an interface in a struct gives you every method of that interface for free, forwarded to the embedded value, which means your struct satisfies http.ResponseWriter the moment you declare it and before you have written a single method. Override one method and only that one changes; the rest still forward. That is the whole pattern, and it is how you get an observation point on an interface you do not own. The trap is what you will not see: WriteHeader is optional. A handler that calls only Write gets its 200 written by net/http, inside its own ResponseWriter, underneath your wrapper, so your override never fires. Your recorder therefore has to already hold 200 before the handler starts, because for most requests on most services nothing will ever tell it.",
 					},
-					stdlibHint: "net/http: http.ResponseWriter is Header, Write, WriteHeader",
+					stdlibHint: [
+						{ pkg: "net/http", funcs: ["http.ResponseWriter", "Header", "Write", "WriteHeader"] },
+					],
 					complexSnippet: `type statusRecorder struct {
     http.ResponseWriter // embedded: every method forwards here by default
     status int
@@ -224,7 +230,9 @@ func (r *statusRecorder) WriteHeader(code int) {
 					why: {
 						en: 'Structured logging means the event stays a set of key/value pairs all the way to whatever stores it, so "status" is a field with a value rather than a substring you hope you can pattern-match later. slog splits that in two: a Logger you call, and a Handler that decides what the output looks like. Same call site, and slog.NewTextHandler gives you key=value for your terminal while slog.NewJSONHandler gives you objects your log aggregator can index, chosen once in main. The second half of the requirement is what makes any of it testable: a logger you accept as a parameter can be pointed at a bytes.Buffer by a test, and the whole question of "did this middleware log the right thing" becomes an assertion instead of a person reading a terminal.',
 					},
-					stdlibHint: "log/slog: slog.New, slog.NewTextHandler, slog.NewJSONHandler, Logger.Info",
+					stdlibHint: [
+						{ pkg: "log/slog", funcs: ["slog.New", "slog.NewTextHandler", "slog.NewJSONHandler", "Logger.Info"] },
+					],
 					complexSnippet: `// The Logger is what you call. The Handler is what it looks like.
 logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 // time=... level=INFO msg=request method=GET path=/x status=200 bytes=5
@@ -293,7 +301,10 @@ logger.Info("request", "method", r.Method, "status", rec.status)`,
 					why: {
 						en: "The whole security property is one keyword. A middleware rejects by writing a response and returning without calling next, and there is nothing in the type system to enforce that: next is a value in a closure, calling it is an ordinary statement, and forgetting to return after http.Error is a plain control-flow bug that compiles, vets clean, and reads fine. What makes it worse than an ordinary control-flow bug is the second mechanism it collides with. WriteHeader can only fire once per response, and net/http enforces that by ignoring later calls, so a handler that runs after your 401 cannot change the status. The client still sees 401. Your logs still say 401. The handler ran anyway, and whatever it does, it did.",
 					},
-					stdlibHint: "net/http: http.Error, Header.Get. strings: strings.CutPrefix",
+					stdlibHint: [
+						{ pkg: "net/http", funcs: ["http.Error", "Header.Get"] },
+						{ pkg: "strings", funcs: ["strings.CutPrefix"] },
+					],
 					complexSnippet: `// CutPrefix (Go 1.20) does the split and the check in one step: it
 // returns the remainder and whether the prefix was actually there, so a
 // missing header and a malformed one collapse into the same branch.
@@ -362,7 +373,10 @@ if !ok {
 					why: {
 						en: 'Contexts are immutable, and every operation on one returns a new context wrapping the old. context.WithValue does not modify anything: it returns a child holding your key and value with a pointer to its parent, and a lookup walks that chain outward until something matches. So r.WithContext(ctx) cannot mutate r either, and does not: it returns a shallow copy of the Request with a different ctx field. If you do not pass that copy along, the value you just created is attached to a request nobody will ever see. As for the key, ctx.Value compares interface values, which means it compares type and value together. A bare string key "user" from your package is equal to a bare string key "user" from any other package in the binary, including one in a dependency you have never read, and the loser of that collision is whoever stored first. An unexported named type cannot be constructed outside your package, so the collision becomes unrepresentable rather than unlikely.',
 					},
-					stdlibHint: "context: context.WithValue, Context.Value. net/http: Request.Context, Request.WithContext",
+					stdlibHint: [
+						{ pkg: "context", funcs: ["context.WithValue", "Context.Value"] },
+						{ pkg: "net/http", funcs: ["Request.Context", "Request.WithContext"] },
+					],
 					complexSnippet: `// The type is the collision proofing. Not the string.
 type contextKey string
 const userKey contextKey = "user"
@@ -419,7 +433,7 @@ user, ok := ctx.Value(userKey).(string)`,
 		{
 			n: "06",
 			heading: { en: "A token bucket, not a counter" },
-			uses: ["maps", "structs"],
+			uses: ["maps", "structs", "rate-limiting"],
 			blocks: [
 				{
 					type: "text",
@@ -435,7 +449,11 @@ user, ok := ctx.Value(userKey).(string)`,
 					why: {
 						en: "A token bucket has no boundary because it has no window. Each bucket holds a number of tokens, a request costs one, and tokens accrue continuously at a fixed rate up to a cap. That single design gives you two properties the counter cannot: a burst allowance, which is what makes it usable by real clients that are bursty rather than smooth, and a hard long-run average, because you can never spend faster than the refill for long. The implementation trick worth internalising is that you do not need a ticker per bucket, and a goroutine per client IP would be a denial of service in itself. Instead you store the timestamp of the last look and compute the refill lazily on arrival: tokens += elapsed.Seconds() * rate, capped. The bucket has no idea what time it is between requests, and it does not need to, because nobody is asking.",
 					},
-					stdlibHint: "net: net.SplitHostPort. time: time.Now, Time.Sub, Duration.Seconds. builtin min (Go 1.21)",
+					stdlibHint: [
+						{ pkg: "net", funcs: ["net.SplitHostPort"] },
+						{ pkg: "time", funcs: ["time.Now", "Time.Sub", "Duration.Seconds"] },
+						{ pkg: "builtin", funcs: ["min (Go 1.21)"] },
+					],
 					thirdPartyHint:
 						"golang.org/x/time/rate: the standard ready-made token bucket, one rate.Limiter per IP. Reach for it in production and know what is inside it first, which is what this step is for.",
 					complexSnippet: `type bucket struct {
@@ -514,7 +532,10 @@ b.tokens--`,
 					why: {
 						en: "Two separate bugs live here and only one of them is the obvious one. The first is the map: concurrent writes to a Go map are undefined behaviour under the memory model, and the runtime's own guard may or may not catch you. The second is subtler and survives a naive fix. If you lock to read the token count, unlock, decide, and lock again to decrement, two goroutines both read four tokens, both conclude they may proceed, and both write three. You have lost an update, your limiter leaks a request per collision, and every individual map access was perfectly synchronised. Atomicity is a property of the whole operation, not of each access in it. The eviction goroutine is the third thing in the room: without it the map is an unbounded allocation keyed by a value the attacker chooses, which is a memory exhaustion primitive handed out for free, and with it you have a second goroutine touching your map forever, which is one more reason the lock is not optional.",
 					},
-					stdlibHint: "sync: sync.Mutex. time: time.NewTicker, time.Since",
+					stdlibHint: [
+						{ pkg: "sync", funcs: ["sync.Mutex"] },
+						{ pkg: "time", funcs: ["time.NewTicker", "time.Since"] },
+					],
 					complexSnippet: `// One critical section, not three. The decision and the write it is based
 // on must not be separable, or two goroutines can both read the same
 // count, both decide yes, and both write it back.
@@ -596,7 +617,9 @@ if !allowed {
 					why: {
 						en: "Four fields, four different questions, and they are not interchangeable. ReadHeaderTimeout bounds the time a client may take to send its request headers, which is the free one: nothing legitimate is slow at that, so a tight bound costs you nothing and closes the cheapest denial of service there is. ReadTimeout bounds reading the entire request including the body, so it has to be large enough for your slowest honest upload. WriteTimeout is the one to think about rather than copy, because the docs say it is reset whenever a new request's header is read, which means its clock starts before your handler does and it therefore bounds your handler, not just the write: set it to five seconds and every request that legitimately takes six dies, and the client cannot tell that apart from a crash. IdleTimeout bounds a kept-alive connection between requests, which is the half of the connection's life the other three never look at. Then there is the part that makes 'I set a timeout' an unreliable sentence: two of these fall back. ReadHeaderTimeout falls back to ReadTimeout when it is zero, and IdleTimeout falls back to ReadTimeout when it is zero. So a server with only ReadTimeout set has all three, at one value, which is by construction the wrong value for at least two of them.",
 					},
-					stdlibHint: "net/http: Server.ReadHeaderTimeout, Server.ReadTimeout, Server.WriteTimeout, Server.IdleTimeout",
+					stdlibHint: [
+						{ pkg: "net/http", funcs: ["Server.ReadHeaderTimeout", "Server.ReadTimeout", "Server.WriteTimeout", "Server.IdleTimeout"] },
+					],
 					complexSnippet: `// All four, explicitly. Every one you leave out is not "the default",
 // it is no deadline, or a fallback to a value chosen for another job.
 return &http.Server{
@@ -666,7 +689,11 @@ return &http.Server{
 					why: {
 						en: "srv.Shutdown closes the listeners, closes idle connections, and then waits for the active ones to go idle. srv.Close does not wait: it hangs up on live connections immediately and the client gets an EOF where its response was going to be. That is the entire difference between the two, and it is one identifier at one call site. Two things around it are just as easy to get wrong. Serve blocks until something stops it, so it has no success return: it always hands back a non-nil error, and after a clean stop that error is the sentinel http.ErrServerClosed, which means you closed it on purpose. And Shutdown needs a context of its own, built from context.Background(), because the ctx that told you to stop is already cancelled, and Shutdown honours the context it is given: hand it the cancelled one and it closes the listener, sees the context is done, and returns instantly having waited for nothing. The last thing worth being certain about is what Shutdown does not do. It does not cancel request contexts. It waits for handlers to return; it never interrupts them. Close is what kills the connection, and killing the connection is what cancels the request context.",
 					},
-					stdlibHint: "net/http: Server.Shutdown, Server.Close, http.ErrServerClosed. context: context.WithTimeout. errors: errors.Is",
+					stdlibHint: [
+						{ pkg: "net/http", funcs: ["Server.Shutdown", "Server.Close", "http.ErrServerClosed"] },
+						{ pkg: "context", funcs: ["context.WithTimeout"] },
+						{ pkg: "errors", funcs: ["errors.Is"] },
+					],
 					complexSnippet: `// Three API facts. Assembling them is yours.
 
 // 1. Serve blocks and has no success return. This is the sentinel that
@@ -741,7 +768,6 @@ served := make(chan error, 1)`,
 					why: {
 						en: "Reading a reference after your own is green is worth more than reading it before, and the difference is not willpower. Once you have made the decisions yourself you have a question for every line: not what does this do, but why did they do it there and I did it here. Before you have written it, the same file is prose that looks obvious. This is also why the lab ships the reference behind the same suites rather than as an appendix: an unverified reference is an opinion, and this one is held to the same fourteen cases you are.",
 					},
-					stdlibHint: "go test -race ./... runs both packages. -tags solution swaps your files for the reference.",
 					complexSnippet: `go test -race ./...              # both suites, against your code
 go test -tags solution ./...     # the same suites, against the reference`,
 					hints: [

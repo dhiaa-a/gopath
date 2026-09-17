@@ -34,6 +34,7 @@ export function RetrievalPrompts({
 						<button
 							key={i}
 							onClick={() => flip(i)}
+							aria-pressed={flipped[i]}
 							className="group relative h-44 w-full cursor-pointer text-start"
 							style={{ perspective: "1000px" }}
 						>
@@ -46,8 +47,11 @@ export function RetrievalPrompts({
 										: "rotateY(0deg)",
 								}}
 							>
-								{/* Front */}
+								{/* Front. Hidden from assistive tech once flipped, so a
+								    screen reader lands on the answer, not the question
+								    it already announced. */}
 								<div
+									aria-hidden={flipped[i]}
 									className="absolute inset-0 flex flex-col rounded-lg border border-border bg-surface p-4"
 									style={{ backfaceVisibility: "hidden" }}
 								>
@@ -56,7 +60,7 @@ export function RetrievalPrompts({
 											{question}
 										</p>
 									</div>
-									<span className="mt-3 shrink-0 font-mono text-[10px] text-muted transition-colors group-hover:text-go-cyan">
+									<span className="mt-3 shrink-0 font-mono text-xs text-muted transition-colors group-hover:text-go-cyan">
 										{tr.common.clickToReveal}{" "}
 										<span aria-hidden="true" className="m-arrow">
 											→
@@ -64,8 +68,10 @@ export function RetrievalPrompts({
 									</span>
 								</div>
 
-								{/* Back */}
+								{/* Back. Hidden from assistive tech until flipped, so the
+								    answer is never announced before the attempt. */}
 								<div
+									aria-hidden={!flipped[i]}
 									className="absolute inset-0 flex flex-col rounded-lg border border-go-cyan/30 bg-go-cyan/5 p-4"
 									style={{
 										backfaceVisibility: "hidden",
@@ -77,7 +83,7 @@ export function RetrievalPrompts({
 											{answer}
 										</p>
 									</div>
-									<span className="mt-3 shrink-0 font-mono text-[10px] text-muted transition-colors group-hover:text-go-cyan">
+									<span className="mt-3 shrink-0 font-mono text-xs text-muted transition-colors group-hover:text-go-cyan">
 										{tr.common.clickToFlipBack}{" "}
 										<span aria-hidden="true" className="m-arrow">
 											→
