@@ -19,7 +19,9 @@ export function LabCard({
 }) {
 	const s = tierStyles[tier]
 	return (
-		<div className={`mb-10 rounded-lg border bg-surface p-5 ${s.border}`}>
+		<div
+			className={`mb-10 rounded-lg border border-s-4 border-border bg-surface p-5 ${s.border.replace("border-", "border-s-")}`}
+		>
 			<div
 				className={`mb-1 font-mono text-[10px] uppercase tracking-widest ${s.accent}`}
 			>
@@ -51,7 +53,7 @@ export function LabCard({
 					</code>
 				</div>
 			</div>
-			<p className="mt-3 text-xs text-faint">
+			<p className="mt-3 text-sm text-muted">
 				Clone the repo once, then work inside the lab directory. Every
 				lab is a plain Go module: the standard toolchain is all you
 				need.

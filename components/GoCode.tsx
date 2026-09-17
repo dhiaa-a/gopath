@@ -243,10 +243,22 @@ export function GoCode({
 export function GoCodeBlock({
 	code,
 	filename,
+	bare = false,
 }: {
 	code: string
 	filename?: string
+	// True when the caller already provides the frame (a pattern/requirement
+	// row inside its own card): render just the code, no second border and
+	// no second background, so nothing sits in a box inside a box.
+	bare?: boolean
 }) {
+	if (bare) {
+		return (
+			<pre className="overflow-x-auto text-sm leading-7">
+				<GoCode code={code} />
+			</pre>
+		)
+	}
 	return (
 		<div className="my-4 overflow-hidden rounded-lg border border-border bg-[var(--color-code-bg)] text-sm">
 			{filename && (
