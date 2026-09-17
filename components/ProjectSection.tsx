@@ -16,12 +16,13 @@ export function ProjectSection({
 }) {
 	if (!blocks) return null
 
+	// No card here on purpose: most of what this wraps is a couple of
+	// paragraphs and one code block, and the code block already carries its
+	// own border. A second frame around that first one was the clearest
+	// "box inside a box" on the site — see DECISIONS.md.
 	return (
-		<section
-			id={id}
-			className="mb-10 scroll-mt-[110px] border-2 border-border bg-surface p-7"
-		>
-			<h2 className="mb-4 font-mono text-xs uppercase tracking-widest text-m-accent-ink">
+		<section id={id} className="mb-12 scroll-mt-[110px]">
+			<h2 className="mb-6 border-b-2 border-border pb-3 font-serif text-2xl text-foreground">
 				{t(title, lang)}
 			</h2>
 			<ContentRenderer blocks={blocks} lang={lang} />

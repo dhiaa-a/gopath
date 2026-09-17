@@ -55,24 +55,24 @@ export const orientationPages: OrientationPage[] = [
 				type: "list",
 				items: [
 					{
-						en: "Backend services: HTTP APIs, gRPC, microservices. The standard library alone gets you a production-grade web server.",
-						ar: "الخدمات الخلفية: واجهات HTTP، وgRPC، والخدمات المصغّرة. المكتبة القياسية وحدها تعطيك خادم ويب صالحاً للإنتاج.",
+						title: { en: "Backend services", ar: "الخدمات الخلفية" },
+						body: { en: "HTTP APIs, gRPC, microservices. The standard library alone gets you a production-grade web server.", ar: "واجهات HTTP، وgRPC، والخدمات المصغّرة. المكتبة القياسية وحدها تعطيك خادم ويب صالحاً للإنتاج." },
 					},
 					{
-						en: "CLIs and developer tools: Docker, Kubernetes, Terraform, Hugo, and most of the modern cloud-native ecosystem are written in Go.",
-						ar: "أدوات سطر الأوامر وأدوات المطورين: Docker وKubernetes وTerraform وHugo ومعظم منظومة السحابة الحديثة مكتوبة بـ Go.",
+						title: { en: "CLIs and developer tools", ar: "أدوات سطر الأوامر وأدوات المطورين" },
+						body: { en: "Docker, Kubernetes, Terraform, Hugo, and most of the modern cloud-native ecosystem are written in Go.", ar: "Docker وKubernetes وTerraform وHugo ومعظم منظومة السحابة الحديثة مكتوبة بـ Go." },
 					},
 					{
-						en: "Concurrent systems: goroutines and channels make concurrency feel native, not bolted on.",
-						ar: "الأنظمة المتزامنة: goroutines والقنوات تجعل التزامن يبدو أصيلاً في اللغة لا مُلحقاً بها.",
+						title: { en: "Concurrent systems", ar: "الأنظمة المتزامنة" },
+						body: { en: "goroutines and channels make concurrency feel native, not bolted on.", ar: "goroutines والقنوات تجعل التزامن يبدو أصيلاً في اللغة لا مُلحقاً بها." },
 					},
 					{
-						en: "Deployment simplicity: Go compiles to a single static binary. No runtime, no interpreter, no dependency hell.",
-						ar: "بساطة النشر: Go تُصرَّف إلى ملف تنفيذي واحد ساكن. بلا بيئة تشغيل، وبلا مفسّر، وبلا جحيم اعتماديات.",
+						title: { en: "Deployment simplicity", ar: "بساطة النشر" },
+						body: { en: "Go compiles to a single static binary. No runtime, no interpreter, no dependency hell.", ar: "Go تُصرَّف إلى ملف تنفيذي واحد ساكن. بلا بيئة تشغيل، وبلا مفسّر، وبلا جحيم اعتماديات." },
 					},
 					{
-						en: "Stable, long-lived codebases: the language barely changes. Code written in 2015 still compiles cleanly today.",
-						ar: "شيفرة مستقرة طويلة العمر: اللغة تكاد لا تتغيّر. شيفرة كُتبت عام 2015 ما زالت تُصرَّف نظيفة اليوم.",
+						title: { en: "Stable, long-lived codebases", ar: "شيفرة مستقرة طويلة العمر" },
+						body: { en: "the language barely changes. Code written in 2015 still compiles cleanly today.", ar: "اللغة تكاد لا تتغيّر. شيفرة كُتبت عام 2015 ما زالت تُصرَّف نظيفة اليوم." },
 					},
 				],
 			},
@@ -84,24 +84,24 @@ export const orientationPages: OrientationPage[] = [
 				type: "list",
 				items: [
 					{
-						en: "Mobile UI: there's no native UI toolkit. Use Swift, Kotlin, React Native, or Flutter.",
-						ar: "واجهات الهاتف: لا توجد أدوات واجهة أصيلة. استخدم Swift أو Kotlin أو React Native أو Flutter.",
+						title: { en: "Mobile UI", ar: "واجهات الهاتف" },
+						body: { en: "there's no native UI toolkit. Use Swift, Kotlin, React Native, or Flutter.", ar: "لا توجد أدوات واجهة أصيلة. استخدم Swift أو Kotlin أو React Native أو Flutter." },
 					},
 					{
-						en: "Data science and ML: the ecosystem is thin. Python's libraries dominate for a reason.",
-						ar: "علم البيانات وتعلّم الآلة: المنظومة ضعيفة. مكتبات Python تهيمن هنا لسبب وجيه.",
+						title: { en: "Data science and ML", ar: "علم البيانات وتعلّم الآلة" },
+						body: { en: "the ecosystem is thin. Python's libraries dominate for a reason.", ar: "المنظومة ضعيفة. مكتبات Python تهيمن هنا لسبب وجيه." },
 					},
 					{
-						en: "Game engines and graphics-heavy desktop apps: Go's runtime and GC aren't optimized for frame-rate-sensitive work.",
-						ar: "محرّكات الألعاب وتطبيقات سطح المكتب كثيفة الرسوميات: بيئة تشغيل Go وجامع القمامة فيها غير مهيّأين للعمل الحسّاس لمعدّل الإطارات.",
+						title: { en: "Game engines and graphics-heavy desktop apps", ar: "محرّكات الألعاب وتطبيقات سطح المكتب كثيفة الرسوميات" },
+						body: { en: "Go's runtime and GC aren't optimized for frame-rate-sensitive work.", ar: "بيئة تشغيل Go وجامع القمامة فيها غير مهيّأين للعمل الحسّاس لمعدّل الإطارات." },
 					},
 					{
-						en: "Tiny one-off scripts: Bash, Python, or Node are faster to write for throwaway glue code.",
-						ar: "السكربتات الصغيرة العابرة: Bash أو Python أو Node أسرع في الكتابة لشيفرة لاصقة تُرمى بعد استخدامها.",
+						title: { en: "Tiny one-off scripts", ar: "السكربتات الصغيرة العابرة" },
+						body: { en: "Bash, Python, or Node are faster to write for throwaway glue code.", ar: "Bash أو Python أو Node أسرع في الكتابة لشيفرة لاصقة تُرمى بعد استخدامها." },
 					},
 					{
-						en: "Frontend web: that's JavaScript and TypeScript's turf.",
-						ar: "واجهات الويب الأمامية: هذا ملعب JavaScript وTypeScript.",
+						title: { en: "Frontend web", ar: "واجهات الويب الأمامية" },
+						body: { en: "that's JavaScript and TypeScript's turf.", ar: "هذا ملعب JavaScript وTypeScript." },
 					},
 				],
 			},
@@ -416,21 +416,31 @@ func main() {
 				type: "list",
 				items: [
 					{
-						en: "Declare variables, write functions, and write a for loop without looking anything up.",
-						ar: "تصريح المتغيّرات، وكتابة الدوال، وكتابة حلقة for دون أن تبحث عن شيء.",
-					},
-					{ en: "Define a struct and add a method to it.", ar: "تعريف بنية وإضافة تابع إليها." },
-					{
-						en: "Read code that returns (value, error) and handle the error correctly.",
-						ar: "قراءة شيفرة تُعيد (قيمة، خطأ) ومعالجة الخطأ معالجة صحيحة.",
+						body: {
+							en: "Declare variables, write functions, and write a for loop without looking anything up.",
+							ar: "تصريح المتغيّرات، وكتابة الدوال، وكتابة حلقة for دون أن تبحث عن شيء.",
+						},
 					},
 					{
-						en: "Explain what <code>&x</code> and <code>*p</code> do, and when a function needs a pointer parameter.",
-						ar: "شرح ما يفعله <code>&x</code> و<code>*p</code>، ومتى تحتاج الدالة إلى معامل مؤشّر.",
+						body: { en: "Define a struct and add a method to it.", ar: "تعريف بنية وإضافة تابع إليها." },
 					},
 					{
-						en: "Initialize a slice and a map, and iterate over them with range.",
-						ar: "تهيئة شريحة وخريطة، والمرور عليهما بـ range.",
+						body: {
+							en: "Read code that returns (value, error) and handle the error correctly.",
+							ar: "قراءة شيفرة تُعيد (قيمة، خطأ) ومعالجة الخطأ معالجة صحيحة.",
+						},
+					},
+					{
+						body: {
+							en: "Explain what <code>&x</code> and <code>*p</code> do, and when a function needs a pointer parameter.",
+							ar: "شرح ما يفعله <code>&x</code> و<code>*p</code>، ومتى تحتاج الدالة إلى معامل مؤشّر.",
+						},
+					},
+					{
+						body: {
+							en: "Initialize a slice and a map, and iterate over them with range.",
+							ar: "تهيئة شريحة وخريطة، والمرور عليهما بـ range.",
+						},
 					},
 				],
 			},

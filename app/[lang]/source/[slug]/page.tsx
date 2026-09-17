@@ -35,8 +35,12 @@ export async function generateMetadata({
 // rendering one of those fields opts back in through the same scoped
 // utilities. Inline <code> is left to the global rule, which is what the
 // concept pages do with their HTML fields.
-const prose =
+const proseRules =
 	"text-muted [&_em]:text-foreground [&_strong]:text-foreground [&_p+p]:mt-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:pl-6 [&_li]:mt-2 [&_li]:leading-relaxed [&_pre]:my-4 [&_pre]:overflow-x-auto [&_pre]:rounded [&_pre]:border [&_pre]:border-border [&_pre]:bg-bg [&_pre]:p-3"
+// Bare page-flow prose gets its own reading-measure cap; prose already inside
+// a bordered card (the reveal answer box) uses the card's own edge instead —
+// a second cap there just leaves dead space between the text and the border.
+const prose = `max-w-[65ch] ${proseRules}`
 
 // The excerpt claims a start line; the range it covers is that plus its own
 // height. Computed the same way GoCode counts lines so the header and the
@@ -45,6 +49,30 @@ function lineRange(code: string, startLine: number) {
 	const lines = code.split("\n")
 	if (lines.length > 1 && lines[lines.length - 1] === "") lines.pop()
 	return { from: startLine, to: startLine + lines.length - 1 }
+}
+
+// "How the file is laid out" describes the file in named regions ("Lines 18
+// to 24, the struct") that are broader than any one excerpt — an excerpt is
+// a representative slice of the region, not the whole of it — so this links
+// a mentioned region to the first excerpt that starts inside it, when one
+// does. A region with no excerpt (the ones the prose tells you to skip)
+// is left as plain bold text; there is nothing to jump to.
+function linkifyLineRefs(
+	html: string,
+	excerptStarts: number[],
+): string {
+	return html.replace(
+		/<strong>Lines? (\d+)(?: to (\d+))?<\/strong>/g,
+		(match, fromStr: string, toStr?: string) => {
+			const from = Number(fromStr)
+			const to = toStr ? Number(toStr) : from
+			const index = excerptStarts.findIndex(
+				(start) => start >= from && start <= to,
+			)
+			if (index === -1) return match
+			return `<a href="#excerpt-${index + 1}" class="text-go-cyan hover:underline">${match}</a>`
+		},
+	)
 }
 
 function LinkRow({
@@ -86,6 +114,11 @@ export default async function SourceWalkthroughPage({
 	const lp = (href: string) => localePath(href, lang)
 	const walkthrough = getWalkthrough(slug)
 	if (!walkthrough) notFound()
+
+	const orientationHtml = linkifyLineRefs(
+		walkthrough.orientation,
+		walkthrough.excerpts.map((e) => e.startLine),
+	)
 
 	const conceptLinks = walkthrough.relatedConcepts
 		.map((s) => concepts.find((c) => c.slug === s))
@@ -145,7 +178,7 @@ export default async function SourceWalkthroughPage({
 			</section>
 
 			{/* Open it */}
-			<section className="mb-10 rounded-lg border border-go-teal/30 bg-go-teal/5 p-6">
+			<section className="mb-10 rounded-lg border border-border border-s-4 border-s-go-teal bg-go-teal/5 p-6">
 				<div className="mb-2 font-mono text-xs uppercase tracking-widest text-go-teal">
 					Open it
 				</div>
@@ -170,7 +203,7 @@ export default async function SourceWalkthroughPage({
 				</div>
 				<div
 					className={prose}
-					dangerouslySetInnerHTML={{ __html: localizeHtml(walkthrough.orientation, lang) }}
+					dangerouslySetInnerHTML={{ __html: localizeHtml(orientationHtml, lang) }}
 				/>
 			</section>
 
@@ -229,7 +262,7 @@ export default async function SourceWalkthroughPage({
 			</section>
 
 			{/* Exercise */}
-			<section className="mb-10 rounded-lg border border-go-amber/30 bg-go-amber/5 p-6">
+			<section className="mb-10 rounded-lg border border-border border-s-4 border-s-go-amber bg-go-amber/5 p-6">
 				<div className="mb-2 font-mono text-xs uppercase tracking-widest text-go-amber">
 					Find it yourself
 				</div>
@@ -245,7 +278,7 @@ export default async function SourceWalkthroughPage({
 							The answer
 						</div>
 						<div
-							className={prose}
+							className={proseRules}
 							dangerouslySetInnerHTML={{
 								__html: localizeHtml(walkthrough.exercise.answer, lang),
 							}}
@@ -255,7 +288,7 @@ export default async function SourceWalkthroughPage({
 			</section>
 
 			{/* Takeaway */}
-			<section className="mb-10 rounded-lg border-l-4 border-go-cyan bg-surface p-6">
+			<section className="mb-10 rounded-lg border-s-4 border-go-cyan bg-surface p-6">
 				<div className="mb-1 font-mono text-xs uppercase tracking-widest text-faint">
 					The takeaway
 				</div>

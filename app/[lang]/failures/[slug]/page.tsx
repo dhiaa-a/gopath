@@ -43,13 +43,13 @@ export default async function FailurePage({
 				{failure.name}
 			</h1>
 			<p className="mb-4 text-muted">{failure.tagline}</p>
-			<p className="mb-10 font-mono text-xs text-faint">
+			<p className="mb-10 text-sm text-muted">
 				Teaches most after Tier {failure.unlockTier}. A suggestion, not
 				a gate: nothing here is locked.
 			</p>
 
 			{/* The report, as it arrives */}
-			<section className="mb-10 rounded-lg border border-go-amber/30 bg-go-amber/5 p-6">
+			<section className="mb-10 rounded-lg border border-border border-s-4 border-s-go-amber bg-go-amber/5 p-6">
 				<div className="mb-2 font-mono text-xs uppercase tracking-widest text-go-amber">
 					The report
 				</div>
@@ -105,41 +105,44 @@ export default async function FailurePage({
 				<div className="mb-4 font-mono text-xs uppercase tracking-widest text-go-cyan">
 					The diagnosis
 				</div>
-				<div className="flex flex-col gap-6">
+				{/* A single spine behind the step numbers, not a card per step: it
+				    reads as one line of reasoning instead of N unrelated boxes. */}
+				<div className="relative flex flex-col gap-10">
+					<span
+						aria-hidden="true"
+						className="absolute bottom-5 start-[15px] top-5 w-[2px] bg-border"
+					/>
 					{failure.diagnosis.map((step, i) => (
-						<div
-							key={i}
-							className="rounded-lg border border-border bg-surface p-6"
-						>
-							<div className="mb-2 flex items-baseline gap-3">
-								<span className="font-mono text-xs text-go-cyan">
-									{String(i + 1).padStart(2, "0")}
-								</span>
-								<h2 className="font-semibold text-foreground">
+						<div key={i} className="relative flex gap-4">
+							<span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-border bg-surface font-mono text-xs text-go-cyan">
+								{String(i + 1).padStart(2, "0")}
+							</span>
+							<div className="min-w-0 flex-1 pt-0.5">
+								<h2 className="mb-2 font-semibold text-foreground">
 									{step.title}
 								</h2>
+								<div
+									className="max-w-[65ch] text-sm leading-relaxed text-muted [&_code]:rounded [&_code]:bg-bg [&_code]:px-1 [&_code]:font-mono [&_code]:text-[0.85em] [&_em]:text-foreground"
+									dangerouslySetInnerHTML={{ __html: localizeHtml(step.body, lang) }}
+								/>
+								{step.command && (
+									<pre className="mt-3 overflow-x-auto rounded bg-bg p-3 font-mono text-sm text-go-teal">
+										{step.command}
+									</pre>
+								)}
+								{step.output && (
+									<pre className="mt-2 overflow-x-auto rounded bg-bg p-3 font-mono text-xs leading-relaxed text-muted">
+										{step.output}
+									</pre>
+								)}
 							</div>
-							<div
-								className="text-sm leading-relaxed text-muted [&_code]:rounded [&_code]:bg-bg [&_code]:px-1 [&_code]:font-mono [&_code]:text-[0.85em] [&_em]:text-foreground"
-								dangerouslySetInnerHTML={{ __html: localizeHtml(step.body, lang) }}
-							/>
-							{step.command && (
-								<pre className="mt-3 overflow-x-auto rounded bg-bg p-3 font-mono text-sm text-go-teal">
-									{step.command}
-								</pre>
-							)}
-							{step.output && (
-								<pre className="mt-2 overflow-x-auto rounded bg-bg p-3 font-mono text-xs leading-relaxed text-muted">
-									{step.output}
-								</pre>
-							)}
 						</div>
 					))}
 				</div>
 			</section>
 
 			{/* Fix */}
-			<section className="mb-10 rounded-lg border border-go-teal/30 bg-go-teal/5 p-6">
+			<section className="mb-10 rounded-lg border border-border border-s-4 border-s-go-teal bg-go-teal/5 p-6">
 				<div className="mb-2 font-mono text-xs uppercase tracking-widest text-go-teal">
 					The fix
 				</div>
@@ -152,7 +155,7 @@ export default async function FailurePage({
 			{/* Production, behind the reveal */}
 			<section className="mb-10">
 				<Reveal prompt="how does this show up in production?">
-					<div className="rounded-lg border border-go-amber/30 bg-surface p-6">
+					<div className="rounded-lg border border-border border-s-4 border-s-go-amber bg-surface p-6">
 						<div className="mb-2 font-mono text-xs uppercase tracking-widest text-go-amber">
 							In production
 						</div>
@@ -166,8 +169,8 @@ export default async function FailurePage({
 				</Reveal>
 			</section>
 
-			{/* Scar */}
-			<section className="mb-10 rounded-lg border-l-4 border-go-amber bg-surface p-6">
+			{/* Scar — the one deliberately different beat on the page, kept plain */}
+			<section className="mb-10 rounded-lg border-s-4 border-go-amber bg-surface p-6">
 				<div className="mb-1 font-mono text-xs uppercase tracking-widest text-faint">
 					The scar
 				</div>

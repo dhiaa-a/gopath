@@ -54,7 +54,7 @@ export default async function SourcePage({
 					<Link
 						key={w.slug}
 						href={lp(`/source/${w.slug}`)}
-						className="group flex items-baseline gap-4 rounded-lg border border-border bg-surface p-5 transition-all hover:-translate-y-0.5 hover:border-go-cyan/40 hover:shadow-sm"
+						className="group flex items-baseline gap-4 rounded-lg border border-border bg-surface p-5 shadow-card transition-all hover:-translate-y-0.5 hover:border-go-cyan/40 hover:shadow-elevated"
 					>
 						<span className="font-mono text-xs text-go-cyan">
 							{String(i + 1).padStart(2, "0")}

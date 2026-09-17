@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs"
 import path from "node:path"
 import { concepts } from "../lib/concepts"
 import { conceptGroups } from "../lib/content/concepts/groups"
+import { REFERENCE_ONLY_CONCEPTS } from "../lib/content/concepts/reference-only"
 import { projects } from "../lib/projects"
 import { orientationPages, OrientationPage } from "../lib/orientation"
 import { failures, failureCategories } from "../lib/failures"
@@ -206,6 +207,46 @@ for (const concept of concepts) {
 	}
 }
 
+// Every concept is used by a project step, or explicitly listed as
+// reference-only with a reason — never both, never neither. This is the same
+// two-list rule the capstone holds its failure classes to: it stops a concept
+// from silently having no way into a project (nobody notices "no chip ever
+// points here" the way they'd notice a broken link) and stops a stale
+// reference-only entry from surviving after a step picks the concept up.
+{
+	const usedByStep = new Set<string>()
+	for (const project of projects) {
+		for (const step of project.steps) {
+			for (const slug of step.uses) usedByStep.add(slug)
+		}
+	}
+	const referenceOnly = new Set<string>()
+	for (const r of REFERENCE_ONLY_CONCEPTS) {
+		if (!conceptSlugs.has(r.slug)) {
+			fail(`reference-only concepts: unknown concept "${r.slug}"`)
+		}
+		if (referenceOnly.has(r.slug)) {
+			fail(`reference-only concepts: "${r.slug}" listed twice`)
+		}
+		referenceOnly.add(r.slug)
+		if (!r.reason.trim()) {
+			fail(`reference-only concepts: "${r.slug}" has no reason`)
+		}
+		if (usedByStep.has(r.slug)) {
+			fail(
+				`concept "${r.slug}" is listed as reference-only but a project step already uses it — drop it from reference-only.ts`,
+			)
+		}
+	}
+	for (const concept of concepts) {
+		if (!usedByStep.has(concept.slug) && !referenceOnly.has(concept.slug)) {
+			fail(
+				`concept "${concept.slug}" is used by no project step and is not in reference-only.ts — either tag a step's uses or add it there with a reason`,
+			)
+		}
+	}
+}
+
 // ─── Orientation ───────────────────────────────────────────────────────────
 
 // Unique slugs
@@ -241,7 +282,10 @@ function blockTexts(blocks: ContentBlock[]): string[] {
 		} else if (block.type === "code") {
 			out.push(block.value)
 		} else if (block.type === "list") {
-			out.push(...block.items.map((i) => i.en))
+			for (const item of block.items) {
+				if (item.title) out.push(item.title.en)
+				out.push(item.body.en)
+			}
 		}
 	}
 	return out

@@ -17,7 +17,7 @@ export function LessonNumber({
 
 	return (
 		<div
-			className={`flex h-9 w-9 shrink-0 items-center justify-center border font-mono text-sm transition-colors ${
+			className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border font-mono text-sm transition-colors ${
 				done
 					? "border-m-accent bg-m-accent text-m-on-accent"
 					: "border-border bg-bg text-muted"
@@ -44,7 +44,7 @@ export function LessonMarker({
 			type="button"
 			onClick={() => toggleDone(id)}
 			aria-pressed={done}
-			className={`flex items-center gap-2 border-2 px-[16px] py-[10px] font-mono text-xs font-semibold transition-colors ${
+			className={`flex items-center gap-2 rounded-full border-2 px-[16px] py-[10px] font-mono text-xs font-semibold transition-colors ${
 				done
 					? "border-m-accent bg-m-accent text-m-on-accent"
 					: "border-border bg-surface text-muted hover:border-m-accent hover:text-m-accent-ink"

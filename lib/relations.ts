@@ -44,6 +44,26 @@ export function priorConceptOccurrence(
 	}
 }
 
+// True when `slug` was already tagged on an earlier step, in path order,
+// strictly before (projectSlug, stepN) — "earlier" meaning an earlier
+// project in the array, or an earlier step number within the same one. Powers
+// the concept chips' new-vs-seen-before distinction: a chip only counts as
+// "new" the first time a learner could possibly have reached it.
+export function seenBefore(
+	slug: string,
+	projectSlug: string,
+	stepN: string,
+): boolean {
+	const targetIdx = projects.findIndex((p) => p.slug === projectSlug)
+	for (let i = 0; i <= targetIdx; i++) {
+		for (const step of projects[i].steps) {
+			if (i === targetIdx && step.n >= stepN) break
+			if (step.uses.includes(slug)) return true
+		}
+	}
+	return false
+}
+
 export function projectToConcepts(slug: string): string[] {
 	const project = projects.find((p) => p.slug === slug)
 	if (!project) return []

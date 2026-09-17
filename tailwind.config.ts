@@ -81,20 +81,24 @@ const config: Config = {
 				],
 				mono: ["JetBrains Mono", "monospace"],
 			},
-			// "Do not round a corner anywhere — --radius-md is 0 on purpose."
-			// Zeroing the scale converts all 109 `rounded*` uses at once. The
-			// only `rounded-full` cases are step-number circles and fake macOS
-			// traffic lights, both of which the system rejects anyway.
+			// 2026-09-16: the zero-radius rule softened. It converted every
+			// `rounded*` use at once when it was introduced, and the same lever
+			// now does the opposite job — a real scale reaches the same ~100
+			// call sites without editing markup. See DECISIONS.md.
 			borderRadius: {
 				none: "0",
-				sm: "0",
-				DEFAULT: "0",
-				md: "0",
-				lg: "0",
-				xl: "0",
-				"2xl": "0",
-				"3xl": "0",
-				full: "0",
+				sm: "6px",
+				DEFAULT: "8px",
+				md: "10px",
+				lg: "14px",
+				xl: "18px",
+				"2xl": "22px",
+				"3xl": "28px",
+				full: "9999px",
+			},
+			boxShadow: {
+				card: "var(--shadow-card)",
+				elevated: "var(--shadow-elevated)",
 			},
 			fontSize: {
 				xs: ["0.75rem", { lineHeight: "1.5" }],

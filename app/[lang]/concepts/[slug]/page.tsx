@@ -47,8 +47,11 @@ export default async function ConceptPage({
 
 	const sourceReads = walkthroughsForConcept(concept.slug)
 
+	// In path order (conceptToProjects walks projects in that order already):
+	// every step that uses this concept, not just the first three. A concept
+	// used 22 times told a learner about 3 of them; the other 19 had no way
+	// to find this page from where they actually needed it.
 	const practiceLinks = conceptToProjects(concept.slug)
-		.slice(0, 3)
 		.map(({ projectSlug, stepN }) => ({
 			project: projects.find((p) => p.slug === projectSlug),
 			stepN,
@@ -99,10 +102,10 @@ export default async function ConceptPage({
 			{/* Mental model — summary folds in as the definition above the schema-builder */}
 			<section className="mb-8">
 				<p
-					className="mb-4 leading-relaxed text-muted"
+					className="mb-4 max-w-[65ch] leading-relaxed text-muted"
 					dangerouslySetInnerHTML={{ __html: localizeHtml(concept.summary, lang) }}
 				/>
-				<div className="rounded-lg border border-go-cyan/20 bg-go-cyan/5 p-6">
+				<div className="rounded-lg border border-border border-s-4 border-s-go-cyan bg-go-cyan/5 p-6">
 					<div className="mb-2 font-mono text-xs uppercase tracking-widest text-go-cyan">
 						Mental model
 					</div>
@@ -144,7 +147,7 @@ export default async function ConceptPage({
 					</pre>
 				</div>
 				<p
-					className="mt-3 text-sm leading-relaxed text-muted"
+					className="mt-3 max-w-[65ch] text-sm leading-relaxed text-muted"
 					dangerouslySetInnerHTML={{
 						__html: localizeHtml(concept.codeExplanation, lang),
 					}}
@@ -152,7 +155,7 @@ export default async function ConceptPage({
 			</section>
 
 			{/* Why Go made this choice */}
-			<section className="mb-8 rounded-lg border border-go-amber/20 bg-go-amber/5 p-6">
+			<section className="mb-8 rounded-lg border border-border border-t-4 border-t-go-amber bg-go-amber/5 p-6">
 				<div className="mb-2 font-mono text-xs uppercase tracking-widest text-go-amber">
 					Why Go made this choice
 				</div>
@@ -162,39 +165,33 @@ export default async function ConceptPage({
 				/>
 			</section>
 
-			{/* Common mistakes — collapsed by default */}
+			{/* Common mistakes — this is the part a learner coming from another
+			    language most needs, so it is never collapsed. */}
 			<section className="mb-10">
-				<details>
-					<summary className="mb-4 flex cursor-pointer list-none items-center justify-between">
-						<h2 className="font-serif text-xl text-foreground">
-							Common mistakes
-						</h2>
-						<span className="font-mono text-xs text-muted">
-							click to expand
-						</span>
-					</summary>
-					<div className="flex flex-col gap-3">
-						{concept.commonMistakes.map((m, i) => (
-							<div
-								key={i}
-								className="rounded-lg border border-border bg-surface p-5"
-							>
-								<div className="mb-1.5 flex items-center gap-2">
-									<span className="font-mono text-xs text-m-accent-ink">
-										✗
-									</span>
-									<span className="font-semibold text-foreground">
-										{m.title}
-									</span>
-								</div>
-								<p
-									className="text-sm leading-relaxed text-muted"
-									dangerouslySetInnerHTML={{ __html: localizeHtml(m.body, lang) }}
-								/>
+				<h2 className="mb-4 font-serif text-xl text-foreground">
+					Common mistakes
+				</h2>
+				<div className="flex flex-col gap-4">
+					{concept.commonMistakes.map((m, i) => (
+						<div
+							key={i}
+							className="rounded-lg border border-border border-s-4 border-s-m-accent-ink bg-surface p-5"
+						>
+							<div className="mb-1.5 flex items-center gap-2">
+								<span className="font-mono text-xs text-m-accent-ink">
+									✗
+								</span>
+								<span className="font-semibold text-foreground">
+									{m.title}
+								</span>
 							</div>
-						))}
-					</div>
-				</details>
+							<p
+								className="text-sm leading-relaxed text-muted"
+								dangerouslySetInnerHTML={{ __html: localizeHtml(m.body, lang) }}
+							/>
+						</div>
+					))}
+				</div>
 			</section>
 
 			{/* Related concepts */}
@@ -208,7 +205,7 @@ export default async function ConceptPage({
 							<Link
 								key={c.slug}
 								href={lp(`/concepts/${c.slug}`)}
-								className="rounded-lg border border-border bg-surface px-4 py-2.5 transition-colors hover:border-go-cyan/40"
+								className="rounded-lg border border-border bg-surface px-4 py-2.5 shadow-card transition-colors hover:border-go-cyan/40"
 							>
 								<div className="font-semibold text-foreground">
 									{c.name}
@@ -237,7 +234,7 @@ export default async function ConceptPage({
 							<Link
 								key={w.slug}
 								href={lp(`/source/${w.slug}`)}
-								className="rounded-lg border border-border bg-surface px-4 py-2.5 transition-colors hover:border-go-cyan/40"
+								className="rounded-lg border border-border bg-surface px-4 py-2.5 shadow-card transition-colors hover:border-go-cyan/40"
 							>
 								<div className="font-semibold text-foreground">
 									{w.name}
@@ -251,8 +248,9 @@ export default async function ConceptPage({
 				</section>
 			)}
 
-			{/* See it in practice */}
-			<section className="rounded-lg border border-border bg-surface p-6">
+			{/* See it in practice — the page's one landing beat, deliberately not
+			    another bordered bg-surface box like the four sections above it */}
+			<section className="rounded-xl bg-go-cyan/10 p-8">
 				<h2 className="mb-4 font-serif text-xl text-foreground">
 					See it in practice
 				</h2>
@@ -266,8 +264,8 @@ export default async function ConceptPage({
 						{practiceLinks.map(({ project: p, stepN }) => (
 							<Link
 								key={`${p.slug}-${stepN}`}
-								href={lp(`/projects/${p.slug}`)}
-								className="flex items-center gap-3 rounded-lg border border-border bg-bg px-4 py-3 transition-colors hover:border-go-cyan/30"
+								href={lp(`/projects/${p.slug}#step-${stepN}`)}
+								className="flex items-center gap-3 rounded-lg border border-border bg-bg px-4 py-3 shadow-card transition-colors hover:border-go-cyan/30"
 							>
 								<span
 									className={`font-mono text-xs font-semibold ${tierColors[p.tier]}`}

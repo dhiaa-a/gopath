@@ -57,7 +57,7 @@ export default async function ProjectsPage({
 						<Link
 							key={p.slug}
 							href={lp(`/projects/${p.slug}`)}
-							className={`group flex items-center gap-5 rounded-lg border bg-surface p-5 transition-all ${c.border} hover:translate-x-1`}
+							className={`group flex items-center gap-5 rounded-lg border bg-surface p-5 shadow-card transition-all ${c.border} hover:translate-x-1 hover:shadow-elevated`}
 						>
 							{/* Step number */}
 							<div className="hidden w-6 shrink-0 text-right font-mono text-xs text-faint sm:block">

@@ -1,12 +1,11 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { getProject, projects } from "@/lib/projects"
-import { priorConceptOccurrence } from "@/lib/relations"
 import { walkthroughsForProject } from "@/lib/source"
 import { ContentRenderer } from "@/components/ContentRenderer"
 import { LabCard } from "@/components/LabCard"
 import { ProjectSection } from "@/components/ProjectSection"
-import { SpacedReuseCallout } from "@/components/SpacedReuseCallout"
+import { ConceptChips } from "@/components/ConceptChips"
 import { StepRecap } from "@/components/StepRecap"
 import { PageNav, type PageNavItem } from "@/components/PageNav"
 import { Appear } from "@/components/Motion"
@@ -136,7 +135,7 @@ export default async function ProjectPage({
 			<h1 className="mb-4 font-serif text-5xl text-foreground">
 				{project.name}
 			</h1>
-			<p className="mb-7 text-xl leading-relaxed text-muted">
+			<p className="mb-7 max-w-[65ch] text-xl leading-relaxed text-muted">
 				{project.tagline}
 			</p>
 
@@ -218,48 +217,38 @@ export default async function ProjectPage({
 			<div className="relative flex flex-col gap-12">
 				<span
 					aria-hidden="true"
-					className="absolute bottom-6 left-[19px] top-6 w-[2px] bg-border"
+					className="absolute bottom-6 start-[19px] top-6 w-[2px] bg-border"
 				/>
-				{project.steps.map((step) => {
-					const prior = priorConceptOccurrence(project.slug, step.uses)
-					const priorProject = prior
-						? projects.find((p) => p.slug === prior.priorProjectSlug)
-						: null
-
-					return (
-						<Appear
-							key={step.n}
-							className="relative scroll-mt-[110px]"
+				{project.steps.map((step) => (
+					<Appear key={step.n} className="relative scroll-mt-[110px]">
+						<div
+							id={`step-${step.n}`}
+							className="mb-4 flex items-center gap-4 scroll-mt-[110px]"
 						>
-							<div
-								id={`step-${step.n}`}
-								className="mb-4 flex items-center gap-4 scroll-mt-[110px]"
-							>
-								<StepMarker
-									projectSlug={project.slug}
-									n={step.n}
-									accentClass={c.accent}
-								/>
-								<h3 className="text-xl font-semibold text-foreground">
-									{step.heading.en}
-								</h3>
-							</div>
-							<div className="ms-14">
-								{priorProject && prior && (
-									<SpacedReuseCallout
-										projectName={priorProject.name}
-										projectSlug={priorProject.slug}
-										lang={lang}
-									/>
-								)}
-								<ContentRenderer blocks={step.blocks} lang={lang} />
-								{step.retrievalPrompt && (
-									<StepRecap prompt={step.retrievalPrompt} />
-								)}
-							</div>
-						</Appear>
-					)
-				})}
+							<StepMarker
+								projectSlug={project.slug}
+								n={step.n}
+								accentClass={c.accent}
+							/>
+							<h3 className="text-xl font-semibold text-foreground">
+								{step.heading.en}
+							</h3>
+						</div>
+						<div className="ms-14">
+							<ConceptChips
+								slugs={step.uses}
+								projectSlug={project.slug}
+								stepN={step.n}
+								tier={project.tier}
+								lang={lang}
+							/>
+							<ContentRenderer blocks={step.blocks} lang={lang} />
+							{step.retrievalPrompt && (
+								<StepRecap prompt={step.retrievalPrompt} lang={lang} />
+							)}
+						</div>
+					</Appear>
+				))}
 			</div>
 
 			{/* Recap */}

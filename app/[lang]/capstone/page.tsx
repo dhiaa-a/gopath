@@ -51,7 +51,7 @@ export default async function CapstonePage({
 			/>
 
 			{/* How you find out */}
-			<section className="mb-12 rounded-lg border border-go-cyan/30 bg-surface p-6">
+			<section className="mb-12 rounded-lg border border-border border-s-4 border-s-go-cyan bg-surface p-6">
 				<div className="mb-3 font-mono text-xs uppercase tracking-widest text-go-cyan">
 					How you find out
 				</div>
@@ -250,7 +250,7 @@ export default async function CapstonePage({
 					the reason is worth more than the seeds that do.
 				</p>
 
-				<div className="mb-5 rounded-lg border border-border bg-surface p-5">
+				<div className="mb-5 rounded-lg border border-border border-s-4 border-s-go-amber bg-surface p-5">
 					<p className="mb-2 font-semibold text-foreground">
 						A lost update is not observable from outside
 					</p>

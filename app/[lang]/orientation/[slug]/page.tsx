@@ -90,7 +90,7 @@ export default async function OrientationPage({
 			<h1 className="mb-3 font-serif text-4xl text-foreground">
 				{t(page.title, lang)}
 			</h1>
-			<p className="mb-10 text-lg text-muted">{t(page.tagline, lang)}</p>
+			<p className="mb-10 max-w-[65ch] text-lg text-muted">{t(page.tagline, lang)}</p>
 
 			{/* Body */}
 			{page.blocks.length > 0 && (
@@ -112,7 +112,7 @@ export default async function OrientationPage({
 				<div className="mb-10 flex justify-center">
 					<Link
 						href={lp(page.cta.href)}
-						className="rounded bg-go-cyan px-6 py-3 font-mono text-sm font-semibold text-black transition-opacity hover:opacity-85"
+						className="rounded-lg bg-go-cyan px-6 py-3 font-mono text-sm font-semibold text-black shadow-elevated transition-opacity hover:opacity-85"
 					>
 						{t(page.cta.label, lang)}
 					</Link>

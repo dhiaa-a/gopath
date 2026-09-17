@@ -59,7 +59,7 @@ export default async function ConceptsPage({
 									<Link
 										key={c.slug}
 										href={lp(`/concepts/${c.slug}`)}
-										className={`group rounded-lg border ${style.border} bg-surface p-4 transition-all hover:-translate-y-0.5 hover:shadow-sm`}
+										className={`group rounded-lg border ${style.border} bg-surface p-4 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-elevated`}
 									>
 										<div className="mb-1 font-semibold text-foreground group-hover:text-go-cyan">
 											{c.name}

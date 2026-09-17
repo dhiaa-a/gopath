@@ -25,7 +25,7 @@ export function StepMarker({
 			aria-label={
 				done ? `Step ${n}, done — mark not done` : `Step ${n} — mark done`
 			}
-			className={`flex h-10 w-10 shrink-0 items-center justify-center border-2 font-mono text-sm font-semibold transition-colors ${
+			className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 font-mono text-sm font-semibold transition-colors ${
 				done
 					? "border-m-accent bg-m-accent text-m-on-accent"
 					: `border-border bg-surface ${accentClass} hover:border-m-accent`

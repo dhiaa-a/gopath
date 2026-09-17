@@ -51,7 +51,7 @@ export default async function BasicsIndexPage({
 					<li key={lesson.slug}>
 						<Link
 							href={lp(`/basics/${lesson.slug}`)}
-							className="group flex items-start gap-4 border border-border bg-surface p-5 transition-all hover:-translate-y-0.5 hover:border-border2 hover:shadow-sm"
+							className="group flex items-start gap-4 rounded-lg border border-border bg-surface p-5 shadow-card transition-all hover:-translate-y-0.5 hover:border-border2 hover:shadow-elevated"
 						>
 							<LessonNumber
 								slug={lesson.slug}

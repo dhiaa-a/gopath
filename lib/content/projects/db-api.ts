@@ -98,16 +98,20 @@ export const dbApi: Project = {
 			type: "list",
 			items: [
 				{
-					en: "One dependency: pgx. Everything else is the standard library. No ORM, no query builder, no mock-generation tool, no test-container library. Every one of those is a wrapper around something in this project, and you should be able to describe what it wraps before you decide you want it.",
+					title: { en: "One dependency: pgx." },
+					body: { en: "Everything else is the standard library. No ORM, no query builder, no mock-generation tool, no test-container library. Every one of those is a wrapper around something in this project, and you should be able to describe what it wraps before you decide you want it." },
 				},
 				{
-					en: "Package api imports nothing from package postgres. If you ever need to break that rule the interface is wrong, not the rule.",
+					title: { en: "Package api imports nothing from package postgres." },
+					body: { en: "If you ever need to break that rule the interface is wrong, not the rule." },
 				},
 				{
-					en: "Every query uses $N placeholders. Not because a style guide says so: because of what the wire protocol does with them, which is step 05.",
+					title: { en: "Every query uses $N placeholders." },
+					body: { en: "Not because a style guide says so: because of what the wire protocol does with them, which is step 05." },
 				},
 				{
-					en: "The integration suite is opt-in and skips without TEST_DATABASE_URL. That is a real constraint on you, not a convenience: it means go test ./... prints ok for a postgres package whose code never ran. Step 09 is about what to do with that.",
+					title: { en: "The integration suite is opt-in and skips without TEST_DATABASE_URL." },
+					body: { en: "That is a real constraint on you, not a convenience: it means go test ./... prints ok for a postgres package whose code never ran. Step 09 is about what to do with that." },
 				},
 			],
 		},
@@ -463,7 +467,7 @@ r.db.QueryRow(ctx,
 		{
 			n: "06",
 			heading: { en: "Not found, when there is no row to find out from" },
-			uses: ["error-handling"],
+			uses: ["error-handling", "sentinel-errors"],
 			blocks: [
 				{
 					type: "text",
@@ -593,7 +597,7 @@ r.db.QueryRow(ctx,
 		{
 			n: "08",
 			heading: { en: "The DSN is a secret, and the pool is a budget you share" },
-			uses: ["structs", "error-handling"],
+			uses: ["structs", "error-handling", "secrets-config", "method-sets"],
 			blocks: [
 				{
 					type: "text",

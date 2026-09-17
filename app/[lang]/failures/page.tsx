@@ -34,7 +34,7 @@ export default async function FailuresPage({
 			<p className="mb-6 max-w-2xl text-muted">
 				{tr.index.failuresLead}
 			</p>
-			<p className="mb-12 max-w-2xl text-sm text-faint">
+			<p className="mb-12 max-w-2xl text-sm text-muted">
 				Every lab lives in{" "}
 				<code className="font-mono text-muted">labs/failures/</code>{" "}
 				and reproduces on demand with a stock toolchain. None of them
@@ -62,7 +62,7 @@ export default async function FailuresPage({
 									<Link
 										key={f.slug}
 										href={lp(`/failures/${f.slug}`)}
-										className={`group rounded-lg border ${style.border} bg-surface p-4 transition-all hover:-translate-y-0.5 hover:shadow-sm`}
+										className={`group rounded-lg border ${style.border} bg-surface p-4 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-elevated`}
 									>
 										<div className="mb-1 flex items-baseline justify-between gap-3">
 											<span className="font-semibold text-foreground group-hover:text-go-cyan">

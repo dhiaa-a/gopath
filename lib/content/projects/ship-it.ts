@@ -74,19 +74,24 @@ export const shipIt: Project = {
 			type: "list",
 			items: [
 				{
-					en: "Zero dependencies. net/http, os/signal, context, and sync/atomic are the whole toolkit. Every framework that offers you graceful shutdown is wrapping the same forty lines you are about to write, and you should know what is under the wrapper before you buy one.",
+					title: { en: "Zero dependencies." },
+					body: { en: "net/http, os/signal, context, and sync/atomic are the whole toolkit. Every framework that offers you graceful shutdown is wrapping the same forty lines you are about to write, and you should know what is under the wrapper before you buy one." },
 				},
 				{
-					en: "CGO_ENABLED=0. The artifact is one file that depends on nothing, which is what makes the container a binary plus 2MB of CA certificates instead of a Linux distribution.",
+					title: { en: "CGO_ENABLED=0." },
+					body: { en: "The artifact is one file that depends on nothing, which is what makes the container a binary plus 2MB of CA certificates instead of a Linux distribution." },
 				},
 				{
-					en: "No config file, no reload, no flags. Everything comes from the environment, is read exactly once, and never changes while the process lives. A handler that can ask the environment a question at request time is a handler whose behaviour depends on when you look.",
+					title: { en: "No config file, no reload, no flags." },
+					body: { en: "Everything comes from the environment, is read exactly once, and never changes while the process lives. A handler that can ask the environment a question at request time is a handler whose behaviour depends on when you look." },
 				},
 				{
-					en: "Nothing in the lab's checks runs Docker. You build the image yourself, because reading a Dockerfile is not the same as running one. The gate checks the Go program's shipping properties, which are the parts a container cannot fix for you.",
+					title: { en: "Nothing in the lab's checks runs Docker." },
+					body: { en: "You build the image yourself, because reading a Dockerfile is not the same as running one. The gate checks the Go program's shipping properties, which are the parts a container cannot fix for you." },
 				},
 				{
-					en: "The gate is relative. Every number it enforces is compared against the budget the same Config asked for, so it holds on your laptop, on CI, and on a machine under load, without a single absolute millisecond in it.",
+					title: { en: "The gate is relative." },
+					body: { en: "Every number it enforces is compared against the budget the same Config asked for, so it holds on your laptop, on CI, and on a machine under load, without a single absolute millisecond in it." },
 				},
 			],
 		},
@@ -95,7 +100,7 @@ export const shipIt: Project = {
 		{
 			n: "01",
 			heading: { en: "Read the whole environment once, at the boundary" },
-			uses: ["error-handling", "structs"],
+			uses: ["error-handling", "structs", "errors-join"],
 			blocks: [
 				{
 					type: "text",

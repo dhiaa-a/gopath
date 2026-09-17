@@ -23,16 +23,23 @@
 	--bg: 243 242 242;
 	--color-surface: #eae9e9;
 	--color-surface2: #dedcdc;
-	--color-border: color-mix(in srgb, #201e1d 40%, transparent);
-	--color-border2: color-mix(in srgb, #201e1d 62%, transparent);
+	--color-border: color-mix(in srgb, #201e1d 16%, transparent);
+	--color-border2: color-mix(in srgb, #201e1d 32%, transparent);
 
 	/* Text */
 	--color-fg: #201e1d;
 	--color-muted: color-mix(in srgb, #201e1d 72%, transparent);
-	--color-faint: color-mix(in srgb, #201e1d 63%, transparent);
+	/* 67%, not the original 63% (~4.50:1 against --color-surface, the AA floor
+	   with no margin). 67% clears ~5.1:1, real headroom instead of sitting on
+	   the legal minimum. See DECISIONS 2026-09-16. */
+	--color-faint: color-mix(in srgb, #201e1d 67%, transparent);
 
-	/* Code block background */
-	--color-code-bg: #eae9e9;
+	/* Code block background. Lighter than --color-surface (not the same value
+	   it used to share with it) so a code block reads as its own zone rather
+	   than blending into every other card. Lighter, not darker, because syntax
+	   colors were tuned against the old shared value and darkening would have
+	   cost contrast; lightening gains it instead. */
+	--color-code-bg: #f0eeee;
 
 	/* One accent role, three legacy names */
 	--go-cyan: 174 24 0;
@@ -57,6 +64,14 @@
 	--sx-comment: #686565;
 	--sx-ident: #201e1d;
 	--sx-punct: #605d5d;
+
+	/* Elevation. The system had no shadow scale at all — separation between a
+	   card and the page was carried entirely by a border, which is a large
+	   part of why flat cards on a barely-lighter surface read as "boxy" rather
+	   than as objects with presence. Soft and wide rather than dark and tight,
+	   so it reads as ambient lift, not a drop-shadow effect. */
+	--shadow-card: 0 1px 2px rgba(32, 30, 29, 0.04), 0 6px 16px -8px rgba(32, 30, 29, 0.12);
+	--shadow-elevated: 0 2px 4px rgba(32, 30, 29, 0.05), 0 14px 34px -12px rgba(32, 30, 29, 0.18);
 }
 
 .dark {
@@ -64,16 +79,18 @@
 	--bg: 26 25 24;
 	--color-surface: #242220;
 	--color-surface2: #2d2b2b;
-	--color-border: color-mix(in srgb, #f3f2f2 28%, transparent);
-	--color-border2: color-mix(in srgb, #f3f2f2 46%, transparent);
+	--color-border: color-mix(in srgb, #f3f2f2 14%, transparent);
+	--color-border2: color-mix(in srgb, #f3f2f2 26%, transparent);
 
 	/* Text */
 	--color-fg: #f3f2f2;
 	--color-muted: color-mix(in srgb, #f3f2f2 70%, transparent);
-	--color-faint: color-mix(in srgb, #f3f2f2 52%, transparent);
+	--color-faint: color-mix(in srgb, #f3f2f2 56%, transparent);
 
-	/* Code block background */
-	--color-code-bg: #242220;
+	/* Code block background. Darker than --color-surface here — the opposite
+	   direction from light mode, because darkening this text *increases* its
+	   contrast against a darker ground instead of costing it. */
+	--color-code-bg: #1e1c1b;
 
 	/* One accent role, three legacy names — lifted a ramp step for ink ground */
 	--go-cyan: 255 151 131;
@@ -89,12 +106,21 @@
 	--sx-comment: #9b9797;
 	--sx-ident: #f3f2f2;
 	--sx-punct: #bab6b6;
+
+	/* Elevation, ink ground. Black shadows need more spread and a touch more
+	   opacity than the light-mode ramp to read against a dark surface at all. */
+	--shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 20px -8px rgba(0, 0, 0, 0.45);
+	--shadow-elevated: 0 2px 6px rgba(0, 0, 0, 0.35), 0 18px 40px -12px rgba(0, 0, 0, 0.55);
 }
 
 /* ─── Modernist tokens ──────────────────────────────────────────────────────
    The homepage redesign (and the nav it shares with every other page) is drawn
-   in the Modernist system: an off-white ground, one red accent, zero radius and
-   strong 2px rules. It is namespaced `--m-*` because the system's own names
+   in the Modernist system: an off-white ground, one red accent. It shipped
+   with zero radius and strong 2px rules; both softened 2026-09-16 (see
+   DECISIONS.md) because the flat, hard-edged combination read as "boxy" and
+   "not inviting" rather than minimal. The accent and one-family typography
+   stay — only the corners, border weight and the addition of a shadow scale
+   changed. It is namespaced `--m-*` because the system's own names
    (--color-surface, --color-text) collide with the tokens above, and because
    the rest of the site deliberately keeps its current look until it is
    redesigned too.
@@ -111,13 +137,18 @@
 	--m-surface: #eae9e9;
 	--m-ink: #201e1d;
 	--m-muted: color-mix(in srgb, #201e1d 72%, transparent);
-	/* 63%, not the system's 55%. Its own `.text-muted` is 55%, which measures
-	   3.65:1 here and fails AA for the 11px meta labels this carries (tier
-	   numbers, track labels, the code window's filename). 63% is the lowest
-	   step that clears 4.5:1 — 4.65:1 — so it stays clearly lighter than
-	   --m-muted at 6.2:1 and the two roles remain distinguishable. */
-	--m-faint: color-mix(in srgb, #201e1d 63%, transparent);
-	--m-divider: color-mix(in srgb, #201e1d 40%, transparent);
+	/* 67%, not the system's original 55% or the 63% this was later raised to.
+	   Its own `.text-muted` is 55%, which measures 3.65:1 here and fails AA
+	   for the 11px meta labels this carries (tier numbers, track labels, the
+	   code window's filename); 63% cleared 4.5:1 but with no margin (~4.50:1
+	   against the card surface, exactly the floor). 67% clears ~5.1:1 while
+	   staying lighter than --m-muted at 6.2:1, so the two roles remain
+	   distinguishable. */
+	--m-faint: color-mix(in srgb, #201e1d 67%, transparent);
+	/* 22%, not 40%. The divider was a deliberate hard rule at launch; softened
+	   alongside the border tokens above so 2px section dividers (nav, stats
+	   bar, tracks grid, footer) read as a quiet line instead of an outline. */
+	--m-divider: color-mix(in srgb, #201e1d 22%, transparent);
 
 	/* accent-500 base; -700 is the step that carries body-size text on this
 	   ground, since the raw accent only reaches 3:1 against it. */
@@ -138,8 +169,8 @@
 	--m-surface: #242220;
 	--m-ink: #f3f2f2;
 	--m-muted: color-mix(in srgb, #f3f2f2 70%, transparent);
-	--m-faint: color-mix(in srgb, #f3f2f2 52%, transparent);
-	--m-divider: color-mix(in srgb, #f3f2f2 28%, transparent);
+	--m-faint: color-mix(in srgb, #f3f2f2 56%, transparent);
+	--m-divider: color-mix(in srgb, #f3f2f2 16%, transparent);
 
 	--m-accent: #ff563c;
 	--m-accent-ink: #ff9783;
@@ -167,13 +198,6 @@
 	--sx-comment: color-mix(in srgb, var(--m-ink) 45%, transparent);
 	--sx-ident: var(--m-ink);
 	--sx-punct: var(--m-ink);
-}
-
-/* The base `code` rule carries a 4px radius. `pre code` already strips its
-   background and border, so nothing shows through it — but the system's rule is
-   that no corner is rounded anywhere, and an invisible exception is still one. */
-.m-code code {
-	border-radius: 0;
 }
 
 /* The system styles keyboard focus itself rather than leaving the browser
@@ -346,6 +370,26 @@
 	transform: translateX(6px);
 }
 
+/* The Disclosure control's triangle: point right, rotate down when open.
+   Not `.m-arrow` — that class already means "nudge forward on hover" for
+   directional links, a different gesture from "this expanded." Keyed off
+   the native <details open> attribute rather than a Tailwind group-open
+   variant, which this Tailwind version doesn't generate. Rotation, not a
+   mirrored glyph, so it needs no RTL rule: "pointing down" means expanded
+   in either reading direction. */
+.m-disclosure-arrow {
+	display: inline-block;
+	transition: transform 0.2s var(--m-ease);
+}
+details[open] > summary .m-disclosure-arrow {
+	transform: rotate(90deg);
+}
+@media (prefers-reduced-motion: reduce) {
+	.m-disclosure-arrow {
+		transition: none;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.m-appear,
 	.m-appear.is-in,
@@ -465,6 +509,13 @@ pre,
 		-webkit-font-smoothing: antialiased;
 	}
 
+	/* `list-none` on <summary> removes the marker in Chrome/Firefox but not
+	   Safari, which draws its own regardless — every disclosure control on
+	   the site supplies its own arrow, so the native one is always a dupe. */
+	summary::-webkit-details-marker {
+		display: none;
+	}
+
 	/* Modernist sets the whole system in one family at two weights, so headings
 	   that used to be a 400-weight serif are now Archivo at 800. Without this
 	   they would inherit the body weight and stop reading as headings at all. */
@@ -514,7 +565,7 @@ pre,
 		background: var(--color-surface2);
 		border: 1px solid var(--color-border);
 		padding: 0.15em 0.4em;
-		border-radius: 0;
+		border-radius: 6px;
 		color: var(--color-fg);
 		letter-spacing: -0.01em;
 	}

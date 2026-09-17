@@ -49,7 +49,7 @@ export default async function OrientationIndexPage({
 					<li key={page.slug}>
 						<Link
 							href={lp(`/orientation/${page.slug}`)}
-							className="group flex items-start gap-4 rounded-lg border border-border bg-surface p-5 transition-all hover:-translate-y-0.5 hover:border-border2 hover:shadow-sm"
+							className="group flex items-start gap-4 rounded-lg border border-border bg-surface p-5 shadow-card transition-all hover:-translate-y-0.5 hover:border-border2 hover:shadow-elevated"
 						>
 							<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-bg font-mono text-sm text-muted">
 								{page.order}
