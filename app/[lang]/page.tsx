@@ -85,7 +85,7 @@ export default async function Home({
 			>
 				<Appear stagger>
 					<div>
-						<span className="inline-flex bg-m-tag-bg px-[12px] py-[5px] text-[11px] tracking-[0.02em] text-m-tag-fg">
+						<span className="inline-flex rounded-full bg-m-tag-bg px-[12px] py-[5px] text-[11px] tracking-[0.02em] text-m-tag-fg">
 							{s.home.badge}
 						</span>
 					</div>
@@ -122,7 +122,7 @@ export default async function Home({
 
 				{/* Code window */}
 				<Appear delay={140}>
-					<div className="m-code border-2 border-m-divider bg-m-surface">
+					<div className="m-code overflow-hidden rounded-lg border-2 border-m-divider bg-m-surface shadow-elevated">
 						<div className="flex items-center gap-[10px] border-b-2 border-m-divider px-[18px] py-[11px]">
 							<span
 								aria-hidden="true"
@@ -220,7 +220,7 @@ export default async function Home({
 								{projects.map((p) => (
 									<span
 										key={p.slug}
-										className="bg-m-tag-neutral-bg px-[12px] py-[5px] text-[12px] tracking-[0.01em] text-m-tag-neutral-fg"
+										className="rounded-full bg-m-tag-neutral-bg px-[12px] py-[5px] text-[12px] tracking-[0.01em] text-m-tag-neutral-fg"
 									>
 										{p.name}
 									</span>
@@ -255,13 +255,13 @@ export default async function Home({
 					</Appear>
 					<Appear
 						stagger
-						className="grid grid-cols-1 gap-[2px] border-2 border-m-divider bg-m-divider sm:grid-cols-2"
+						className="grid grid-cols-1 gap-[20px] sm:grid-cols-2"
 					>
 						{TRACK_LINKS.map((t, i) => (
 							<Link
 								key={t.href}
 								href={p(t.href)}
-								className="m-card group bg-m-bg p-[32px] hover:bg-m-surface"
+								className="m-card group rounded-lg border border-m-divider bg-m-bg p-[32px] shadow-card transition-shadow duration-300 hover:border-m-accent/30 hover:shadow-elevated"
 							>
 								<div>
 									<div className="mb-[14px] flex items-baseline gap-[12px]">

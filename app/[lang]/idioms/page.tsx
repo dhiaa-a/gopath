@@ -44,7 +44,7 @@ export default async function IdiomsPage({
 			<p className="mb-6 max-w-2xl text-muted">
 				{tr.index.idiomsLead}
 			</p>
-			<p className="mb-6 max-w-2xl text-sm text-faint">
+			<p className="mb-6 max-w-2xl text-sm text-muted">
 				Every exercise lives in{" "}
 				<code className="font-mono text-muted">labs/idioms/</code> and
 				shares one lint config,{" "}

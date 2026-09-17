@@ -97,7 +97,7 @@ export default async function BasicsLessonPage({
 			<h1 className="mb-3 font-serif text-4xl text-foreground">
 				{lesson.title}
 			</h1>
-			<p className="mb-10 text-lg text-muted">{lesson.tagline}</p>
+			<p className="mb-10 max-w-[65ch] text-lg text-muted">{lesson.tagline}</p>
 
 			{/* Intro */}
 			<div className="mb-8">
