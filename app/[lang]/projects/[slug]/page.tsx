@@ -244,7 +244,7 @@ export default async function ProjectPage({
 							/>
 							<ContentRenderer blocks={step.blocks} lang={lang} />
 							{step.retrievalPrompt && (
-								<StepRecap prompt={step.retrievalPrompt} />
+								<StepRecap prompt={step.retrievalPrompt} lang={lang} />
 							)}
 						</div>
 					</Appear>

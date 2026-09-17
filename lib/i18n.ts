@@ -161,6 +161,8 @@ const en = {
 		seenConcept: "seen before",
 		fullConceptPage: "Full page",
 		whichConceptsHere: "Which concepts does this use?",
+		answerItThenCheck: "Answer it, then check",
+		readTheSource: "read the source",
 	},
 	blocks: {
 		concept: "concept",
@@ -407,6 +409,8 @@ const ar: Dict = {
 		seenConcept: "ظهر سابقًا",
 		fullConceptPage: "الصفحة الكاملة",
 		whichConceptsHere: "ما المفاهيم التي تُستخدم هنا؟",
+		answerItThenCheck: "أجب عنه، ثم تحقّق",
+		readTheSource: "اقرأ المصدر",
 	},
 	blocks: {
 		concept: "المفهوم",

@@ -29,6 +29,8 @@ function StdlibChip({
 	funcs: string[]
 	lang: string
 }) {
+	const L = toLang(lang)
+	const tr = ui(L)
 	if (funcs.length === 0) {
 		return <span className="font-mono text-xs text-muted">{pkg}</span>
 	}
@@ -46,10 +48,13 @@ function StdlibChip({
 			<span className="font-mono text-xs text-muted">{funcs.join(", ")}</span>
 			{walkthrough && (
 				<Link
-					href={localePath(`/source/${walkthrough}`, toLang(lang))}
+					href={localePath(`/source/${walkthrough}`, L)}
 					className="font-mono text-[10px] text-go-teal hover:underline"
 				>
-					read the source →
+					{tr.common.readTheSource}{" "}
+					<span aria-hidden="true" className="m-arrow">
+						→
+					</span>
 				</Link>
 			)}
 		</span>
