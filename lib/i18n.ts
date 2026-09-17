@@ -163,6 +163,7 @@ const en = {
 		whichConceptsHere: "Which concepts does this use?",
 		answerItThenCheck: "Answer it, then check",
 		readTheSource: "read the source",
+		backToTop: "Back to top",
 	},
 	blocks: {
 		concept: "concept",
@@ -411,6 +412,7 @@ const ar: Dict = {
 		whichConceptsHere: "ما المفاهيم التي تُستخدم هنا؟",
 		answerItThenCheck: "أجب عنه، ثم تحقّق",
 		readTheSource: "اقرأ المصدر",
+		backToTop: "العودة إلى الأعلى",
 	},
 	blocks: {
 		concept: "المفهوم",

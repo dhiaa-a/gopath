@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
+import Script from "next/script"
 import "../globals.css"
 import Nav from "@/components/Nav"
+import { BackToTop } from "@/components/BackToTop"
 import { getNavMenu } from "@/lib/nav"
 import { buildSearchIndex } from "@/lib/search-index"
 import { LANGS, toLang, dirOf, type Lang } from "@/lib/i18n"
@@ -60,8 +62,14 @@ export default async function RootLayout({
 	return (
 		<html lang={lang} dir={dirOf(lang)} suppressHydrationWarning>
 			<head>
-				{/* Runs before React hydrates to avoid a light-flash on dark-mode users */}
-				<script
+				{/* Runs before React hydrates to avoid a light-flash on dark-mode users.
+				    next/script's beforeInteractive strategy (not a raw <script> tag)
+				    is what makes that timing guarantee possible in the App Router —
+				    it also avoids React's dev-only "script tags are never executed
+				    on the client" warning, which fires for literal <script> JSX. */}
+				<Script
+					id="theme-init"
+					strategy="beforeInteractive"
 					dangerouslySetInnerHTML={{
 						__html: `try{var t=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.classList.toggle('dark',t==='dark')}catch(e){document.documentElement.classList.add('dark')}`,
 					}}
@@ -86,6 +94,7 @@ export default async function RootLayout({
 					lang={lang}
 				/>
 				{children}
+				<BackToTop lang={lang} />
 			</body>
 		</html>
 	)
